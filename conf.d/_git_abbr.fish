@@ -1,7 +1,6 @@
-# git
-if command --query fzf
-    set -g GIT_FISH_FZF_EXISTS 1
-end
+command --query git; or return
+
+command --query fzf; and set -g GIT_FISH_FZF_EXISTS
 
 abbr -a g git
 

@@ -64,19 +64,38 @@ abbr -a gg git grep
 abbr -a gl git log --graph
 abbr -a glo git log --oneline --decorate --graph --all
 
+# git merge
+abbr -a gm git merge
+
+# git mv
+abbr -a gmv git mv
+
 # git pull
 abbr -a gp git pull --progress
 # git push
 abbr -a gP git push --progress
 
+# git rebase
+abbr -a grb git rebase
+abbr -a grbi git rebase --interactive
+
 # git restore
 abbr -a gr git restore
+
+# git rm
+abbr -a grm git rm
 
 # git status
 abbr -a gs git status --untracked-files=all
 abbr -a gss git status --short --branch --untracked-files=all
 
 # git stash
+abbr -a gst git stash
+abbr -a gstp git stash pop
+abbr -a gsta git stash apply
+abbr -a gstd git stash drop
+abbr -a gstl git stash list
+
 
 # git submodule
 abbr -a gsub git submodule

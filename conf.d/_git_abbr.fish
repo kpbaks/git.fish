@@ -79,8 +79,12 @@ abbr -a gP git push --progress
 abbr -a grb git rebase
 abbr -a grbi git rebase --interactive
 
+# git reflog
+abbr -a grl git reflog
+
+
 # git restore
-abbr -a gr git restore
+abbr -a gr git restore show
 
 # git rm
 abbr -a grm git rm
@@ -95,7 +99,6 @@ abbr -a gstp git stash pop
 abbr -a gsta git stash apply
 abbr -a gstd git stash drop
 abbr -a gstl git stash list
-
 
 # git submodule
 abbr -a gsub git submodule

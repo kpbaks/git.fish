@@ -130,8 +130,10 @@ end
 
 abbr -a git_clone_at_depth --position command --regex "gc[0-9]*" --function abbr_git_clone
 
-abbr -a gac --set-cursor 'git add --update && git status && git commit'
-abbr -a gacp --set-cursor 'git add --update % && git status && git commit && git push'
+set -l sleep_duration 1.5
+
+abbr -a gac --set-cursor "git add --update && git status && sleep $sleep_duration && git commit"
+abbr -a gacp --set-cursor "git add --update % && git status && sleep $sleep_duration && git commit && git push"
 
 set --erase GIT_FISH_FZF_EXISTS
 

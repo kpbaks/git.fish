@@ -134,3 +134,12 @@ abbr -a gac --set-cursor 'git add --update && git status && git commit'
 abbr -a gacp --set-cursor 'git add --update % && git status && git commit && git push'
 
 set --erase GIT_FISH_FZF_EXISTS
+
+
+# other git tools -------------------------------------------------------------
+
+# lazygit
+abbr -a lg lazygit
+
+# gitui
+abbr -a gui gitui

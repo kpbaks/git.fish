@@ -145,3 +145,39 @@ abbr -a lg lazygit
 
 # gitui
 abbr -a gui gitui
+
+
+
+# abbr -a ga 'git add --update && git status'
+# abbr -a gaa 'git add --all && git status'
+# abbr -a gam 'git ls-files --modified | xargs git add && git status'
+# abbr -a gau 'git ls-files --others | xargs git add && git status'
+#
+# function abbr_git_clone
+#     set -l args --recursive
+#     set -l postfix_args
+#     set -l clipboard (fish_clipboard_paste)
+#     # if clipboard is a git url
+#     # TODO: also handle url of the form https://github.com/<user>/<repo>
+#
+#     if string match --quiet --regex "^(https?|git)://.*\.git\$" -- "$clipboard"
+#         set --append args $clipboard
+#         # Parse the directory name from the url
+#         set --append postfix_args '; cd'
+#         set --append postfix_args (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
+#     end
+#
+#     set -l depth (string replace --all --regex '[^0-9]' '' $argv[1])
+#     if test -n $depth
+#         set --append args --depth=$depth
+#     end
+#     echo -- git clone $args $postfix_args
+# end
+#
+# abbr -a git_clone_at_depth --position command --regex "gc[0-9]*" --function abbr_git_clone
+#
+# abbr -a gcm --set-cursor git commit --message "'feat(%):'"
+# abbr -a gcmf --set-cursor git commit --message "'fix(%):'"
+# abbr -a gcmr --set-cursor git commit --message "'refactor(%):'"
+# abbr -a gcmc --set-cursor git commit --message "'chore(%):'"
+# abbr -a gcmd --set-cursor git commit --message "'docs(%):'"

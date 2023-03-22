@@ -13,13 +13,8 @@ function _remind_me_to_commit --on-variable PWD
     end
 
     if test -d .git
-		# defined in $__fish_config_dir/functions/should_i_commit.fish
-		# part of git.fish
+        # defined in $__fish_config_dir/functions/should_i_commit.fish
+        # part of git.fish
         should_i_commit $REMIND_ME_TO_COMMIT_THRESHOLD
     end
 end
-
-# function _remind_me_to_commit_postexec_handler --on-event fish_postexec
-#     # do the check every 5 minutes if I am in a git repo 
-#
-# end

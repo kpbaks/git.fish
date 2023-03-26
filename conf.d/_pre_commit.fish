@@ -1,6 +1,9 @@
 status is-interactive; or return
 
-command --query pre-commit; or return
+if not command --query pre-commit
+    _git_fish_echo "pre-commit not installed. no hooks will be enabled."
+    return
+end
 
 set -g _git_fish_git_directories_visisted
 
@@ -8,24 +11,19 @@ function _git_fish_check_for_pre_commit --on-variable PWD
     test -d .git; or return
     contains -- $PWD $_git_fish_git_directories_visisted; and return
 
-    set -l prefix "[git.fish]"
-    set -l git_color "#f44d27" # taken from git's logo
-
     if test -f .pre-commit-config.yaml
         # check if hooks are installed
         if not test -f ./git/hooks/pre-commit
-            printf "%s%s%s %s\n" \
-                (set_color $git_color) $prefix (set_color normal) \
-                "pre-commit hooks not installed. installing..."
+            _git_fish_echo "pre-commit hooks not installed. installing..."
             pre-commit install
-            printf "%s%s%s %s\n" \
-                (set_color $git_color) $prefix (set_color normal) \
-                "pre-commit hooks installed."
+            _git_fish_echo "pre-commit hooks installed."
+        else
+            _git_fish_echo "pre-commit hooks not installed."
+            _git_fish_echo "run `pre-commit install` to install them."
         end
     else
-        printf "%s%s%s %s\n" \
-            (set_color $git_color) $prefix (set_color normal) \
-            "pre-commit hooks not installed. skipping..."
+        _git_fish_echo "no .pre-commit-config.yaml file found. skipping..."
+        _git_fish_echo "a sample .pre-commit-config.yaml file can be generated with: `pre-commit sample-config`"
     end
 
     # check if we've already visited this directory

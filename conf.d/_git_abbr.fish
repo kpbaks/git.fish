@@ -9,6 +9,7 @@ abbr -a ga --set-cursor 'git add % && git status'
 abbr -a gaa 'git add --all && git status'
 abbr -a gam 'git ls-files --modified | xargs git add && git status'
 abbr -a gau 'git ls-files --others | xargs git add && git status'
+abbr -a gap 'git add --patch && git status'
 
 # git branch
 set -l git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]"

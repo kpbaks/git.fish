@@ -106,7 +106,32 @@ abbr -a gstl git stash list
 abbr -a gsub git submodule
 
 # git switch
-abbr -a gsw git switch
+function abbr_git_switch
+    set -l cmd git switch
+    # check that we are in a git repo
+    if not command git rev-parse --is-inside-work-tree >/dev/null
+        echo -- $cmd
+        return
+    end
+
+    # Check how many branches there are
+    # if there are 2, then append the other branch name to the command
+    # else output the command.
+    # This is a nice quality of life improvement when you have a repo with two branches
+    # that you switch between often. E.g. master and develop.
+    # set -l branches (command git branch)
+    set -l branches_count (command git branch | count)
+    if test $branches_count -eq 2
+        set -l other_branch (command git branch | string match --invert --regex '^\*' | string trim)
+        set --append cmd $other_branch
+        echo "# You are in a git repo with only 2 branches.
+# My guess is that you want to switch to branch: $other_branch."
+    end
+
+    echo -- "$cmd"
+end
+
+abbr -a gsw --function abbr_git_switch
 
 function abbr_git_clone
     set -l args --recursive

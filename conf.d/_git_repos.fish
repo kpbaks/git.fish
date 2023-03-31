@@ -13,7 +13,10 @@ function _git_repos_visited --on-variable PWD
     if not contains -- $PWD $GIT_REPOS_VISITED
         set --append GIT_REPOS_VISITED $PWD
         set -l git_repos_visited_count (count $GIT_REPOS_VISITED)
-        echo "$prefix added ($PWD) to list of visited repos, total: $git_repos_visited_count"
+        set -l repo_dir (string replace "$HOME" "~" $PWD)
+        printf "$prefix added (%s%s%s) to list of visited repos, total: %s%d%s\n" \
+            $git_color $repo_dir $normal \
+            $git_color $git_repos_visited_count $normal
     end
 end
 

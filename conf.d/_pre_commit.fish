@@ -15,20 +15,20 @@ function _git_fish_check_for_pre_commit --on-variable PWD
     set -l dot_pre_commit_config_yaml (set_color --bold)".pre-commit-config.yaml"(set_color normal)
 
     if test -f .pre-commit-config.yaml
+        _git_fish_echo "a $dot_pre_commit_config_yaml file was found."
+        if command --query bat
+            command bat --plain .pre-commit-config.yaml
+        else
+            command cat .pre-commit-config.yaml
+        end
         # check if hooks are installed
         if not test -f ./git/hooks/pre-commit
-            _git_fish_echo "a $dot_pre_commit_config_yaml file was found."
-            if command --query bat
-                command bat --plain .pre-commit-config.yaml
-            else
-                command cat .pre-commit-config.yaml
-            end
             _git_fish_echo "pre-commit hooks not installed. installing..."
             pre-commit install
             _git_fish_echo "pre-commit hooks installed."
         else
-            _git_fish_echo "pre-commit hooks not installed."
-            _git_fish_echo "run `pre-commit install` to install them."
+            _git_fish_echo "pre-commit hooks installed."
+            _git_fish_echo "run `pre-commit autoupdate` to update hooks."
         end
     else
         _git_fish_echo "no $dot_pre_commit_config_yaml file found. skipping..."

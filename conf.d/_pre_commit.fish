@@ -22,13 +22,13 @@ function _git_fish_check_for_pre_commit --on-variable PWD
             command cat .pre-commit-config.yaml
         end
         # check if hooks are installed
-        if not test -f ./git/hooks/pre-commit
+        if not test -f ./.git/hooks/pre-commit
             _git_fish_echo "pre-commit hooks not installed. installing..."
-            pre-commit install
+            pre-commit install 2>/dev/null
             _git_fish_echo "pre-commit hooks installed."
         else
             _git_fish_echo "pre-commit hooks installed."
-            _git_fish_echo "run `pre-commit autoupdate` to update hooks."
+            _git_fish_echo "run `pre-commit autoupdate` to install them."
         end
     else
         _git_fish_echo "no $dot_pre_commit_config_yaml file found. skipping..."

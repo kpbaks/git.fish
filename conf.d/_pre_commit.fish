@@ -32,7 +32,13 @@ function _git_fish_check_for_pre_commit --on-variable PWD
         end
     else
         _git_fish_echo "no $dot_pre_commit_config_yaml file found. skipping..."
-        _git_fish_echo "a sample $dot_pre_commit_config_yaml file can be generated with:" (echo "pre-commit sample-config" | fish_indent --ansi)
+        set -l generate_sample_config_command "pre-commit sample-config > .pre-commit-config.yaml"
+        _git_fish_echo "a sample $dot_pre_commit_config_yaml file can be generated with:" (echo "$generate_sample_config_command" | fish_indent --ansi)
+        if not abbr --query pcg
+            _git_fish_echo "adding abbreviation `pcg` for" (echo "$generate_sample_config_command" | fish_indent --ansi)
+            abbr --add pcg "$generate_sample_config_command"
+        end
+        _git_fish_echo "the abbreviation `pcg` can be used to generate a sample $dot_pre_commit_config_yaml file."
     end
 
     # check if we've already visited this directory

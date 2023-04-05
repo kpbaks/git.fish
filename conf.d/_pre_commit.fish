@@ -7,8 +7,7 @@ end
 
 set -g _git_fish_git_directories_visisted
 
-function _git_fish_check_for_pre_commit --on-variable PWD
-    test -d .git; or return
+function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
     contains -- $PWD $_git_fish_git_directories_visisted; and return
 
     # used to highlight the .pre-commit-config.yaml file when it is printed
@@ -28,15 +27,19 @@ function _git_fish_check_for_pre_commit --on-variable PWD
             _git_fish_echo "pre-commit hooks installed."
         else
             _git_fish_echo "pre-commit hooks installed."
-            _git_fish_echo "run `pre-commit autoupdate` to install them."
+            _git_fish_echo "run $(echo "pre-commit autoupdate" | fish_indent --ansi) to autoupdate them."
         end
     else
         _git_fish_echo "no $dot_pre_commit_config_yaml file found. skipping..."
         set -l generate_sample_config_command "pre-commit sample-config | tee .pre-commit-config.yaml && pre-commit install"
-        _git_fish_echo "a sample $dot_pre_commit_config_yaml file can be generated and installed with:" (echo "$generate_sample_config_command" | fish_indent --ansi)
+        _git_fish_echo "a sample $dot_pre_commit_config_yaml file can be generated and installed with:"
+        echo -n "\t"
+        echo "$generate_sample_config_command" | fish_indent --ansi
         set -l abbreviation pcg
         if not abbr --query $abbreviation
-            _git_fish_echo "adding abbreviation: `$abbreviation` for" (echo "$generate_sample_config_command" | fish_indent --ansi)
+            _git_fish_echo "adding abbreviation: `$abbreviation` for"
+            echo -n "\t"
+            echo "$generate_sample_config_command" | fish_indent --ansi
             abbr --add $abbreviation "$generate_sample_config_command"
         end
         _git_fish_echo "the abbreviation `$abbreviation` can be used to generate a sample $dot_pre_commit_config_yaml file."
@@ -44,7 +47,7 @@ function _git_fish_check_for_pre_commit --on-variable PWD
 
     # check if we've already visited this directory
     # if not, add it to the list of visited directories
-    # this is to prevent annoying the user by asking them again and again in 
+    # this is to prevent annoying the user by asking them again and again in
     # the same shell session.
     if not contains -- $PWD $_git_fish_git_directories_visisted
         set --append _git_fish_git_directories_visisted $PWD

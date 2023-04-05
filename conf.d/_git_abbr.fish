@@ -2,7 +2,8 @@ command --query git; or return
 
 command --query fzf; and set -g GIT_FISH_FZF_EXISTS
 
-abbr -a g git
+abbr -a g "# You probably have an abbreviation for what you want to do ;)
+git"
 
 # git add
 abbr -a ga --set-cursor 'git add % && git status'
@@ -91,6 +92,10 @@ abbr -a gr git restore show
 # git rm
 abbr -a grm git rm
 
+
+# git show
+abbr -a gsh git show
+
 # git status
 abbr -a gs git status --untracked-files=all
 abbr -a gss git status --short --branch --untracked-files=all
@@ -113,7 +118,13 @@ function abbr_git_switch
         echo -- $cmd
         return
     end
-
+    # credit: https://stackoverflow.com/a/52222248/12323154
+    if not command git symbolic-ref --quiet HEAD 2>/dev/null
+        # We are in a detached HEAD state
+        # so we can't switch to a branch, but we likely want to switch to the main branch
+        # again. So we append '-' to the command.
+        echo -- "$cmd -"
+    end
     # Check how many branches there are
     # if there are 2, then append the other branch name to the command
     # else output the command.
@@ -132,6 +143,24 @@ function abbr_git_switch
 end
 
 abbr -a gsw --function abbr_git_switch
+
+
+# git worktree
+abbr -a gwt git worktree
+# it is best practive to create a worktree in a directory that is a sibling of the current directory
+function abbr_git_worktree_add
+    set -l dirname (path basename $PWD)
+    set -l worktree_dirname "$dirname-wt"
+    echo -- git worktree add "../$worktree_dirname/%" --detach
+end
+abbr -a gwta --set-cursor --function abbr_git_worktree_add
+abbr -a gwtl git worktree list
+abbr -a gwtm git worktree move
+abbr -a gwtp git worktree prune
+abbr -a gwtrm git worktree remove
+abbr -a gwtrmf git worktree remove --force
+
+#
 
 function abbr_git_clone
     set -l args --recursive

@@ -1,20 +1,22 @@
 status is-interactive; or return
-command --query fzf; or return
 
+if not command --query fzf
+    _git_fish_echo "fzf not found, $(set_color --bold)repos$(set_color normal) function will not be available"
+    return
+end
+
+# This variable is used to persist the list of visited repos across shell sessions
 set --query GIT_REPOS_VISITED; or set --universal GIT_REPOS_VISITED
 
 # Every time a directory with a .git directory is entered, store it in a universal variable
-function _git_repos_visited --on-variable PWD
-    test -d .git; or return
-
+function _git_repos_visited --on-event in_git_repo_root_directory
     set -l git_color (set_color "#f44d27") # taken from git's logo
     set -l normal (set_color normal)
-    set -l prefix (printf "%s[git.fish]%s" $git_color $normal)
     if not contains -- $PWD $GIT_REPOS_VISITED
         set --append GIT_REPOS_VISITED $PWD
         set -l git_repos_visited_count (count $GIT_REPOS_VISITED)
         set -l repo_dir (string replace "$HOME" "~" $PWD)
-        printf "$prefix added (%s%s%s) to list of visited repos, total: %s%d%s\n" \
+        _git_fish_echo "added (%s%s%s) to list of visited repos, total: %s%d%s\n" \
             $git_color $repo_dir $normal \
             $git_color $git_repos_visited_count $normal
     end

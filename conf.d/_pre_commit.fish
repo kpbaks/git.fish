@@ -12,9 +12,11 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
 
     # used to highlight the .pre-commit-config.yaml file when it is printed
     set -l dot_pre_commit_config_yaml (set_color --bold)".pre-commit-config.yaml"(set_color normal)
+    # When running on A Fedora Silverblue system, the PWD is /var/home/username
+    set -l cwd (string replace --regex "^/var$HOME" "~" -- $PWD | string replace --regex "^$HOME" "~")
 
     if test -f .pre-commit-config.yaml
-        _git_fish_echo "a $dot_pre_commit_config_yaml file was found in $(set_color --bold)$PWD$(set_color normal)"
+        _git_fish_echo "a $dot_pre_commit_config_yaml file was found in $(set_color --bold)$cwd$(set_color normal)"
         if command --query bat
             command bat --plain .pre-commit-config.yaml
         else
@@ -23,14 +25,15 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
         # check if hooks are installed
         if not test -f ./.git/hooks/pre-commit
             _git_fish_echo "pre-commit hooks not installed. installing..."
-            pre-commit install 2>/dev/null
+            command pre-commit install 2>/dev/null
             _git_fish_echo "pre-commit hooks installed."
         else
             _git_fish_echo "pre-commit hooks installed."
-            _git_fish_echo "to autoupdate them, run: $(echo -n "pre-commit autoupdate" | fish_indent --ansi)"
+            set -l auto_update_command (echo -n "pre-commit autoupdate" | fish_indent --ansi)
+            _git_fish_echo "to autoupdate them, run: $auto_update_command"
         end
     else
-        _git_fish_echo "no $dot_pre_commit_config_yaml file found. skipping..."
+        _git_fish_echo "no $dot_pre_commit_config_yaml file found in $(set_color --bold)$cwd$(set_color normal). skipping..."
         set -l generate_sample_config_command "pre-commit sample-config | tee .pre-commit-config.yaml && pre-commit install"
         _git_fish_echo "a sample $dot_pre_commit_config_yaml file can be generated and installed with:"
         echo -en "\t"

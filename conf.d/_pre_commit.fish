@@ -25,7 +25,7 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
         # check if hooks are installed
         if not test -f ./.git/hooks/pre-commit
             _git_fish_echo "pre-commit hooks not installed. installing..."
-            command pre-commit install 2>/dev/null
+            command pre-commit install --install-hooks 2>/dev/null
             _git_fish_echo "pre-commit hooks installed."
         else
             _git_fish_echo "pre-commit hooks installed."
@@ -33,19 +33,25 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
             _git_fish_echo "to autoupdate them, run: $auto_update_command"
         end
     else
-        _git_fish_echo "no $dot_pre_commit_config_yaml file found in $(set_color --bold)$cwd$(set_color normal). skipping..."
-        set -l generate_sample_config_command "pre-commit sample-config | tee .pre-commit-config.yaml && pre-commit install"
-        _git_fish_echo "a sample $dot_pre_commit_config_yaml file can be generated and installed with:"
-        echo -en "\t"
-        echo "$generate_sample_config_command" | fish_indent --ansi
-        set -l abbreviation pcg
-        if not abbr --query $abbreviation
-            _git_fish_echo "adding abbreviation: $(set_color --reverse)$abbreviation$(set_color normal) for"
+        _git_fish_echo "no $dot_pre_commit_config_yaml file found in $(set_color --bold)$cwd$(set_color normal)."
+        if set --query GIT_FISH_PRE_COMMIT_AUTO_INSTALL
+            _git_fish_echo "GIT_FISH_PRE_COMMIT_AUTO_INSTALL is set. generating a sample $dot_pre_commit_config_yaml file and installing it..."
+            command pre-commit sample-config | tee .pre-commit-config.yaml && command pre-commit install --install-hooks
+            _git_fish_echo "pre-commit hooks installed."
+        else
+            set -l generate_sample_config_command "pre-commit sample-config | tee .pre-commit-config.yaml && pre-commit install"
+            _git_fish_echo "a sample $dot_pre_commit_config_yaml file can be generated and installed with:"
             echo -en "\t"
             echo "$generate_sample_config_command" | fish_indent --ansi
-            abbr --add $abbreviation "$generate_sample_config_command"
+            set -l abbreviation pcg
+            if not abbr --query $abbreviation
+                _git_fish_echo "adding abbreviation: $(set_color --reverse)$abbreviation$(set_color normal) for"
+                echo -en "\t"
+                echo "$generate_sample_config_command" | fish_indent --ansi
+                abbr --add $abbreviation "$generate_sample_config_command"
+            end
+            _git_fish_echo "the abbreviation $(set_color --reverse)$abbreviation$(set_color normal) can be used to generate a sample $dot_pre_commit_config_yaml file."
         end
-        _git_fish_echo "the abbreviation $(set_color --reverse)$abbreviation$(set_color normal) can be used to generate a sample $dot_pre_commit_config_yaml file."
     end
 
     # check if we've already visited this directory

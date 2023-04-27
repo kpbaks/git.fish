@@ -108,7 +108,10 @@ abbr -a gstd git stash drop
 abbr -a gstl git stash list
 
 # git submodule
-abbr -a gsub git submodule
+abbr -a gsm git submodule
+abbr -a gsms git submodule status
+abbr -a gsml git submodule status
+
 
 # git switch
 function abbr_git_switch
@@ -119,7 +122,7 @@ function abbr_git_switch
         return
     end
     # credit: https://stackoverflow.com/a/52222248/12323154
-    if not command git symbolic-ref --quiet HEAD 2>/dev/null
+    if not command git symbolic-ref --quiet HEAD >/dev/null 2>/dev/null
         # We are in a detached HEAD state
         # so we can't switch to a branch, but we likely want to switch to the main branch
         # again. So we append '-' to the command.

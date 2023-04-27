@@ -16,9 +16,9 @@ function _git_repos_visited --on-event in_git_repo_root_directory
         set --append GIT_REPOS_VISITED $PWD
         set -l git_repos_visited_count (count $GIT_REPOS_VISITED)
         set -l repo_dir (string replace "$HOME" "~" $PWD)
-        _git_fish_echo "added (%s%s%s) to list of visited repos, total: %s%d%s\n" \
+        _git_fish_echo (printf "added (%s%s%s) to list of visited repos, total: %s%d%s\n" \
             $git_color $repo_dir $normal \
-            $git_color $git_repos_visited_count $normal
+            $git_color $git_repos_visited_count $normal)
     end
 end
 
@@ -27,6 +27,11 @@ function repos
     set -l git_color (set_color "#f44d27") # taken from git's logo
     set -l normal (set_color normal)
     set -l prefix (printf "%s[git.fish]%s" $git_color $normal)
+    set -l github_icon ""
+    set -l gitlab_icon ""
+    set -l bitbucket_icon ""
+    set -l git_icon ""
+
     set -l argc (count $argv)
     if test $argc -eq 1
         set -l verb $argv[1]
@@ -39,7 +44,13 @@ function repos
                 echo "$prefix cleared list of visited repos"
                 return 0
             case list
-                if isatty stdout
+                if not isatty stdout
+                    # for non-interactive shells, just print the list of repos
+                    # so it is easier to pipe to other commands
+                    for repo in $GIT_REPOS_VISITED
+                        echo $repo
+                    end
+                else
                     set -l longest_path_length 0
                     for repo in $GIT_REPOS_VISITED
                         set -l repo_length (string length $repo)
@@ -71,15 +82,13 @@ function repos
                         end
                         set directory_styling (set_color $directory_styling)
 
+                        set repo (string replace --regex "^/var$HOME" "~" $repo | string replace --regex "^$HOME" "~")
+
                         printf "%"$index_width"d) " $count
+
                         printf "%s%s%s%s -> %s%s%s\n" $directory_styling $repo $normal $padding $git_color $remote_origin_url $normal
                     end
-                else
-                    # for non-interactive shells, just print the list of repos
-                    # so it is easier to pipe to other commands
-                    for repo in $GIT_REPOS_VISITED
-                        echo $repo
-                    end
+
                 end
                 return 0
             case '*'

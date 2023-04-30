@@ -19,7 +19,7 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
         _git_fish_echo "a $dot_pre_commit_config_yaml file was found in $(set_color --bold)$cwd$(set_color normal)"
         set -l hooks (string match --regex --all --groups-only "\s+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
         _git_fish_echo "the following hooks are enabled:"
-        printf "- %s\n" $hooks
+        printf " - %s\n" $hooks
         # if command --query bat
         #     command bat --plain .pre-commit-config.yaml
         # else

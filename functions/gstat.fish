@@ -1,4 +1,4 @@
-function gfold
+function gstat
     if not command --query find
         set_color red --bold
         echo "find not found"
@@ -20,9 +20,9 @@ function gfold
 
     if set --query _flag_help
         set_color green --bold
-        echo "gfold - find git repos in the subtree of the current directory"
+        echo "gstat - find git repos in the subtree of the current directory"
         set_color normal
-        echo "usage: gfold [options] [path]"
+        echo "usage: gstat [options] [path]"
         echo "options:"
         echo "  -l, --no-log     do not show the last commit"
         echo "  -t, --no-stash   do not show the stash"

@@ -71,23 +71,25 @@ function gcl
             set value_color $important_param_color
         else if string match --quiet --regex "^alias" -- $param
             set param_color (set_color green)
+            # TODO: get this to work
             # values starting with ! are shell commands
-            if string match --quiet --regex "^!" -- $value
-                set value_color (echo $value | fish_indent --ansi)
-            end
+            # if string match --quiet --regex "^!" -- $value
+            #     set value (echo $value | fish_indent --ansi)
+            # end
         end
 
         set -l param_cell (printf "%s%s%s%s" $param_color $param $normal $padding_of_param)
         set -l separator_cell (printf "%s" $output_separator)
         set -l row_length (math "$(string length $param_cell) + $(string length $separator_cell) + $(string length $value)")
-        set -l ellipsis " ..."
+        set -l ellipsis " ... "
         set -l ellipsis_length (string length $ellipsis)
         set -l free_space (math "$COLUMNS - $ellipsis_length")
 
         if test $row_length -gt $free_space
             # Ellipsize the value cell
-            set -l overflow_length (math "$row_length - $free_space")
-            set value (string sub --start 1 --end $overflow_length -- $value)
+            # TODO: not entirely accurate, but good enough for now
+            set -l cutoff (math "$free_space - $(string length $param_cell) - $(string length $separator_cell)")
+            set value (string sub --start 1 --end $cutoff -- $value)
             set value (printf "%s%s%s%s" $value (set_color --bold red) $ellipsis $normal)
         end
         set -l value_cell (printf "%s%s%s" $value_color $value $normal)

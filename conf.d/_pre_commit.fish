@@ -18,7 +18,7 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
     if test -f .pre-commit-config.yaml
         _git_fish_echo "a $dot_pre_commit_config_yaml file was found in $(set_color --bold)$cwd$(set_color normal)"
         set -l hooks (string match --regex --all --groups-only "\s+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
-        _git_fish_echo "the following hooks are enabled:"
+        _git_fish_echo "the following hooks are listed:"
         printf " - %s\n" $hooks
         # if command --query bat
         #     command bat --plain .pre-commit-config.yaml
@@ -29,11 +29,11 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
         if not test -f ./.git/hooks/pre-commit
             _git_fish_echo "pre-commit hooks not installed. installing..."
             command pre-commit install --install-hooks 2>/dev/null
-            _git_fish_echo "pre-commit hooks installed."
+            # _git_fish_echo "pre-commit hooks installed."
         else
             _git_fish_echo "pre-commit hooks installed."
-            set -l auto_update_command (echo -n "pre-commit autoupdate" | fish_indent --ansi)
-            _git_fish_echo "to autoupdate them, run: $auto_update_command"
+            # set -l auto_update_command (echo -n "pre-commit autoupdate" | fish_indent --ansi)
+            # _git_fish_echo "to autoupdate them, run: $auto_update_command"
         end
     else
         _git_fish_echo "no $dot_pre_commit_config_yaml file found in $(set_color --bold)$cwd$(set_color normal)."
@@ -48,9 +48,9 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
             echo -en "\t"
             echo "$generate_sample_config_command" | fish_indent --ansi
             if not abbr --query $abbreviation
-                _git_fish_echo "adding abbreviation: $(set_color --reverse)$abbreviation$(set_color normal) for"
-                echo -en "\t"
-                echo "$generate_sample_config_command" | fish_indent --ansi
+                # _git_fish_echo "adding abbreviation: $(set_color --reverse)$abbreviation$(set_color normal) for"
+                # echo -en "\t"
+                # echo "$generate_sample_config_command" | fish_indent --ansi
                 abbr --add $abbreviation "$generate_sample_config_command"
             end
             # _git_fish_echo "the abbreviation $(set_color --reverse)$abbreviation$(set_color normal) can be used to generate a sample $dot_pre_commit_config_yaml file."

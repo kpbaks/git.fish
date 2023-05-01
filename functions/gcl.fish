@@ -36,6 +36,12 @@ function gcl
         end
     end
 
+    if set --query _flag_local
+        _git_fish_echo "local git config:"
+    else
+        _git_fish_echo "global git config:"
+    end
+
     for i in (seq (count $params))
         set -l param (string trim $params[$i])
         set -l value (string trim $values[$i])

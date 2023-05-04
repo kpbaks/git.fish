@@ -28,17 +28,18 @@ abbr -a gco git checkout
 abbr -a gcm git commit
 abbr -a gcma git commit --amend
 # conventional commits
-abbr -a gcmb --set-cursor git commit --message "'build: '"
-abbr -a gcmc --set-cursor git commit --message "'chore: '"
-abbr -a gcmi --set-cursor git commit --message "'ci: '"
-abbr -a gcmd --set-cursor git commit --message "'docs: '"
-abbr -a gcmf --set-cursor git commit --message "'feat: '"
-abbr -a gcmx --set-cursor git commit --message "'fix: '"
-abbr -a gcmp --set-cursor git commit --message "'perf: '"
-abbr -a gcmr --set-cursor git commit --message "'refactor: '"
-abbr -a gcmv --set-cursor git commit --message "'revert: '"
-abbr -a gcms --set-cursor git commit --message "'style: '"
-abbr -a gcmt --set-cursor git commit --message "'test: '"
+# https://daily-dev-tips.com/posts/git-basics-conventional-commits/
+abbr -a gcmb --set-cursor git commit --message "'build: %'"
+abbr -a gcmc --set-cursor git commit --message "'chore: %'"
+abbr -a gcmi --set-cursor git commit --message "'ci: %'"
+abbr -a gcmd --set-cursor git commit --message "'docs: %'"
+abbr -a gcmf --set-cursor git commit --message "'feat: %'"
+abbr -a gcmx --set-cursor git commit --message "'fix: %'"
+abbr -a gcmp --set-cursor git commit --message "'perf: %'"
+abbr -a gcmr --set-cursor git commit --message "'refactor: %'"
+abbr -a gcmv --set-cursor git commit --message "'revert: %'"
+abbr -a gcms --set-cursor git commit --message "'style: %'"
+abbr -a gcmt --set-cursor git commit --message "'test: %'"
 
 abbr -a gcmB --set-cursor git commit --message "'build(%):'"
 abbr -a gcmC --set-cursor git commit --message "'chore(%):'"

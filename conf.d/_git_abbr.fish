@@ -28,11 +28,19 @@ abbr -a gco git checkout
 abbr -a gcm git commit
 abbr -a gcma git commit --amend
 # conventional commits
-abbr -a gcmf --set-cursor git commit --message "'feat(%):'"
-abbr -a gcmx --set-cursor git commit --message "'fix(%):'"
-abbr -a gcmr --set-cursor git commit --message "'refactor(%):'"
-abbr -a gcmc --set-cursor git commit --message "'chore(%):'"
-abbr -a gcmd --set-cursor git commit --message "'docs(%):'"
+abbr -a gcmb --set-cursor git commit --message "'build: '"
+abbr -a gcmc --set-cursor git commit --message "'chore: '"
+abbr -a gcmd --set-cursor git commit --message "'docs: '"
+abbr -a gcmf --set-cursor git commit --message "'feat: '"
+abbr -a gcmx --set-cursor git commit --message "'fix: '"
+abbr -a gcmr --set-cursor git commit --message "'refactor: '"
+
+
+abbr -a gcmF --set-cursor git commit --message "'feat(%):'"
+abbr -a gcmX --set-cursor git commit --message "'fix(%):'"
+abbr -a gcmR --set-cursor git commit --message "'refactor(%):'"
+abbr -a gcmC --set-cursor git commit --message "'chore(%):'"
+abbr -a gcmD --set-cursor git commit --message "'docs(%):'"
 
 # git diff
 abbr -a gd git diff HEAD

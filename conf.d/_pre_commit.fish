@@ -20,18 +20,12 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
         set -l hooks (string match --regex --all --groups-only "\s+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
         _git_fish_echo "the following hooks are listed:"
         printf " - %s\n" $hooks
-        # if command --query bat
-        #     command bat --plain .pre-commit-config.yaml
-        # else
-        #     command cat .pre-commit-config.yaml
-        # end
-        # check if hooks are installed
         if not test -f ./.git/hooks/pre-commit
             _git_fish_echo "pre-commit hooks not installed. installing..."
             command pre-commit install --install-hooks 2>/dev/null
             # _git_fish_echo "pre-commit hooks installed."
         else
-            _git_fish_echo "pre-commit hooks installed."
+            _git_fish_echo "pre-commit hooks installed $(set_color green)✓$(set_color normal)"
             # set -l auto_update_command (echo -n "pre-commit autoupdate" | fish_indent --ansi)
             # _git_fish_echo "to autoupdate them, run: $auto_update_command"
         end

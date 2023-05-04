@@ -30,17 +30,27 @@ abbr -a gcma git commit --amend
 # conventional commits
 abbr -a gcmb --set-cursor git commit --message "'build: '"
 abbr -a gcmc --set-cursor git commit --message "'chore: '"
+abbr -a gcmi --set-cursor git commit --message "'ci: '"
 abbr -a gcmd --set-cursor git commit --message "'docs: '"
 abbr -a gcmf --set-cursor git commit --message "'feat: '"
 abbr -a gcmx --set-cursor git commit --message "'fix: '"
+abbr -a gcmp --set-cursor git commit --message "'perf: '"
 abbr -a gcmr --set-cursor git commit --message "'refactor: '"
+abbr -a gcmv --set-cursor git commit --message "'revert: '"
+abbr -a gcms --set-cursor git commit --message "'style: '"
+abbr -a gcmt --set-cursor git commit --message "'test: '"
 
-
+abbr -a gcmB --set-cursor git commit --message "'build(%):'"
+abbr -a gcmC --set-cursor git commit --message "'chore(%):'"
+abbr -a gcmI --set-cursor git commit --message "'ci(%):'"
+abbr -a gcmD --set-cursor git commit --message "'docs(%):'"
 abbr -a gcmF --set-cursor git commit --message "'feat(%):'"
 abbr -a gcmX --set-cursor git commit --message "'fix(%):'"
+abbr -a gcmP --set-cursor git commit --message "'perf(%):'"
 abbr -a gcmR --set-cursor git commit --message "'refactor(%):'"
-abbr -a gcmC --set-cursor git commit --message "'chore(%):'"
-abbr -a gcmD --set-cursor git commit --message "'docs(%):'"
+abbr -a gcmV --set-cursor git commit --message "'revert(%):'"
+abbr -a gcmS --set-cursor git commit --message "'style(%):'"
+abbr -a gcmT --set-cursor git commit --message "'test(%):'"
 
 # git diff
 abbr -a gd git diff HEAD

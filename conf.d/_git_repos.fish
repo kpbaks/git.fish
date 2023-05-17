@@ -1,12 +1,24 @@
+# --------------------------------------------------------------------------------------------------
+# description:
+# external dependencies:
+# - fzf
+# - git
+# - sqlite3
+# ideas:
+# - Sort the list of repos by the last time they were visited 2023-05-11 12:57:58
+# --------------------------------------------------------------------------------------------------
 status is-interactive; or return
 
-if not command --query fzf
-    _git_fish_echo "fzf not found, $(set_color --bold)repos$(set_color normal) function will not be available"
-    return
+for cmd in fzf sqlite3
+    if not command --query $cmd
+        _git_fish_echo "$cmd not found, $(set_color --bold)repos$(set_color normal) function will not be available"
+        return
+    end
 end
 
 # This variable is used to persist the list of visited repos across shell sessions
 set --query GIT_REPOS_VISITED; or set --universal GIT_REPOS_VISITED
+
 
 # Every time a directory with a .git directory is entered, store it in a universal variable
 function _git_repos_visited --on-event in_git_repo_root_directory
@@ -20,6 +32,12 @@ function _git_repos_visited --on-event in_git_repo_root_directory
             $git_color $repo_dir $normal \
             $git_color $git_repos_visited_count $normal)
     end
+
+    # add timestamp to the repo
+    # this will be used to sort the repos by the last time they were visited
+    set -l timestamp (date +%s)
+    sqlite3 ~/.config/git.fish/git.fish.db "INSERT INTO repos (path, timestamp) VALUES ('$PWD', $timestamp) ON CONFLICT(path) DO UPDATE SET timestamp=$timestamp;"
+
 end
 
 
@@ -123,10 +141,9 @@ function repos
     # to be delimited by newlines
     echo $valid_repos | string collect | string split ' ' \
         | command fzf \
-        --prompt "git repos > " \
-        --height 50% \
+        --prompt "$git_icon git repos > " \
+        --height 80% \
         --reverse \
-        --ansi \
         --color="border:#f44d27" \
         --preview 'git -C {} status' \
         | read -l selected_repo

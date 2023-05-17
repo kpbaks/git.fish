@@ -111,7 +111,7 @@ abbr -a grl git reflog
 
 
 # git restore
-abbr -a gr git restore show
+abbr -a gr git restore
 
 # git rm
 abbr -a grm git rm

@@ -55,6 +55,13 @@ abbr -a gcmV --set-cursor git commit --message "'revert(%): '"
 abbr -a gcmS --set-cursor git commit --message "'style(%): '"
 abbr -a gcmT --set-cursor git commit --message "'test(%): '"
 
+# git config
+abbr -a gcfg git config
+abbr -a gcfgl git config --list
+abbr -a gcfgg git config --global
+abbr -a gcfgl git config --local
+
+
 # git diff
 abbr -a gd git diff HEAD
 abbr -a gds git diff --stat HEAD

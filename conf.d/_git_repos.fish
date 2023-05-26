@@ -6,6 +6,7 @@
 # - sqlite3
 # ideas:
 # - Sort the list of repos by the last time they were visited 2023-05-11 12:57:58
+# -
 # --------------------------------------------------------------------------------------------------
 status is-interactive; or return
 
@@ -88,7 +89,7 @@ function repos-list --description "list all the git repos that have been visited
         set -l paths
         set -l timestamps
         set -l number_of_times_visited_list
-        sqlite3 $GIT_FISH_REPOS_DB $select_all_query | while read -l path timestamp number_of_times_visited
+        sqlite3 $GIT_FISH_REPOS_DB $select_all_query | while read -d "|" -l path timestamp number_of_times_visited
             set --append paths $path
             set --append timestamps $timestamp
             set --append number_of_times_visited_list $number_of_times_visited
@@ -111,9 +112,14 @@ function repos-list --description "list all the git repos that have been visited
         printf "%s%s%s\n" $git_color "repos visited:" $reset
 
         set -l git_repos_visited_count (count $paths)
+        if test $git_repos_visited_count -eq 0
+            _git_fish_echo "no repos have been visited"
+            return
+        end
 
         # 1 is added to the log10 of the count as the width will have to be
         # at least 1 more than the log10 of the count e.g. 12 repos will have 2 digits
+        #NOTE: <kpbaks 2023-05-21 22:37:09> This will error if the count is 0
         set -l index_width (math "floor(log10($git_repos_visited_count)) + 1")
         set -l count 0
         for repo in $paths
@@ -177,6 +183,7 @@ function repos
         if test -d $repo -a -d $repo/.git
             set --append valid_repos $repo
         else
+            #FIXME: <kpbaks 2023-05-24 09:01:14> change message so it does not sound like it is removing the repo from the filesystem
             echo "$prefix removing invalid repo: $repo"
         end
     end
@@ -200,7 +207,7 @@ function repos
         --height 80% \
         --reverse \
         --color="border:#f44d27" \
-        --preview 'git -C {} status' \
+        --preview 'git -c color.status=always -C {} status' \
         | read -l selected_repo
 
     if test -z $selected_repo

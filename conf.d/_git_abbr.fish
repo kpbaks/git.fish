@@ -186,7 +186,22 @@ _git_abbr gmv git mv
 _git_abbr gp git pull --progress
 _git_abbr pull git pull --progress
 # git push
-_git_abbr gP git push --progress
+
+function abbr_git_push
+    # check if the local branch has a remote branch of the same name
+    # if not, run `git push --set-upstream origin <branch-name>`
+    # if yes, run `git push`
+    set -l branch (git rev-parse --abbrev-ref HEAD)
+    set -l remote_branch (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
+    if test $status -ne 0
+        echo -- "git push --set-upstream origin $branch% # no remote branch found, creating one"
+        return
+    else
+        echo -- git push
+    end
+end
+
+_git_abbr gP --set-cursor --function abbr_git_push
 _git_abbr push git push --progress
 
 # git rebase

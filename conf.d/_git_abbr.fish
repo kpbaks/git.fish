@@ -302,7 +302,7 @@ function abbr_git_clone
     if string match --quiet --regex "^(https?|git)://.*\.git\$" -- "$clipboard"
         set --append args $clipboard
         # Parse the directory name from the url
-        set --append postfix_args '; cd'
+        set --append postfix_args '&& cd'
         set --append postfix_args (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
     end
 

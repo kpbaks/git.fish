@@ -201,8 +201,9 @@ function abbr_git_push
     end
 end
 
-_git_abbr gP --set-cursor --function abbr_git_push
-_git_abbr push git push --progress
+for abbr in gP push
+    _git_abbr $abbr --set-cursor --function abbr_git_push
+end
 
 # git rebase
 _git_abbr grb git rebase

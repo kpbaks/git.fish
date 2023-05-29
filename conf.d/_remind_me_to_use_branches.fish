@@ -1,32 +1,36 @@
 status is-interactive; or return
 
+set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
+
 function __remind_me_to_use_branches --on-event in_git_repo_root_directory
     set -l branches (git branch --list --no-color)
     set -l current_branch (git rev-parse --abbrev-ref HEAD)
+    # A check is performed within the function such that the feature can be disabled/enabled
+    # without having to restart the shell
     set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
 
+    # Use the bright colors for the branch you are on
+    set -l reset (set_color normal)
+    set -l yellow (set_color yellow)
+    set -l bryellow (set_color bryellow)
+    set -l green (set_color green)
+    set -l brgreen (set_color brgreen)
+    set -l blue (set_color blue)
+    set -l brblue (set_color brblue)
+    set -l red (set_color red)
+    set -l brred (set_color brred)
+
+
     if contains -- $current_branch main master
-        set -l normal (set_color normal)
         _git_fish_echo (printf "You are on the %s%s%s branch. You should be on a %sfeature%s branch!" \
-			(set_color yellow) $current_branch $normal (set_color green) $normal)
+			$yellow $current_branch $reset $green $reset)
     end
 
-    # Does the current branch have a remote?
-    # If so, is it ahead or behind the remote?
-    # If so, how many commits?
-    # If so, how long ago was the last commit?
-    # If so, who was the last committer?
-    # If so, what was the last commit message?
-    # If so, what is the remote URL?
-    # If so, what is the remote name?
-    # If so, what is the remote branch name?
-    # If so, what is the remote branch URL?
-
-    _git_fish_echo "The following branches exist:"
-
     set -l field_delimiter '#'
-    set -l output_separator '|'
-    # | column -t -s $field_delimiter --table-header --output-separator $output_separator
+    # set -l bar "┃"
+    set -l bar "│"
+    set -l output_separator $bar
+
     set -l branches
     set -l contents
     set -l committerdates
@@ -72,11 +76,8 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
         end
     end
 
-    set -l normal (set_color normal)
-    set -l branch_color (set_color yellow)
-    set -l content_color (set_color green)
-    set -l committerdate_color (set_color blue)
-    set -l author_color (set_color red)
+
+    _git_fish_echo "The following branches exist:"
 
     for i in (seq (count $authors))
         set -l branch $branches[$i]
@@ -98,22 +99,29 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
         set -l committerdate "$committerdate$committerdate_padding"
         set -l author "$author$author_padding"
 
-        #       echo "branch: $branch"
-        # echo "content: $content"
-        # echo "committerdate: $committerdate"
-        # echo "author: $author"
+        set -l branch_color $yellow
+        set -l content_color $green
+        set -l committerdate_color $blue
+        set -l author_color $red
 
-        printf "%s %s%s%s %s %s%s%s %s %s%s%s %s %s%s%s" \
+        # Use the bright colors for the branch you are on
+        # to make it stand out
+        if test $branch = $current_branch
+            set branch_color (set_color bryellow --bold)
+            set content_color (set_color brgreen --bold)
+            set committerdate_color (set_color brblue --bold)
+            set author_color (set_color brred --bold)
+        end
+
+        printf "%s %s%s%s %s %s%s%s %s %s%s%s %s %s%s%s %s\n" \
             $output_separator \
-            $branch_color $branch $normal \
+            $branch_color $branch $reset \
             $output_separator \
-            $content_color $content $normal \
+            $content_color $content $reset \
             $output_separator \
-            $committerdate_color $committerdate $normal \
+            $committerdate_color $committerdate $reset \
             $output_separator \
-            $author_color $author $normal
-        printf " |\n"
+            $author_color $author $reset \
+            $output_separator
     end
-
-
 end

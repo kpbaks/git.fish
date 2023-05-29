@@ -1,10 +1,17 @@
+# --------------------------------------------------------------------------------------------------
+# ideas:
+# - [] include changes to submodules
+# --------------------------------------------------------------------------------------------------
+
 function should_i_commit
+    set -l red (set_color red)
+    set -l green (set_color green)
+    set -l reset (set_color normal)
+    set -l options (fish_opt --short=h --long=help)
     set -l min_args 1
     set -l max_args 1
-    if not argparse --min-args $min_args --max-args $max_args -- $argv
-        set_color red
-        printf "Usage: %s <threshold>\n" (status current-filename) >&2
-        set_color normal
+    if not argparse --min-args $min_args --max-args $max_args $options -- $argv
+        printf "%sUsage: %s <threshold>%s\n" $red (status current-filename) $reset >&2
         return 1
     end
 
@@ -12,9 +19,7 @@ function should_i_commit
     # precondition: inside a git repo
     # nothing to do, if there are no changes
     if not git rev-parse --inside-work-tree >/dev/null 2>&1
-        set_color red
-        printf "Not inside a git repo\n" >&2
-        set_color normal
+        printf "%sNot inside a git repo\n%s" $red $reset >&2
         return 1
     end
 
@@ -49,36 +54,90 @@ function should_i_commit
         set -l template "%s%s%s
 in this repo %s%s%s at %s%s%s
 %s%s%s lines have changed (insertions: %s%s%s, deletions: %s%s%s)
-since your last commit. You SHOULD commit,
+since your last commit (%s%s%s ago). You SHOULD commit,
 as this is above your set threshold of %s%s%s!
 %s\n"
 
         set -l owner_and_repo (git config --local --get remote.origin.url | string match --regex --groups-only '([^/]+/[^/]+)\.git$') # extract the repo owner / repo name from the remote url e.g. kpbs5/git.fish
         set -l angry_emojis_sample_set 🤬 😠 😡 💀
         set -l angry_emojis_count (math "floor($number_of_lines_changed_in_repo_since_last_commit / $threshold)")
-        
+
         set -l angry_emojis
         for i in (seq $angry_emojis_count)
-			set -l random_index (random 1 (count $angry_emojis_sample_set))
-			set -l random_emoji $angry_emojis_sample_set[$random_index]
-			set --append angry_emojis $random_emoji
-		end
-        
-		set -l angry_emojis (string join '' $angry_emojis)
-        
+            set -l random_index (random 1 (count $angry_emojis_sample_set))
+            set -l random_emoji $angry_emojis_sample_set[$random_index]
+            set --append angry_emojis $random_emoji
+        end
 
-        # set -l angry (string repeat --count (math "floor($number_of_lines_changed_in_repo_since_last_commit / $threshold)") 😠)
-        set -l normal (set_color normal)
+        set -l angry_emojis (string join '' $angry_emojis)
+
+        # determine the time since last commit
+        set -l last_commit_time (git log -1 --format=%ct)
+        set -l now (date +%s)
+        set -l seconds_since_last_commit (math "$now - $last_commit_time")
+
+
+        function _git_fish_format_duration --argument-names duration
+            # Format the duration in dynamic units
+            # duration is in seconds
+            set -l t $duration
+            set -l days (math --scale=0 $t / 60 / 60 / 24)
+            set -l hours (math --scale=0 $t / 60 / 60 % 24)
+            set -l minutes (math --scale=0 $t / 60 % 60)
+            set -l seconds (math --scale=0 $t % 60)
+
+            set -l str ""
+
+            if test $days -gt 0
+                if test $days -eq 1
+                    set --append str "1 day"
+                else
+                    set --append str "$days days"
+                end
+            end
+
+            if test $hours -gt 0
+                if test $hours -eq 1
+                    set --append str "1 hour"
+                else
+                    set --append str "$hours hours"
+                end
+            end
+
+            if test $minutes -gt 0
+                if test $minutes -eq 1
+                    set --append str "1 minute"
+                else
+                    set --append str "$minutes minutes"
+                end
+            end
+
+            if test $seconds -gt 0
+                if test $seconds -eq 1
+                    set --append str "1 second"
+                else
+                    set --append str "$seconds seconds"
+                end
+            end
+
+            printf "%s" (string join -- ' ' $str)
+        end
+
+
+        # format the time since last commit in a human readable way
+        set -l time_since_last_commit (_git_fish_format_duration $seconds_since_last_commit | string trim)
+
         set git_color (set_color $git_color)
 
         printf $template \
-            $git_color "GIT ALERT!" $normal \
-			$git_color $owner_and_repo $normal \
-			$git_color $PWD $normal \
-            $git_color $number_of_lines_changed_in_repo_since_last_commit $normal \
-            (set_color green) $insertions $normal \
-			(set_color red) $deletions $normal \
-            $git_color $threshold $normal \
+            $git_color "GIT ALERT!" $reset \
+            $git_color $owner_and_repo $reset \
+            $git_color $PWD $reset \
+            $git_color $number_of_lines_changed_in_repo_since_last_commit $reset \
+            $green $insertions $reset \
+            $red $deletions $reset \
+            $git_color $time_since_last_commit $reset \
+            $git_color $threshold $reset \
             $angry_emojis
     end
 end

@@ -329,3 +329,7 @@ _git_abbr lg lazygit
 
 # gitui
 _git_abbr gui gitui
+
+
+# _git_abbr gam 'git ls-files --modified | xargs git add && git status'
+_git_abbr wip "git ls-files --modified | xargs git add && git status && git commit -m 'wip, squash me'"

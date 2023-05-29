@@ -173,6 +173,12 @@ _git_abbr gg git grep
 _git_abbr gl git log --graph
 _git_abbr glo git log --oneline --decorate --graph --all
 
+# git ls-files
+_git_abbr gls git ls-files
+_git_abbr glsm git ls-files --modified
+_git_abbr glsu git ls-files --others --exclude-standard
+_git_abbr glsum git ls-files --unmerged
+
 # git merge
 _git_abbr gm git merge
 _git_abbr gma git merge --abort

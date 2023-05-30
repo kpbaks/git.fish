@@ -381,3 +381,6 @@ _git_abbr gui gitui
 
 # _git_abbr gam 'git ls-files --modified | xargs git add && git status'
 _git_abbr wip "git ls-files --modified | xargs git add && git status && git commit -m 'wip, squash me'"
+
+# unstage a file
+_git_abbr gun --set-cursor git restore --staged %

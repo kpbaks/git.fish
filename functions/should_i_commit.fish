@@ -77,6 +77,7 @@ as this is above your set threshold of %s%s%s!
         set -l seconds_since_last_commit (math "$now - $last_commit_time")
 
 
+        # TODO: <kpbaks 2023-05-29 11:37:02> refactor this. put into kpbs5/sea.fish
         function _git_fish_format_duration --argument-names duration
             # Format the duration in dynamic units
             # duration is in seconds

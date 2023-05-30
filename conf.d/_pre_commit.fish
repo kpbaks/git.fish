@@ -1,5 +1,11 @@
 status is-interactive; or return
 
+# --------------------------------------------------------------------------------------------------
+# ideas:
+# - Add a way to list all the abbreviations specific to git.fish
+# --------------------------------------------------------------------------------------------------
+
+
 if not command --query pre-commit
     _git_fish_echo "pre-commit not installed. no hooks will be enabled."
     return

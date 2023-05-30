@@ -85,10 +85,36 @@ _git_abbr g "# You probably have an abbreviation for what you want to do ;)
 git"
 
 # git add
-_git_abbr ga --set-cursor 'git add % && git status'
+function abbr_git_add
+    set -l cmd "git add"
+    # 1. find all modified, untracked, and deleted files
+    set -l addable_files (git ls-files --modified --others --deleted)
+    # 2. if there is exactly one file, append it to the command
+    if test (count $addable_files) -eq 1
+        set --append cmd $addable_files
+    end
+
+    echo -- "$cmd% && git status"
+end
+_git_abbr ga --set-cursor --function abbr_git_add
+# _git_abbr ga --set-cursor 'git add % && git status'
 _git_abbr gaa 'git add --all && git status'
 _git_abbr gam 'git ls-files --modified | xargs git add && git status'
+function abbr_git_add_modified_and_commit_previous
+    # 1. find the previous commit
+    set -l cmd "git ls-files --modified | xargs git add && git status"
+    set -l previous_commit (history search --max 1 --prefix "git commit --message")
+    # 2. if there is a previous commit, add it to the command
+    if test -n "$previous_commit"
+        set --append cmd "&& $previous_commit"
+    end
+    echo -- $cmd
+end
+# This one is nice to have, if your pre-commit hook did not pass, as you would
+# have to add the, now, modified files again and then commit them with the same message.
+_git_abbr gamcp --set-cursor --function abbr_git_add_modified_and_commit_previous
 _git_abbr gau 'git ls-files --others | xargs git add && git status'
+_git_abbr gad 'git ls-files --deleted | xargs git add && git status'
 _git_abbr gap 'git add --patch && git status'
 
 # git branch
@@ -103,6 +129,10 @@ _git_abbr gbm git branch --move
 
 # git checkout
 _git_abbr gco git checkout
+
+# git cherry-pick
+_git_abbr gcp git cherry-pick
+
 
 # git commit
 _git_abbr gcm git commit
@@ -220,7 +250,18 @@ _git_abbr grl git reflog
 
 
 # git restore
-_git_abbr gr git restore
+function abbr_git_restore
+    # if there is only one modified file, append it to the expand command
+    set -l cmd git restore
+    set modified (git ls-files --modified)
+    if test (count $modified) -eq 1
+        set --append cmd $modified
+    end
+    echo -- $cmd
+end
+
+# _git_abbr gr git restore
+_git_abbr gr --set-cursor --function abbr_git_restore
 
 # git rm
 _git_abbr grm git rm

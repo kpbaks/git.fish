@@ -1,15 +1,32 @@
-function gcl
+function gcl --description "Print the git config in a nice format"
+    set -l options (fish_opt --short h --long help)
     # specifying the short flag -l is necessary even though it is not valid. (why fish?)
-    set -l options (fish_opt --short l --long local --long-only)
+    set -a options (fish_opt --short l --long local --long-only)
     if not argparse $options -- $argv
-        _git_fish_echo "Usage: gcl [--list]"
         return 1
     end
+
+    if set --query _flag_help
+        set -l usage "$(set_color --bold)Print the git config in a nice format$(set_color normal)
+
+$(set_color yellow)Usage:$(set_color normal) $(set_color blue)$(status current-command)$(set_color normal) [options]
+
+$(set_color yellow)Options:$(set_color normal)
+	$(set_color green)-h$(set_color normal), $(set_color green)--help$(set_color normal)      Show this help message and exit
+	$(set_color green)-l$(set_color normal), $(set_color green)--local$(set_color normal)     Show the local git config
+
+Part of $(set_color cyan)git.fish$(set_color normal) at https://github.com/kpbs5/git.fish"
+
+        echo $usage
+        return 0
+    end
+
 
     set -l default_param_color (set_color blue)
     set -l important_param_color (set_color yellow)
     set -l normal (set_color normal)
-    set -l output_separator " | "
+    set -l bar "│"
+    set -l output_separator " $bar "
     set -l params
     set -l values
     # Read all the params and values into two arrays

@@ -283,6 +283,16 @@ _git_abbr gstl git stash list
 
 # git submodule
 _git_abbr gsm git submodule
+function abbr_git_submodule_add
+    set -l cmd git submodule add
+    set -l clipboard (fish_clipboard_paste)
+    # if the clipboard is a valid git url, append it to the command
+    if string match -q --regex '^https?://.*\.git$' $clipboard
+        set --append cmd $clipboard
+    end
+    echo -- $cmd
+end
+_git_abbr gsma --set-cursor --function abbr_git_submodule_add
 _git_abbr gsms git submodule status
 _git_abbr gsml git submodule status
 

@@ -127,6 +127,9 @@ _git_abbr gbd git branch --delete
 _git_abbr gbD git branch --delete --force
 _git_abbr gbm git branch --move
 
+# check if a file is ignored by .gitignore
+_git_abbr gci git check-ignore --verbose --non-matching
+
 # git checkout
 _git_abbr gco git checkout
 
@@ -173,7 +176,7 @@ _git_abbr gcfgl git config --local
 
 
 # git diff
-_git_abbr gd git diff HEAD
+_git_abbr gd git diff -- HEAD
 _git_abbr gds git diff --stat HEAD
 
 function parse_git_difftool_tool_help_output
@@ -275,7 +278,7 @@ _git_abbr gs git status --untracked-files=all
 _git_abbr gss git status --short --branch --untracked-files=all
 
 # git stash
-_git_abbr gst git stash
+_git_abbr gst --set-cursor git stash push --message "'%'"
 _git_abbr gstp git stash pop
 _git_abbr gsta git stash apply
 _git_abbr gstd git stash drop
@@ -288,13 +291,15 @@ function abbr_git_submodule_add
     set -l clipboard (fish_clipboard_paste)
     # if the clipboard is a valid git url, append it to the command
     if string match -q --regex '^https?://.*\.git$' $clipboard
-        set --append cmd $clipboard
+        set -l project_name (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
+        set --append cmd $clipboard $project_name
     end
     echo -- $cmd
 end
 _git_abbr gsma --set-cursor --function abbr_git_submodule_add
 _git_abbr gsms git submodule status
 _git_abbr gsml git submodule status
+_git_abbr gsmf git submodule foreach git
 
 
 # git switch

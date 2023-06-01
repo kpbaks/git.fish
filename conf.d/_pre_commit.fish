@@ -3,6 +3,7 @@ status is-interactive; or return
 # --------------------------------------------------------------------------------------------------
 # ideas:
 # - Add a way to list all the abbreviations specific to git.fish
+# - Print if the hooks are installed or not, or enabled or not (outcommented)
 # --------------------------------------------------------------------------------------------------
 
 
@@ -23,7 +24,7 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
 
     if test -f .pre-commit-config.yaml
         _git_fish_echo "a $dot_pre_commit_config_yaml file was found in $(set_color --bold)$cwd$(set_color normal)"
-        set -l hooks (string match --regex --all --groups-only "\s+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
+        set -l hooks (string match --regex --all --groups-only "[^#]+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
         _git_fish_echo "the following hooks are listed:"
         printf " - %s\n" $hooks
         if not test -f ./.git/hooks/pre-commit

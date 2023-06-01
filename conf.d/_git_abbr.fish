@@ -213,7 +213,18 @@ _git_abbr glsu git ls-files --others --exclude-standard
 _git_abbr glsum git ls-files --unmerged
 
 # git merge
-_git_abbr gm git merge
+function abbr_git_merge
+    set -l cmd git merge
+    # if there is 2 local branches, the suggest the other branch as the branch to merge
+    set -l branches (command git branch)
+    if test (count $branches) -eq 2
+        set -l other_branch (command git branch | string match --invert --regex '^\*' | string trim)
+        set --append cmd $other_branch
+    end
+
+    echo -- $cmd
+end
+_git_abbr gm --set-cursor --function abbr_git_merge
 _git_abbr gma git merge --abort
 _git_abbr gmc git merge --continue
 

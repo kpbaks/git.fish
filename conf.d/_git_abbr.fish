@@ -200,7 +200,7 @@ end
 _git_abbr gdt --set-cursor --function abbr_git_difftool
 
 # git fetch
-_git_abbr gf git fetch
+_git_abbr gf --set-cursor "git fetch % && git status"
 _git_abbr gfa --set-cursor "git fetch --all% # Fetch the latest changes from all remote upstream repositories"
 _git_abbr gft --set-cursor "git fetch --tags% # Also fetch tags from the remote upstream repository"
 _git_abbr gfp --set-cursor "git fetch --prune% # Delete local references to remote branches that have been deleted upstream"

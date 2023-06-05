@@ -94,7 +94,7 @@ function abbr_git_add
         set --append cmd $addable_files
     end
 
-    echo -- "$cmd% && git status"
+    echo -- "$cmd % && git status"
 end
 _git_abbr ga --set-cursor --function abbr_git_add
 # _git_abbr ga --set-cursor 'git add % && git status'

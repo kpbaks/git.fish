@@ -29,6 +29,15 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
     set -l field_delimiter '#'
     # set -l bar "┃"
     set -l bar "│"
+    # use thinner underline
+    set -l underline "─"
+    set -l upper_left_corner "┌"
+    set -l upper_right_corner "┐"
+    set -l lower_left_corner "└"
+    set -l lower_right_corner "┘"
+    set -l downwards_tee "┬"
+    set -l upwards_tee "┴"
+
     set -l output_separator $bar
 
     set -l branches
@@ -79,6 +88,17 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
 
     _git_fish_echo "The following branches exist:"
 
+    printf "%s%s%s%s%s%s%s%s%s\n" \
+        $upper_left_corner \
+        (string repeat --count (math "$length_of_longest_branch + 2") $underline) \
+        $downwards_tee \
+        (string repeat --count (math "$length_of_longest_content + 2") $underline) \
+        $downwards_tee \
+        (string repeat --count (math "$length_of_longest_committerdate + 2") $underline) \
+        $downwards_tee \
+        (string repeat --count (math "$length_of_longest_author + 2") $underline) \
+        $upper_right_corner
+
     for i in (seq (count $authors))
         set -l branch $branches[$i]
         set -l content $contents[$i]
@@ -124,4 +144,15 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
             $author_color $author $reset \
             $output_separator
     end
+
+    printf "%s%s%s%s%s%s%s%s%s\n" \
+        $lower_left_corner \
+        (string repeat --count (math "$length_of_longest_branch + 2") $underline) \
+        $upwards_tee \
+        (string repeat --count (math "$length_of_longest_content + 2") $underline) \
+        $upwards_tee \
+        (string repeat --count (math "$length_of_longest_committerdate + 2") $underline) \
+        $upwards_tee \
+        (string repeat --count (math "$length_of_longest_author + 2") $underline) \
+        $lower_right_corner
 end

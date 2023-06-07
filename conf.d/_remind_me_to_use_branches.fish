@@ -3,6 +3,8 @@ status is-interactive; or return
 set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
 
 function __remind_me_to_use_branches --on-event in_git_repo_root_directory
+    # TODO: <kpbaks 2023-06-07 22:21:32> handle the case where there are no branches
+    # e.g. when you have just created a repo with `git init`
     set -l branches (git branch --list --no-color)
     set -l current_branch (git rev-parse --abbrev-ref HEAD)
     # A check is performed within the function such that the feature can be disabled/enabled
@@ -88,16 +90,19 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
 
     _git_fish_echo "The following branches exist:"
 
-    printf "%s%s%s%s%s%s%s%s%s\n" \
-        $upper_left_corner \
-        (string repeat --count (math "$length_of_longest_branch + 2") $underline) \
-        $downwards_tee \
-        (string repeat --count (math "$length_of_longest_content + 2") $underline) \
-        $downwards_tee \
-        (string repeat --count (math "$length_of_longest_committerdate + 2") $underline) \
-        $downwards_tee \
-        (string repeat --count (math "$length_of_longest_author + 2") $underline) \
-        $upper_right_corner
+    # Only what to print the top border if there are multiple branches
+    if test (count $branches) -eq 1
+        printf "%s%s%s%s%s%s%s%s%s\n" \
+            $upper_left_corner \
+            (string repeat --count (math "$length_of_longest_branch + 2") $underline) \
+            $downwards_tee \
+            (string repeat --count (math "$length_of_longest_content + 2") $underline) \
+            $downwards_tee \
+            (string repeat --count (math "$length_of_longest_committerdate + 2") $underline) \
+            $downwards_tee \
+            (string repeat --count (math "$length_of_longest_author + 2") $underline) \
+            $upper_right_corner
+    end
 
     for i in (seq (count $authors))
         set -l branch $branches[$i]
@@ -145,14 +150,17 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
             $output_separator
     end
 
-    printf "%s%s%s%s%s%s%s%s%s\n" \
-        $lower_left_corner \
-        (string repeat --count (math "$length_of_longest_branch + 2") $underline) \
-        $upwards_tee \
-        (string repeat --count (math "$length_of_longest_content + 2") $underline) \
-        $upwards_tee \
-        (string repeat --count (math "$length_of_longest_committerdate + 2") $underline) \
-        $upwards_tee \
-        (string repeat --count (math "$length_of_longest_author + 2") $underline) \
-        $lower_right_corner
+    # Only want to print the bottom line if there is more than one branch
+    if test (count $branches) -eq 1
+        printf "%s%s%s%s%s%s%s%s%s\n" \
+            $lower_left_corner \
+            (string repeat --count (math "$length_of_longest_branch + 2") $underline) \
+            $upwards_tee \
+            (string repeat --count (math "$length_of_longest_content + 2") $underline) \
+            $upwards_tee \
+            (string repeat --count (math "$length_of_longest_committerdate + 2") $underline) \
+            $upwards_tee \
+            (string repeat --count (math "$length_of_longest_author + 2") $underline) \
+            $lower_right_corner
+    end
 end

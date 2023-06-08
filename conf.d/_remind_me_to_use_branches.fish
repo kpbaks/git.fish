@@ -88,10 +88,11 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
     end
 
 
-    _git_fish_echo "The following branches exist:"
+    # TODO: <kpbaks 2023-06-08 20:43:45> print * in a different color
+    _git_fish_echo "The following branches exist ($(set_color --italics)the * indicates the branch you are on$(set_color normal)):"
 
     # Only what to print the top border if there are multiple branches
-    if test (count $branches) -eq 1
+    if test (count $branches) -ne 1
         printf "%s%s%s%s%s%s%s%s%s\n" \
             $upper_left_corner \
             (string repeat --count (math "$length_of_longest_branch + 2") $underline) \
@@ -151,7 +152,7 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
     end
 
     # Only want to print the bottom line if there is more than one branch
-    if test (count $branches) -eq 1
+    if test (count $branches) -ne 1
         printf "%s%s%s%s%s%s%s%s%s\n" \
             $lower_left_corner \
             (string repeat --count (math "$length_of_longest_branch + 2") $underline) \

@@ -292,6 +292,9 @@ _git_abbr grm git rm
 # git show
 _git_abbr gsh git show
 
+# git show-branch
+_git_abbr gsb git show-branch
+
 # git status
 _git_abbr gs git status --untracked-files=all
 _git_abbr gss git status --short --branch --untracked-files=all

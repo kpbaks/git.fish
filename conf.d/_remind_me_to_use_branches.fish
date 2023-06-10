@@ -3,11 +3,15 @@ status is-interactive; or return
 set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
 
 function __remind_me_to_use_branches --on-event in_git_repo_root_directory
-    # TODO: <kpbaks 2023-06-07 22:21:32> handle the case where there are no branches
-    # e.g. when you have just created a repo with `git init`
     # TODO: <kpbaks 2023-06-10 15:02:18> maybe highlight last commit message and last committer
     # in a grey color to differentiate them from the branch name, and deemphasize them
     set -l branches (git branch --list --no-color)
+    if test (count $branches) -eq 0
+        # Handle the case where there are no branches
+        # e.g. when you have just created a repo with `git init`
+        _git_fish_echo "no branches has been created yet"
+        return
+    end
     set -l current_branch (git rev-parse --abbrev-ref HEAD)
     # A check is performed within the function such that the feature can be disabled/enabled
     # without having to restart the shell
@@ -57,6 +61,7 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
         set --append committerdates (string trim -- $committerdate)
         set --append authors (string trim -- $author)
     end
+
 
     set -l longest_branch ""
     set -l length_of_longest_branch 0

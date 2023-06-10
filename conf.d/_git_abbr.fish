@@ -140,6 +140,7 @@ _git_abbr gcp git cherry-pick
 # git commit
 _git_abbr gcm git commit
 _git_abbr gcma git commit --amend
+# TODO: <kpbaks 2023-06-02 12:23:43> add a gmcm<> variant that adds all modified files and commits them
 # conventional commits
 # https://daily-dev-tips.com/posts/git-basics-conventional-commits/
 _git_abbr gcmb --set-cursor git commit --message "'build: %'"

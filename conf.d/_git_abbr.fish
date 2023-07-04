@@ -177,8 +177,8 @@ _git_abbr gcfgl git config --local
 
 
 # git diff
-_git_abbr gd git diff -- HEAD
-_git_abbr gds git diff --stat HEAD
+_git_abbr gd git diff
+_git_abbr gds git diff --stat
 
 function parse_git_difftool_tool_help_output
     command git difftool --tool-help | sed --regexp-extended -e '/Use/! d' -e 's/\s*(\w+)\s+(Use.+)$/\1\t\2/'
@@ -222,6 +222,7 @@ _git_abbr glsum git ls-files --unmerged
 
 # git merge
 function abbr_git_merge
+    # TODO: <kpbaks 2023-06-27 21:29:04> search for the 2. most recent call to `git switch` and use that as the branch to merge
     set -l cmd git merge
     # if there is 2 local branches, the suggest the other branch as the branch to merge
     set -l branches (command git branch)

@@ -350,7 +350,7 @@ function abbr_git_switch
         set -l other_branch (command git branch | string match --invert --regex '^\*' | string trim)
         set --append cmd $other_branch
         echo "# You are in a git repo with only 2 branches.
-# My guess is that you want to switch to branch: $other_branch."
+# My guess is that you want to switch to branch: $other_branch"
     end
 
     echo -- "$cmd"

@@ -24,6 +24,14 @@ function _in_git_repo_root_directory --on-variable PWD
     end
     set -l plugin_dir $__fish_user_data_dir/plugins
     test -d $plugin_dir; or mkdir -p $plugin_dir
+end
 
-
+function _remind_me_to_create_remote --on-event in_git_repo_root_directory
+    set -l remote_branch (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
+    if test $status -ne 0
+		_git_fish_echo "You have not set up a remote branch for this branch yet. You can do so by running:"
+        set -l connect_to_remote_cmd "git push -u <remote> <branch>"
+		echo $connect_to_remote_cmd | fish_indent --ansi
+        return
+    end
 end

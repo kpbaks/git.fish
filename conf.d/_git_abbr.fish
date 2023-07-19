@@ -384,11 +384,18 @@ function abbr_git_clone
     # if clipboard is a git url
     # TODO: also handle url of the form https://github.com/<user>/<repo>
 
+    # You ctrl+l && ctrl+c a git url
     if string match --quiet --regex "^(https?|git)://.*\.git\$" -- "$clipboard"
         set --append args $clipboard
         # Parse the directory name from the url
         set --append postfix_args '&& cd'
         set --append postfix_args (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
+    else if string match --quiet --regex "^git clone .*\.git\$" -- "$clipboard"
+        # example: git clone https://github.com/nushell/nushell.git
+        set -l url (string replace --all --regex '^git clone (.*)\.git$' '$1' $clipboard)
+        set -l reponame (string split --max=1 --right / $url)[-1]
+        set -a postfix_args $url
+        set -a postfix_args "&& cd $reponame"
     end
 
     set -l depth (string replace --all --regex '[^0-9]' '' $argv[1])

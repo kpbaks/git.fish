@@ -3,6 +3,9 @@ status is-interactive; or return
 set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
 
 function __remind_me_to_use_branches --on-event in_git_repo_root_directory
+    # A check is performed within the function such that the feature can be disabled/enabled
+    # without having to restart the shell
+    set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
     # TODO: <kpbaks 2023-06-10 15:02:18> maybe highlight last commit message and last committer
     # in a grey color to differentiate them from the branch name, and deemphasize them
     set -l branches (git branch --list --no-color)
@@ -13,9 +16,6 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
         return
     end
     set -l current_branch (git rev-parse --abbrev-ref HEAD)
-    # A check is performed within the function such that the feature can be disabled/enabled
-    # without having to restart the shell
-    set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
 
     # Use the bright colors for the branch you are on
     set -l reset (set_color normal)
@@ -50,10 +50,11 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
 
     set -l output_separator $bar
 
+    # Read data for each column into a separate array
     set -l branches
     set -l contents
-    set -l committerdates
     set -l authors
+    set -l committerdates
     git branch --format="%(HEAD) %(refname:short) $field_delimiter %(contents:subject) $field_delimiter %(committerdate:relative) $field_delimiter %(authorname)" --sort=-committerdate \
         | while read --delimiter $field_delimiter branch content committerdate author
         set --append branches (string trim -- $branch)
@@ -136,9 +137,9 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
             printf "%s" $downwards_tee
             printf "%s" (string repeat --count (math "$length_of_longest_content + 2") $underline)
             printf "%s" $downwards_tee
-            printf "%s" (string repeat --count (math "$length_of_longest_committerdate + 2") $underline)
-            printf "%s" $downwards_tee
             printf "%s" (string repeat --count (math "$length_of_longest_author + 2") $underline)
+            printf "%s" $downwards_tee
+            printf "%s" (string repeat --count (math "$length_of_longest_committerdate + 2") $underline)
         else if test $show_branch -eq 1 -a $show_content -eq 1 -a $show_committerdate -eq 1
             printf "%s" (string repeat --count (math "$length_of_longest_branch + 2") $underline)
             printf "%s" $downwards_tee
@@ -246,9 +247,9 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
             printf "%s" $upwards_tee
             printf "%s" (string repeat --count (math "$length_of_longest_content + 2") $underline)
             printf "%s" $upwards_tee
-            printf "%s" (string repeat --count (math "$length_of_longest_committerdate + 2") $underline)
-            printf "%s" $upwards_tee
             printf "%s" (string repeat --count (math "$length_of_longest_author + 2") $underline)
+            printf "%s" $upwards_tee
+            printf "%s" (string repeat --count (math "$length_of_longest_committerdate + 2") $underline)
         else if test $show_branch -eq 1 -a $show_content -eq 1 -a $show_committerdate -eq 1
             printf "%s" (string repeat --count (math "$length_of_longest_branch + 2") $underline)
             printf "%s" $upwards_tee

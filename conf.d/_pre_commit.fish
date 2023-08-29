@@ -15,6 +15,7 @@ end
 set -g _git_fish_git_directories_visisted
 
 function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
+    # Do not want to spam the user with the same message over and over again in the same shell session
     contains -- $PWD $_git_fish_git_directories_visisted; and return
 
     # used to highlight the .pre-commit-config.yaml file when it is printed
@@ -23,16 +24,18 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
     set -l cwd (string replace --regex "^/var$HOME" "~" -- $PWD | string replace --regex "^$HOME" "~")
 
     if test -f .pre-commit-config.yaml
-        _git_fish_echo "a $dot_pre_commit_config_yaml file was found in $(set_color --bold)$cwd$(set_color normal)"
-        set -l hooks (string match --regex --all --groups-only "[^#]+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
-        _git_fish_echo "the following hooks are listed:"
-        printf " - %s\n" $hooks
+        _git_fish_echo "A $dot_pre_commit_config_yaml file was found in $(set_color --bold)$cwd$(set_color normal)"
+        if set --query GIT_FISH_PRE_COMMIT_LIST_HOOKS
+            set -l hooks (string match --regex --all --groups-only "[^#]+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
+            _git_fish_echo "the following hooks are listed:"
+            printf " - %s\n" $hooks
+        end
         if not test -f ./.git/hooks/pre-commit
             _git_fish_echo "pre-commit hooks not installed. installing..."
             command pre-commit install --install-hooks 2>/dev/null
             # _git_fish_echo "pre-commit hooks installed."
         else
-            _git_fish_echo "pre-commit hooks installed $(set_color green)✓$(set_color normal)"
+            _git_fish_echo "pre-commit hooks are installed $(set_color green)✓$(set_color normal)"
             # set -l auto_update_command (echo -n "pre-commit autoupdate" | fish_indent --ansi)
             # _git_fish_echo "to autoupdate them, run: $auto_update_command"
         end

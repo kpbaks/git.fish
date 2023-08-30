@@ -1,5 +1,37 @@
 status is-interactive; or return
 
+function __git.fish::is_conventional_commit --argument-names commit_msg
+	return 1
+end
+
+# TODO: <kpbaks 2023-08-30 17:53:40> implement
+# https://github.com/cocogitto/cocogitto
+# https://gitmoji.dev/
+# https://github.com/orhun/git-cliff
+# https://github.com/compilerla/conventional-pre-commit
+function __git.fish::parse_conventional_commit --description "https://www.conventionalcommits.org/en/v1.0.0/#specification"
+    set --local argc (count $argv)
+    if test $argc -ne 1
+        return 2
+    end
+    set --local commit_msg $argv[1]
+
+    set --local conventional_commit_type ""
+    set --local conventional_commit_scope ""
+    set --local conventional_commit_description ""
+    set --local conventional_commit_has_exclamation_mark 0
+
+    set --local s (string split --no-empty ":" $commit_msg)
+    if test (count $s) -eq 1
+        # No conventional commit message
+        return 1
+    end
+
+    set --local
+
+    return 0
+end
+
 set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
 
 function __remind_me_to_use_branches --on-event in_git_repo_root_directory

@@ -4,6 +4,8 @@ status is-interactive; or return
 # ideas:
 # - Add a way to list all the abbreviations specific to git.fish
 # - Print if the hooks are installed or not, or enabled or not (outcommented)
+
+# https://github.com/compilerla/conventional-pre-commit
 # --------------------------------------------------------------------------------------------------
 
 

@@ -81,8 +81,10 @@ function git.fish.abbreviations
     #
 end
 
-_git_abbr g "# You probably have an abbreviation for what you want to do ;)
-git"
+# _git_abbr g "# You probably have an abbreviation for what you want to do ;)
+# git"
+#
+# _git_abbr g git
 
 # git add
 function abbr_git_add

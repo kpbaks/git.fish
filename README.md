@@ -30,7 +30,7 @@ fisher install kpbaks/git.fish
 
 `gcl` short for `git config --list` lists all git config settings in a colored and formatted table. Without setting any options the users global config will be shown. If you only want the settings for the current git repository you can use `gcl [-l|--local]`
 
-**TODO** add an image of the output
+![gcl-output](https://github.com/kpbaks/git.fish/assets/57013304/7d466f54-b6a7-4ddd-9fa1-8d19ed91d1f8)
 
 ## Settings
 

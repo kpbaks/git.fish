@@ -9,8 +9,8 @@ Collection of abbreviations and interactive fish-shell integrations I use to mak
 - [sqlite3](https://www.sqlite.org/index.html) is used to store visited git directories with the `repos` command.
 
 ### Optionals
-- [pre-commit](https://pre-commit.com/) ...
 
+- [pre-commit](https://pre-commit.com/) ...
 
 ## Installation
 
@@ -20,7 +20,20 @@ Using [fisher](https://github.com/jorgebucaran/fisher)
 fisher install kpbaks/git.fish
 ```
 
+## Usage
+
+### Abbreviations
+
+### Commands
+
+#### `gcl`
+
+`gcl` short for `git config --list` lists all git config settings in a colored and formatted table. Without setting any options the users global config will be shown. If you only want the settings for the current git repository you can use `gcl [-l|--local]`
+
+**TODO** add an image of the output
+
 ## Settings
+
 GIT_FISH_PRE_COMMIT_LIST_HOOKS
 
 ## Ideas

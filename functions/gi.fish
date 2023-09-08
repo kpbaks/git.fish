@@ -12,6 +12,7 @@ function gi --description 'Get .gitignore file from https://www.toptal.com/devel
     set --local red (set_color red)
     set --local green (set_color green)
     set --local yellow (set_color yellow)
+    set --local cyan (set_color cyan)
 
     if set --query _flag_help; or test $argc -eq 0
         set --local usage "$(set_color --bold)Download common .gitignore rules for various programming languages and frameworks from https://docs.gitignore.io/$(set_color normal)
@@ -48,11 +49,23 @@ Part of $(set_color cyan)git.fish$(set_color normal) at https://github.com/kpbak
         return 1
     end
 
+    # NOTE: <kpbaks 2023-09-08 19:28:44> the items in the query needs to be separated by commas
     set --local query (string trim $argv | string replace --regex --all " +" ,)
     set --local gitignore ($http_get_command $http_get_command_args https://www.toptal.com/developers/gitignore/api/$query)
-    if string match --quiet "ERROR:" $gitignore
-        printf "%serror:%s\n" $red $reset >&2
-        echo $gitignore >&2
+    if string match --quiet --regex "ERROR:" $gitignore
+        set --local n (math min "100,$COLUMNS")
+        set --local d ━
+        set --local hr (string repeat --count $n $d)
+        printf "%serror:%s response from gitignore.io was\n" $red $reset >&2
+		echo $hr >&2
+        printf "%s\n" $gitignore >&2
+		echo $hr >&2
+        # TODO: <kpbaks 2023-09-08 19:41:14> Use a hamming distance algorithm, suggest the closest match
+		# So if you type "pytho" it will suggest "python"
+        printf "%shint:%s You probably misspelled a language/framework name\n" $cyan $reset >&2
+        printf "      or the language/framework is not supported.\n" >&2
+        printf "      Try running %s%s to see a list of supported languages/frameworks\n" (printf (echo "gi list" | fish_indent --ansi)) $reset >&2
+
         return 1
     end
 

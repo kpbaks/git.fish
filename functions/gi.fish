@@ -48,7 +48,7 @@ Part of $(set_color cyan)git.fish$(set_color normal) at https://github.com/kpbak
         return 1
     end
 
-    set --local query (string join , "$argv")
+    set --local query (string trim $argv | string replace --regex --all " +" ,)
     set --local gitignore ($http_get_command $http_get_command_args https://www.toptal.com/developers/gitignore/api/$query)
     if string match --quiet "ERROR:" $gitignore
         printf "%serror:%s\n" $red $reset >&2

@@ -1,7 +1,7 @@
 status is-interactive; or return
 
 function __git.fish::is_conventional_commit --argument-names commit_msg
-	return 1
+    return 1
 end
 
 # TODO: <kpbaks 2023-08-30 17:53:40> implement
@@ -32,61 +32,55 @@ function __git.fish::parse_conventional_commit --description "https://www.conven
     return 0
 end
 
-set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
+set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED; or set --universal GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED 1
 
-function __remind_me_to_use_branches --on-event in_git_repo_root_directory
+function __git.fish::remind_me_to_use_branches --on-event in_git_repo_root_directory
     # A check is performed within the function such that the feature can be disabled/enabled
     # without having to restart the shell
-    set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_DISABLED; and return
+    test $GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED -eq 1; or return
     # TODO: <kpbaks 2023-06-10 15:02:18> maybe highlight last commit message and last committer
     # in a grey color to differentiate them from the branch name, and deemphasize them
-    set -l branches (git branch --list --no-color)
+    set --local branches (git branch --list --no-color)
     if test (count $branches) -eq 0
         # Handle the case where there are no branches
         # e.g. when you have just created a repo with `git init`
         __git.fish::echo "no branches has been created yet"
         return
     end
-    set -l current_branch (git rev-parse --abbrev-ref HEAD)
+    set --local current_branch (git rev-parse --abbrev-ref HEAD)
 
     # Use the bright colors for the branch you are on
-    set -l reset (set_color normal)
-    set -l yellow (set_color yellow)
-    set -l bryellow (set_color bryellow)
-    set -l green (set_color green)
-    set -l brgreen (set_color brgreen)
-    set -l blue (set_color blue)
-    set -l brblue (set_color brblue)
-    set -l red (set_color red)
-    set -l brred (set_color brred)
+    set --local reset (set_color normal)
+    set --local yellow (set_color yellow)
+    set --local bryellow (set_color bryellow)
+    set --local green (set_color green)
+    set --local brgreen (set_color brgreen)
+    set --local blue (set_color blue)
+    set --local brblue (set_color brblue)
+    set --local red (set_color red)
+    set --local brred (set_color brred)
 
 
-    if contains -- $current_branch main master
-        if not set --query GIT_FISH_REMIND_ME_TO_BE_ON_A_FEATURE_BRANCH_DISABLED
-            __git.fish::echo (printf "You are on the %s%s%s branch. You should be on a %sfeature%s branch!" \
-			$yellow $current_branch $reset $green $reset)
-        end
-    end
 
-    set -l field_delimiter '#'
-    # set -l bar "┃"
-    set -l bar "│"
+    set --local field_delimiter '#'
+    # set --local bar "┃"
+    set --local bar "│"
     # use thinner underline
-    set -l underline "─"
-    set -l upper_left_corner "┌"
-    set -l upper_right_corner "┐"
-    set -l lower_left_corner "└"
-    set -l lower_right_corner "┘"
-    set -l downwards_tee "┬"
-    set -l upwards_tee "┴"
+    set --local underline "─"
+    set --local upper_left_corner "┌"
+    set --local upper_right_corner "┐"
+    set --local lower_left_corner "└"
+    set --local lower_right_corner "┘"
+    set --local downwards_tee "┬"
+    set --local upwards_tee "┴"
 
-    set -l output_separator $bar
+    set --local output_separator $bar
 
     # Read data for each column into a separate array
-    set -l branches
-    set -l contents
-    set -l authors
-    set -l committerdates
+    set --local branches
+    set --local contents
+    set --local authors
+    set --local committerdates
     git branch --format="%(HEAD) %(refname:short) $field_delimiter %(contents:subject) $field_delimiter %(committerdate:relative) $field_delimiter %(authorname)" --sort=-committerdate \
         | while read --delimiter $field_delimiter branch content committerdate author
         set --append branches (string trim -- $branch)
@@ -96,32 +90,32 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
     end
 
 
-    set -l longest_branch ""
-    set -l length_of_longest_branch 0
+    set --local longest_branch ""
+    set --local length_of_longest_branch 0
     for branch in $branches
         if test (string length $branch) -gt (string length $longest_branch)
             set longest_branch $branch
             set length_of_longest_branch (string length $branch)
         end
     end
-    set -l longest_content ""
-    set -l length_of_longest_content 0
+    set --local longest_content ""
+    set --local length_of_longest_content 0
     for content in $contents
         if test (string length $content) -gt (string length $longest_content)
             set longest_content $content
             set length_of_longest_content (string length $content)
         end
     end
-    set -l longest_committerdate ""
-    set -l length_of_longest_committerdate 0
+    set --local longest_committerdate ""
+    set --local length_of_longest_committerdate 0
     for committerdate in $committerdates
         if test (string length $committerdate) -gt (string length $longest_committerdate)
             set longest_committerdate $committerdate
             set length_of_longest_committerdate (string length $committerdate)
         end
     end
-    set -l longest_author ""
-    set -l length_of_longest_author 0
+    set --local longest_author ""
+    set --local length_of_longest_author 0
     for author in $authors
         if test (string length $author) -gt (string length $longest_author)
             set longest_author $author
@@ -129,10 +123,10 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
         end
     end
 
-    set -l show_branch 1
-    set -l show_content 1
-    set -l show_committerdate 1
-    set -l show_author 1
+    set --local show_branch 1
+    set --local show_content 1
+    set --local show_committerdate 1
+    set --local show_author 1
 
     if test (math "($length_of_longest_branch + 2) + ($length_of_longest_content + 3) + ($length_of_longest_committerdate + 3) + ($length_of_longest_author + 2)") -gt $COLUMNS
         # All 4 columns shown together with a separator between them, will overflow the terminal.
@@ -190,31 +184,31 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
     end
 
     for i in (seq (count $authors))
-        set -l branch $branches[$i]
-        set -l content $contents[$i]
-        set -l committerdate $committerdates[$i]
-        set -l author $authors[$i]
+        set --local branch $branches[$i]
+        set --local content $contents[$i]
+        set --local committerdate $committerdates[$i]
+        set --local author $authors[$i]
 
-        set -l branch_length (string length $branch)
-        set -l content_length (string length $content)
-        set -l committerdate_length (string length $committerdate)
-        set -l author_length (string length $author)
-        set -l branch_padding (string repeat --count (math "$length_of_longest_branch - $branch_length") " ")
-        set -l content_padding (string repeat --count (math "$length_of_longest_content - $content_length") " ")
-        set -l committerdate_padding (string repeat --count (math "$length_of_longest_committerdate - $committerdate_length") " ")
-        set -l author_padding (string repeat --count (math "$length_of_longest_author - $author_length") " ")
+        set --local branch_length (string length $branch)
+        set --local content_length (string length $content)
+        set --local committerdate_length (string length $committerdate)
+        set --local author_length (string length $author)
+        set --local branch_padding (string repeat --count (math "$length_of_longest_branch - $branch_length") " ")
+        set --local content_padding (string repeat --count (math "$length_of_longest_content - $content_length") " ")
+        set --local committerdate_padding (string repeat --count (math "$length_of_longest_committerdate - $committerdate_length") " ")
+        set --local author_padding (string repeat --count (math "$length_of_longest_author - $author_length") " ")
 
-        set -l branch "$branch$branch_padding"
-        set -l content "$content$content_padding"
-        set -l committerdate "$committerdate$committerdate_padding"
-        set -l author "$author$author_padding"
+        set --local branch "$branch$branch_padding"
+        set --local content "$content$content_padding"
+        set --local committerdate "$committerdate$committerdate_padding"
+        set --local author "$author$author_padding"
 
         # TODO: <kpbaks 2023-06-10 15:18:27> move the definition of the colors to the top of the file
         # so colors can be easily changed.
-        set -l branch_color $yellow
-        set -l content_color $green
-        set -l committerdate_color $blue
-        set -l author_color $red
+        set --local branch_color $yellow
+        set --local content_color $green
+        set --local committerdate_color $blue
+        set --local author_color $red
 
         # Use the bright colors for the branch you are on
         # to make it stand out

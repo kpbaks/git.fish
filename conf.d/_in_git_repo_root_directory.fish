@@ -44,14 +44,14 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
     command git fetch --quiet
 end
 
-
 # when inside a git repo, check if the number of unstaged changes (i.e. lines)
 # is greater than `$GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD`
 # if so, print a reminder to commit
 
-set --query GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD; or set --global GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD 50
-
 function __git.fish::remind_me_to_commit --on-event in_git_repo_root_directory
+    set --query GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD; or set --universal GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD 50
+    set --query GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED; or set --universal GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED 1
+    test GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED = 1; or return
     # FIX: why does it actually trigger when fish is started?
     # do not want to run it every time a new fish shell is opened
     if test $PWD = $__fish_config_dir
@@ -61,4 +61,26 @@ function __git.fish::remind_me_to_commit --on-event in_git_repo_root_directory
     # defined in $__fish_config_dir/functions/should_i_commit.fish
     # part of git.fish
     should_i_commit $GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD
+end
+
+function __git.fish::avoid_being_on_main_branch --on-event in_git_repo_root_directory
+    set --query GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH; or set --universal GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH 1
+    test GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH = 1; or return
+
+    set --local branches (command git branch --list --no-color)
+    if test (count $branches) -eq 0
+        # Handle the case where there are no branches
+        # e.g. when you have just created a repo with `git init`
+        return
+    end
+
+    set --local current_branch (git rev-parse --abbrev-ref HEAD)
+
+    if contains -- $current_branch main master # The 2 most common names for the main branch
+        set --local yellow (set_color yellow)
+        set --local green (set_color green)
+        set --local reset (set_color normal)
+        __git.fish::echo (printf "You are on the %s%s%s branch. You should be on a %sfeature%s branch!" \
+			$yellow $current_branch $reset $green $reset)
+    end
 end

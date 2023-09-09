@@ -44,7 +44,7 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
     if test (count $branches) -eq 0
         # Handle the case where there are no branches
         # e.g. when you have just created a repo with `git init`
-        _git_fish_echo "no branches has been created yet"
+        __git.fish::echo "no branches has been created yet"
         return
     end
     set -l current_branch (git rev-parse --abbrev-ref HEAD)
@@ -63,7 +63,7 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
 
     if contains -- $current_branch main master
         if not set --query GIT_FISH_REMIND_ME_TO_BE_ON_A_FEATURE_BRANCH_DISABLED
-            _git_fish_echo (printf "You are on the %s%s%s branch. You should be on a %sfeature%s branch!" \
+            __git.fish::echo (printf "You are on the %s%s%s branch. You should be on a %sfeature%s branch!" \
 			$yellow $current_branch $reset $green $reset)
         end
     end
@@ -158,8 +158,8 @@ function __remind_me_to_use_branches --on-event in_git_repo_root_directory
     end
 
     # TODO: <kpbaks 2023-06-10 15:39:48> print which columns have been omitted
-    _git_fish_echo "The following $(set_color --italics)local$(set_color normal) branches exist ($(set_color --italics)the $(set_color yellow)*$(set_color normal)$(set_color --italics) indicates the branch you are on$(set_color normal)):"
-    # _git_fish_echo "format: $(set_color yellow)BRANCH$(set_color normal) | $(set_color green)LAST COMMIT MESSAGE$(set_color normal) | $(set_color blue)LAST COMMIT DATE$(set_color normal) | $(set_color red)LAST COMMITTER$(set_color normal)"
+    __git.fish::echo "The following $(set_color --italics)local$(set_color normal) branches exist ($(set_color --italics)the $(set_color yellow)*$(set_color normal)$(set_color --italics) indicates the branch you are on$(set_color normal)):"
+    # __git.fish::echo "format: $(set_color yellow)BRANCH$(set_color normal) | $(set_color green)LAST COMMIT MESSAGE$(set_color normal) | $(set_color blue)LAST COMMIT DATE$(set_color normal) | $(set_color red)LAST COMMITTER$(set_color normal)"
 
     # Only what to print the top border if there are multiple branches
     if test (count $branches) -ne 1

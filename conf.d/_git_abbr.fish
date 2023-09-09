@@ -53,7 +53,7 @@ function git.fish.abbreviations
     set -l git_color (set_color "#f44d27") # taken from git's logo
     set -l reset (set_color normal)
     # printf "there are %s%d%s abbreviations\n" $git_color (count $GIT_FISH_ABBREVIAITONS) $reset
-    _git_fish_echo (printf "there are %s%d%s abbreviations\n" $git_color (count $GIT_FISH_ABBREVIAITONS) $reset)
+    __git.fish::echo (printf "there are %s%d%s abbreviations\n" $git_color (count $GIT_FISH_ABBREVIAITONS) $reset)
 
     set -l hr (string repeat --count $COLUMNS -)
     echo $hr

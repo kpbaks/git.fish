@@ -29,7 +29,7 @@ function __git.fish::remind_me_to_create_remote --on-event in_git_repo_root_dire
     test GIT_FISH_REMIND_ME_TO_CREATE_REMOTE = 1; or return
     set --local remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if test $status -ne 0
-        _git_fish_echo "no remote branch detected. connect to one with:"
+        __git.fish::echo "no remote branch detected. connect to one with:"
         # TODO: <kpbaks 2023-09-09 17:19:23> improve aesthetics of this message
         set --local connect_to_remote_cmd "git push -u 'remote' 'branch'"
         echo -en "\t"

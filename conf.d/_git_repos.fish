@@ -12,7 +12,7 @@ status is-interactive; or return
 
 for cmd in fzf sqlite3
     if not command --query $cmd
-        _git_fish_echo "$cmd not found, $(set_color --bold)repos$(set_color normal) function will not be available"
+        __git.fish::echo "$cmd not found, $(set_color --bold)repos$(set_color normal) function will not be available"
         return
     end
 end
@@ -36,17 +36,17 @@ end
 
 function _add_git_repo_to_db --argument-names dir
     if not argparse --min-args 1 --max-args 1 -- $argv
-        _git_fish_echo "usage: _add_git_repo_to_db <path>"
+        __git.fish::echo "usage: _add_git_repo_to_db <path>"
         return 1
     end
 
     if not test -d $dir
-        _git_fish_echo "$dir is not a directory"
+        __git.fish::echo "$dir is not a directory"
         return 1
     end
 
     if not test -d $dir/.git
-        _git_fish_echo "$dir is not a git repo"
+        __git.fish::echo "$dir is not a git repo"
         return 1
     end
 
@@ -70,7 +70,7 @@ function _add_git_repo_to_db --argument-names dir
     if test $number_of_times_visited -eq 1
         set -l total_number_of_repos_visited (sqlite3 $GIT_FISH_REPOS_DB "SELECT COUNT(*) FROM repos;")
         set -l repo_dir (string replace "$HOME" "~" $dir)
-        _git_fish_echo (printf "added (%s%s%s) to list of visited repos, total: %s%d%s\n" \
+        __git.fish::echo (printf "added (%s%s%s) to list of visited repos, total: %s%d%s\n" \
 			$git_color $repo_dir $reset \
 			$git_color $total_number_of_repos_visited $reset)
     end
@@ -96,14 +96,14 @@ function repos-check
         if not test -d $path
             set -l delete_query "DELETE FROM repos WHERE path = '$path';"
             sqlite3 $GIT_FISH_REPOS_DB $delete_query
-            _git_fish_echo (printf "removed (%s%s%s) from list of visited repos" $git_color $path $reset)
+            __git.fish::echo (printf "removed (%s%s%s) from list of visited repos" $git_color $path $reset)
             set repos_removed (math $repos_removed + 1)
         end
     end
 
     # print how many repos were removed
     if test $repos_removed -gt 0
-        _git_fish_echo (printf "removed %s%d%s repos from list of visited repos" $git_color $repos_removed $reset)
+        __git.fish::echo (printf "removed %s%d%s repos from list of visited repos" $git_color $repos_removed $reset)
     end
 end
 
@@ -161,7 +161,7 @@ function repos-list --description "list all the git repos that have been visited
 
     set -l git_repos_visited_count (count $paths)
     if test $git_repos_visited_count -eq 0
-        _git_fish_echo "no repos have been visited"
+        __git.fish::echo "no repos have been visited"
         return
     end
 
@@ -203,7 +203,7 @@ function repos-init --description "Initialize the repos database by searching re
     end
 
     if not test -d $argv[1]
-        _git_fish_echo (printf "%s is not a directory" $argv[1])
+        __git.fish::echo (printf "%s is not a directory" $argv[1])
         return 1
     end
 
@@ -215,13 +215,13 @@ function repos-init --description "Initialize the repos database by searching re
         printf "- %s\n" $path
     end
 
-    _git_fish_echo "found $found_git_repos_count git repos"
+    __git.fish::echo "found $found_git_repos_count git repos"
 end
 
 function repos-clear --description "clear the list of visited repos"
     set -l delete_all_query "DELETE FROM repos;"
     sqlite3 $GIT_FISH_REPOS_DB $delete_all_query
-    _git_fish_echo "cleared list of visited repos"
+    __git.fish::echo "cleared list of visited repos"
 end
 
 function repos --description "manage the list of visited repos"
@@ -256,7 +256,7 @@ function repos --description "manage the list of visited repos"
                 repos-init $PWD
                 return 0
             case '*'
-                _git_fish_echo "unknown command: $verb"
+                __git.fish::echo "unknown command: $verb"
                 return 1
         end
     end
@@ -269,7 +269,7 @@ function repos --description "manage the list of visited repos"
     # if there are no repos, just return
     # this will prevent the fzf prompt from showing up
     if test (count $repos) -eq 0
-        _git_fish_echo "no repos have been visited"
+        __git.fish::echo "no repos have been visited"
         return 1
     end
 

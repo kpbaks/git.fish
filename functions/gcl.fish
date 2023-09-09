@@ -54,9 +54,9 @@ Part of $(set_color cyan)git.fish$(set_color normal) at https://github.com/kpbs5
     end
 
     if set --query _flag_local
-        _git_fish_echo "local git config:"
+        __git.fish::echo "local git config:"
     else
-        _git_fish_echo "global git config:"
+        __git.fish::echo "global git config:"
     end
 
     for i in (seq (count $params))

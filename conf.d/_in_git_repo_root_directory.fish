@@ -43,3 +43,22 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
     test GIT_FISH_AUTO_FETCH = 1; or return
     command git fetch --quiet
 end
+
+
+# when inside a git repo, check if the number of unstaged changes (i.e. lines)
+# is greater than `$GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD`
+# if so, print a reminder to commit
+
+set --query GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD; or set --global GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD 50
+
+function __git.fish::remind_me_to_commit --on-event in_git_repo_root_directory
+    # FIX: why does it actually trigger when fish is started?
+    # do not want to run it every time a new fish shell is opened
+    if test $PWD = $__fish_config_dir
+        return
+    end
+
+    # defined in $__fish_config_dir/functions/should_i_commit.fish
+    # part of git.fish
+    should_i_commit $GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD
+end

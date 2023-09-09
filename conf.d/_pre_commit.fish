@@ -4,6 +4,7 @@ status is-interactive; or return
 # ideas:
 # - Add a way to list all the abbreviations specific to git.fish
 # - Print if the hooks are installed or not, or enabled or not (outcommented)
+# - have an environment variable/file with the default hooks to install
 
 # https://github.com/compilerla/conventional-pre-commit
 # --------------------------------------------------------------------------------------------------
@@ -14,21 +15,21 @@ if not command --query pre-commit
     return
 end
 
-set -g _git_fish_git_directories_visisted
+set --global _git_fish_git_directories_visisted
 
 function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
     # Do not want to spam the user with the same message over and over again in the same shell session
     contains -- $PWD $_git_fish_git_directories_visisted; and return
 
     # used to highlight the .pre-commit-config.yaml file when it is printed
-    set -l dot_pre_commit_config_yaml (set_color --bold)".pre-commit-config.yaml"(set_color normal)
+    set --local dot_pre_commit_config_yaml (set_color --bold)".pre-commit-config.yaml"(set_color normal)
     # When running on A Fedora Silverblue system, the PWD is /var/home/username
-    set -l cwd (string replace --regex "^/var$HOME" "~" -- $PWD | string replace --regex "^$HOME" "~")
+    set --local cwd (string replace --regex "^/var$HOME" "~" -- $PWD | string replace --regex "^$HOME" "~")
 
     if test -f .pre-commit-config.yaml
         _git_fish_echo "A $dot_pre_commit_config_yaml file was found in $(set_color --bold)$cwd$(set_color normal)"
         if set --query GIT_FISH_PRE_COMMIT_LIST_HOOKS
-            set -l hooks (string match --regex --all --groups-only "[^#]+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
+            set --local hooks (string match --regex --all --groups-only "[^#]+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
             _git_fish_echo "the following hooks are listed:"
             printf " - %s\n" $hooks
         end
@@ -38,7 +39,7 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
             # _git_fish_echo "pre-commit hooks installed."
         else
             _git_fish_echo "pre-commit hooks are installed $(set_color green)✓$(set_color normal)"
-            # set -l auto_update_command (echo -n "pre-commit autoupdate" | fish_indent --ansi)
+            # set --local auto_update_command (echo -n "pre-commit autoupdate" | fish_indent --ansi)
             # _git_fish_echo "to autoupdate them, run: $auto_update_command"
         end
     else
@@ -48,9 +49,9 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
             command pre-commit sample-config | tee .pre-commit-config.yaml && command pre-commit install --install-hooks
             _git_fish_echo "pre-commit hooks installed."
         else
-            set -l generate_sample_config_command "pre-commit sample-config | tee .pre-commit-config.yaml && pre-commit install"
-            set -l abbreviation pcg
-            _git_fish_echo "a sample $dot_pre_commit_config_yaml file can be generated and installed with: (use the abbreviation `$abbreviation` to run it)"
+            set --local generate_sample_config_command "pre-commit sample-config | tee .pre-commit-config.yaml && pre-commit install"
+            set --local abbreviation pcg
+            _git_fish_echo (printf "a sample $dot_pre_commit_config_yaml file can be generated and installed with: (use the abbreviation %s$abbreviation%s to run it)" (set_color $fish_color_command) (set_color normal))
             echo -en "\t"
             echo "$generate_sample_config_command" | fish_indent --ansi
             if not abbr --query $abbreviation

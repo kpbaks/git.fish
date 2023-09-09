@@ -1,7 +1,8 @@
 function gstat
 
     set --local options (fish_opt --short=l --long=no-log --long-only)
-    set --append options (fish_opt --short=n --long=no --longonly --required-val --multiple-vals)
+    set --append options (fish_opt --short=n --long=no --long-only --required-val)
+    set --append options (fish_opt --short=d --long=maxdepth --required-val)
     # TODO: <kpbaks 2023-09-08 17:08:14> --no branch,stash,status,log etc.
     # set --append options (fish_opt --short=t --long=no-stash --long-only)
     # set --append options (fish_opt --short=s --long=no-status --long-only)
@@ -14,6 +15,7 @@ function gstat
 
     set --local reset (set_color normal)
 	set --local bold (set_color --bold)
+    set --local italic (set_color --italics)
 	set --local green (set_color green)
 	set --local yellow (set_color yellow)
 	set --local red (set_color red)
@@ -47,13 +49,40 @@ function gstat
         return 1
     end
 
-    set --local normal (set_color normal)
+    set --local reset (set_color normal)
     set --local bold (set_color --bold)
     set --local dir_fmt (set_color green)
     set --local repo_fmt (set_color yellow)
 
     set --local maxdepth 3
     set --local border_count (math "min($COLUMNS, 100)")
+
+	set --local sections_to_ignore
+    if set --query _flag_no
+		set sections_to_ignore (string replace --all "," " " $_flag_no | string split " ")
+	end
+
+	# echo $sections_to_ignore
+	#    echo "count: $(count $sections_to_ignore)"
+    set --local show_dir_section 1
+	set --local show_repo_section 1
+    set --local show_log_section 1
+	set --local show_status_section 1
+	set --local show_stash_section 1
+	set --local show_branch_section 1
+    set --local show_submodules_section 1
+    set --local show_summary_section 1
+
+    # TODO: <kpbaks 2023-09-08 21:03:15> notify as an error if the user specifies an unknown section
+
+    contains -- dir $sections_to_ignore; and set show_dir_section 0
+	contains -- repo $sections_to_ignore; and set show_repo_section 0
+    contains -- log $sections_to_ignore; and set show_log_section 0
+    contains -- status $sections_to_ignore; and set show_status_section 0
+	contains -- stash $sections_to_ignore; and set show_stash_section 0
+	contains -- branch $sections_to_ignore; and set show_branch_section 0
+    contains -- submodules $sections_to_ignore; and set show_submodules_section 0
+    contains -- summary $sections_to_ignore; and set show_summary_section 0
 
     # TODO: submodules
     # mimic display-modes of https://github.com/nickgerace/gfold
@@ -67,26 +96,35 @@ function gstat
     end
 
     if not test -d $root_dir
-        set_color red --bold
-        echo "not a directory: $root_dir"
-        set_color normal
+        printf "%serror%s %s%s%s is not a directory\n" \
+			$red $reset \
+			$italic $root_dir $reset
         return 1
     end
 
-
+    set --local hr (string repeat --count $border_count ━)
     set --local found_count 0
-    for git_dir in (find $root_dir -maxdepth $maxdepth -type d -name ".git")
+	# TODO: <kpbaks 2023-09-08 21:04:31> use either find or fd
+    # for git_dir in (find $root_dir -maxdepth $maxdepth -type d -name ".git")
+    set --local git_dirs (find $root_dir -maxdepth $maxdepth -type d -name ".git")
+    for idx in (seq (count $git_dirs))
+    # for git_dir in $git_dirs
+        set --local git_dir $git_dirs[$idx]
         set found_count (math "$found_count + 1")
-        set repo_dir (path dirname $git_dir)
+        set --local repo_dir (path dirname $git_dir)
         set --local git git -C $repo_dir
         set --local remote_url ($git config --local --get remote.origin.url)
 
-        printf "%sdir%s:  %s%s%s\n" \
-            $bold $normal \
-            $dir_fmt (string replace "$HOME" "~" $repo_dir) $normal
+		if test $show_dir_section -eq 1
+			printf "%sdir%s:  %s%s%s\n" \
+				$bold $reset \
+				$dir_fmt (string replace "$HOME" "~" $repo_dir) $reset
+		end
+        if test $show_repo_section -eq 1
         printf "%srepo%s: %s%s%s\n" \
-            $bold $normal \
-            $repo_fmt $remote_url $normal
+            $bold $reset \
+            $repo_fmt $remote_url $reset
+		end
         if not set --query _flag_no_branch
             set --local active_branch ($git rev-parse --abbrev-ref HEAD)
             set --local inactive_branches ($git branch | string match --regex --invert "\* (\S+)" | string trim --chars=" " --)
@@ -94,56 +132,61 @@ function gstat
             set --local active_branch_fmt $git_color
             if test -z $inactive_branches
                 printf "%sbranch%s: { %s%s%s }\n" \
-                    $bold $normal \
-                    $active_branch_fmt $active_branch $normal
+                    $bold $reset \
+                    $active_branch_fmt $active_branch $reset
             else
                 set --local grey "#888888"
                 set --local inactive_branch_fmt (set_color $grey)
                 printf "%sbranches%s: { %s%s%s" \
-                    $bold $normal \
-                    $active_branch_fmt $active_branch $normal
+                    $bold $reset \
+                    $active_branch_fmt $active_branch $reset
                 for inactive_branch in $inactive_branches
-                    printf ", %s%s%s" $inactive_branch_fmt $inactive_branch $normal
+                    printf ", %s%s%s" $inactive_branch_fmt $inactive_branch $reset
                 end
                 printf " }\n"
             end
         end
 
-        if not set --query _flag_no_status
-            printf "%sstatus%s:\n" $bold $normal
+        if test $show_status_section -eq 1
+            # TODO: <kpbaks 2023-09-08 21:16:27> compute additioons and deletions of each modified file
+			# with `git diff --numstat`
+            printf "%sstatus%s:\n" $bold $reset
             $git status --short
-        end
+		end
 
-        if not set --query _flag_no_stash
+		if test $show_stash_section -eq 1
             set --local stashes ($git stash list)
             if test -n $stashes
                 printf "%s%s%s:\n" \
                     (set_color --bold) \
                     (test (count $stashes) -eq 1; and echo "stash"; or echo "stashes") \
-                    $normal
+                    $reset
                 printf " - %s\n" ($git stash list)
             end
 
         end
 
-        if not set --query _flag_no_log
-            printf "%slog%s:\n" $bold $normal
+		if test $show_log_section -eq 1
+            printf "%slog%s:\n" $bold $reset
             $git log --oneline -1
         end
 
         # add a border
-        string repeat --count $border_count -
+        if test $idx -lt (count $git_dirs)
+            echo $hr
+		end
     end
 
     if test $found_count -eq 0
-        set_color red --bold
-        echo "no git repos found"
-        set_color normal
+        printf "%warn:%s No git repos found in the subtree of %s%s%s\n" \
+			$yellow $green (string replace "$HOME" "~" $root_dir) $reset
     else
-        set --local green (set_color green --bold)
+        if test $show_summary_section -eq 1
+        echo $hr
         printf "found %s%d%s git %s in the subtree of %s%s%s\n" \
-            $green $found_count $normal \
+            $green $found_count $reset \
             (test $found_count -eq 1; and echo "repo"; or echo "repos") \
-            $green $PWD $normal
+            $green $PWD $reset
+		end
     end
 end

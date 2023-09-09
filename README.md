@@ -32,8 +32,16 @@ fisher install kpbaks/git.fish
 
 ![gcl-output](https://github.com/kpbaks/git.fish/assets/57013304/7d466f54-b6a7-4ddd-9fa1-8d19ed91d1f8)
 
+
+#### `gi`
+
+`gi` can be used to download common `.gitignore` rules from [gitignore.io](https://www.toptal.com/developers/gitignore/)
+
 ## Settings
 
 GIT_FISH_PRE_COMMIT_LIST_HOOKS
+
+GIT_FISH_AUTO_FETCH
+GIT_FISH_REMIND_ME_TO_CREATE_REMOTE
 
 ## Ideas

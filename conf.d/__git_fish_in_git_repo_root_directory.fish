@@ -80,6 +80,7 @@ function __git.fish::avoid_being_on_main_branch --on-event in_git_repo_root_dire
         set --local yellow (set_color yellow)
         set --local green (set_color green)
         set --local reset (set_color normal)
+        # TODO: <kpbaks 2023-09-09 22:32:23> Suggest some of the other local branches. If there are none, suggest creating one.
         __git.fish::echo (printf "You are on the %s%s%s branch. You should be on a %sfeature%s branch!" \
 			$yellow $current_branch $reset $green $reset)
     end

@@ -1,5 +1,5 @@
 command --query gh; or return
-set -l A abbr --add
+set --local A abbr --add
 
 $A ghs gh status
 
@@ -9,3 +9,5 @@ $A ghb gh browse
 $A ghp gh pr list
 $A ghr gh repo view --web
 $A ghg gh gist list
+$A ghi gh issue
+$A ghil gh issue list

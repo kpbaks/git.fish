@@ -2,7 +2,7 @@ status is-interactive; or return
 
 # Make this feature opt-in
 set --query GIT_FISH_GITUI_KEYBIND_ENABLE; or set --universal GIT_FISH_GITUI_KEYBIND_ENABLE 0
-test "$GIT_FISH_GITUI_KEYBIND_ENABLE" = 1; or return
+test $GIT_FISH_GITUI_KEYBIND_ENABLE = 1; or return
 set --query GIT_FISH_GITUI_KEYBIND; or set --universal GIT_FISH_GITUI_KEYBIND \cg
 set --query GIT_FISH_GITUI_KEYBIND_QUIET; or set --universal GIT_FISH_GITUI_KEYBIND_QUIET 0
 

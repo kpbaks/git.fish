@@ -35,6 +35,7 @@ end
 set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED; or set --universal GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED 1
 
 function __git.fish::remind_me_to_use_branches --on-event in_git_repo_root_directory
+    # TODO: <kpbaks 2023-09-09 22:32:54> refactor and finish creating the `tabulate function`
     # A check is performed within the function such that the feature can be disabled/enabled
     # without having to restart the shell
     test $GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED -eq 1; or return

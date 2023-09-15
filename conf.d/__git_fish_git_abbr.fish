@@ -3,20 +3,17 @@
 # - Add a way to list all the abbreviations specific to git.fish
 # --------------------------------------------------------------------------------------------------
 command --query git; or return
-command --query fzf; and set -g GIT_FISH_FZF_EXISTS
+command --query fzf; and set --global GIT_FISH_FZF_EXISTS
 
-set -g GIT_FISH_ABBREVIAITONS
-set -g GIT_FISH_EXPANDED_ABBREVIAITONS
+set --global GIT_FISH_ABBREVIAITONS
+set --global GIT_FISH_EXPANDED_ABBREVIAITONS
 
 function _git_abbr
-    set -l abbr $argv[1]
-    # set -l expanded (string collect $argv[2..])
-    set -l expanded $argv[2..]
-    abbr -a $argv
-    # set --append GIT_FISH_ABBREVIAITONS "$abbr :: $expanded"
+    set --local abbr $argv[1]
+    set --local expanded $argv[2..]
+    abbr --add $argv
     set --append GIT_FISH_ABBREVIAITONS "$abbr"
     set --append GIT_FISH_EXPANDED_ABBREVIAITONS "$expanded"
-    # set --append GIT_FISH_ABBREVIAITONS "$argv"
 end
 
 function git.fish.abbreviations
@@ -26,17 +23,17 @@ function git.fish.abbreviations
     #     | while read -l abbr
     #     # echo "abbr: $abbr"
     #     printf " - %s\n" $abbr
-    #     # set -l words (string split ' ' $abbr)
-    #     # set -l abbr $words[1]
-    #     # # set -l expanded "$words[2..]"
+    #     # set --local words (string split ' ' $abbr)
+    #     # set --local abbr $words[1]
+    #     # # set --local expanded "$words[2..]"
     #     # printf " - %s\n" $abbr
     #     # printf "   - %s\n" $expanded
     #
     # end
 
-    set -l length_of_longest_abbr 0
+    set --local length_of_longest_abbr 0
     for abbr in $GIT_FISH_ABBREVIAITONS
-        set -l abbr_length (string length $abbr)
+        set --local abbr_length (string length $abbr)
         if test $abbr_length -gt $length_of_longest_abbr
             set length_of_longest_abbr $abbr_length
         end
@@ -44,32 +41,32 @@ function git.fish.abbreviations
 
     #TODO: <kpbaks 2023-05-24 22:40:11> handle --regex abbrs
 
-    set -l abbreviation_heading abbreviation
-    set -l expanded_heading expanded
-    set -l padding_length (math $length_of_longest_abbr - (string length $abbreviation_heading))
-    set -l padding (string repeat --count $padding_length ' ')
+    set --local abbreviation_heading abbreviation
+    set --local expanded_heading expanded
+    set --local padding_length (math $length_of_longest_abbr - (string length $abbreviation_heading))
+    set --local padding (string repeat --count $padding_length ' ')
 
 
-    set -l git_color (set_color "#f44d27") # taken from git's logo
-    set -l reset (set_color normal)
+    set --local git_color (set_color "#f44d27") # taken from git's logo
+    set --local reset (set_color normal)
     # printf "there are %s%d%s abbreviations\n" $git_color (count $GIT_FISH_ABBREVIAITONS) $reset
     __git.fish::echo (printf "there are %s%d%s abbreviations\n" $git_color (count $GIT_FISH_ABBREVIAITONS) $reset)
 
-    set -l hr (string repeat --count $COLUMNS -)
+    set --local hr (string repeat --count $COLUMNS -)
     echo $hr
     printf "%s%s | %s\n" $abbreviation_heading $padding $expanded_heading
     echo $hr
 
 
     for i in (seq (count $GIT_FISH_ABBREVIAITONS))
-        set -l abbr $GIT_FISH_ABBREVIAITONS[$i]
-        set -l expanded $GIT_FISH_EXPANDED_ABBREVIAITONS[$i]
-        set -l abbr_length (string length $abbr)
-        set -l padding_length (math $length_of_longest_abbr - $abbr_length)
-        set -l padding (string repeat --count $padding_length ' ')
+        set --local abbr $GIT_FISH_ABBREVIAITONS[$i]
+        set --local expanded $GIT_FISH_EXPANDED_ABBREVIAITONS[$i]
+        set --local abbr_length (string length $abbr)
+        set --local padding_length (math $length_of_longest_abbr - $abbr_length)
+        set --local padding (string repeat --count $padding_length ' ')
         printf "%s%s | " $abbr $padding
         echo "$expanded" | fish_indent --ansi
-        # set -l padding (string repeat ' ' (math (math $length_of_longest_abbr - (string length $abbr)) + 2))
+        # set --local padding (string repeat ' ' (math (math $length_of_longest_abbr - (string length $abbr)) + 2))
         # echo "$abbr + $expanded"
 
     end
@@ -88,9 +85,9 @@ end
 
 # git add
 function abbr_git_add
-    set -l cmd "git add"
+    set --local cmd "git add"
     # 1. find all modified, untracked, and deleted files
-    set -l addable_files (git ls-files --modified --others --deleted)
+    set --local addable_files (git ls-files --modified --others --deleted)
     # 2. if there is exactly one file, append it to the command
     if test (count $addable_files) -eq 1
         set --append cmd $addable_files
@@ -104,8 +101,8 @@ _git_abbr gaa 'git add --all && git status'
 _git_abbr gam 'git ls-files --modified | xargs git add && git status'
 function abbr_git_add_modified_and_commit_previous
     # 1. find the previous commit
-    set -l cmd "git ls-files --modified | xargs git add && git status"
-    set -l previous_commit (history search --max 1 --prefix "git commit --message")
+    set --local cmd "git ls-files --modified | xargs git add && git status"
+    set --local previous_commit (history search --max 1 --prefix "git commit --message")
     # 2. if there is a previous commit, add it to the command
     if test -n "$previous_commit"
         set --append cmd "&& $previous_commit"
@@ -120,7 +117,7 @@ _git_abbr gad 'git ls-files --deleted | xargs git add && git status'
 _git_abbr gap 'git add --patch && git status'
 
 # git branch
-set -l git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]"
+set --local git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]"
 
 _git_abbr gb git branch
 _git_abbr gbl git branch --format="'$git_branch_format'" --sort=-committerdate
@@ -188,7 +185,7 @@ end
 
 function abbr_git_difftool
     # if set -q GIT_FISH_FZF_EXISTS
-    #     set -l tool (parse_git_difftool_tool_help_output | fzf --header "Select a tool" --with-nth 2 | cut -f 1)
+    #     set --local tool (parse_git_difftool_tool_help_output | fzf --header "Select a tool" --with-nth 2 | cut -f 1)
     #     echo "tool: $tool"
     #     if test $status -eq 0
     #         echo -- git difftool --tool=$tool
@@ -225,11 +222,11 @@ _git_abbr glsum git ls-files --unmerged
 # git merge
 function abbr_git_merge
     # TODO: <kpbaks 2023-06-27 21:29:04> search for the 2. most recent call to `git switch` and use that as the branch to merge
-    set -l cmd git merge
+    set --local cmd git merge
     # if there is 2 local branches, the suggest the other branch as the branch to merge
-    set -l branches (command git branch)
+    set --local branches (command git branch)
     if test (count $branches) -eq 2
-        set -l other_branch (command git branch | string match --invert --regex '^\*' | string trim)
+        set --local other_branch (command git branch | string match --invert --regex '^\*' | string trim)
         set --append cmd $other_branch
     end
 
@@ -252,8 +249,8 @@ function abbr_git_push
     # check if the local branch has a remote branch of the same name
     # if not, run `git push --set-upstream origin <branch-name>`
     # if yes, run `git push`
-    set -l branch (git rev-parse --abbrev-ref HEAD)
-    set -l remote_branch (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
+    set --local branch (git rev-parse --abbrev-ref HEAD)
+    set --local remote_branch (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if test $status -ne 0
         echo -- "git push --set-upstream origin $branch% # no remote branch found, creating one"
         return
@@ -277,7 +274,7 @@ _git_abbr grl git reflog
 # git restore
 function abbr_git_restore
     # if there is only one modified file, append it to the expand command
-    set -l cmd git restore
+    set --local cmd git restore
     set modified (git ls-files --modified)
     if test (count $modified) -eq 1
         set --append cmd $modified
@@ -312,11 +309,11 @@ _git_abbr gstl git stash list
 # git submodule
 _git_abbr gsm git submodule
 function abbr_git_submodule_add
-    set -l cmd git submodule add
-    set -l clipboard (fish_clipboard_paste)
+    set --local cmd git submodule add
+    set --local clipboard (fish_clipboard_paste)
     # if the clipboard is a valid git url, append it to the command
     if string match -q --regex '^https?://.*\.git$' $clipboard
-        set -l project_name (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
+        set --local project_name (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
         set --append cmd $clipboard $project_name
     end
     echo -- $cmd
@@ -329,7 +326,7 @@ _git_abbr gsmf git submodule foreach git
 
 # git switch
 function abbr_git_switch
-    set -l cmd git switch
+    set --local cmd git switch
     # check that we are in a git repo
     if not command git rev-parse --is-inside-work-tree >/dev/null
         echo -- $cmd
@@ -341,33 +338,43 @@ function abbr_git_switch
         # so we can't switch to a branch, but we likely want to switch to the main branch
         # again. So we append '-' to the command.
         echo -- "$cmd -"
+        return
     end
     # Check how many branches there are
-    # if there are 2, then append the other branch name to the command
-    # else output the command.
-    # This is a nice quality of life improvement when you have a repo with two branches
-    # that you switch between often. E.g. master and develop.
-    # set -l branches (command git branch)
-    set -l branches_count (command git branch | count)
-    if test $branches_count -eq 2
-        set -l other_branch (command git branch | string match --invert --regex '^\*' | string trim)
-        set --append cmd $other_branch
-        echo "# You are in a git repo with only 2 branches.
+    set --local branches_count (command git branch | count)
+    switch $branches_count
+        case 1
+            # If there is only one local branch, there is nothing to switch to.
+            # So we just output the command. With a comment explaining that there is no other branch.
+            echo -- "$cmd % # There is no other local branch to switch to."
+        case 2
+            # if there are 2, then append the other branch name to the command
+            # else output the command.
+            # This is a nice quality of life improvement when you have a repo with two branches
+            # that you switch between often. E.g. master and develop.
+            set --local other_branch (command git branch | string match --invert --regex '^\*' | string trim)
+            set --append cmd $other_branch
+            echo "# You are in a git repo with only 2 branches.
 # My guess is that you want to switch to branch: $other_branch"
+        case '*'
+            # If there are more than 2 branches, then append the most recently used branch to the command
+            command git branch --sort=-committerdate \
+                | string match --invert --regex '^\*' \
+                | read --line branches
+            echo -- "$cmd $branches[1]%"
     end
 
-    echo -- "$cmd"
 end
 
-_git_abbr gsw --function abbr_git_switch
+_git_abbr gsw --set-cursor --function abbr_git_switch
 
 
 # git worktree
 _git_abbr gwt git worktree
 # it is best practive to create a worktree in a directory that is a sibling of the current directory
 function abbr_git_worktree_add
-    set -l dirname (path basename $PWD)
-    set -l worktree_dirname "$dirname-wt"
+    set --local dirname (path basename $PWD)
+    set --local worktree_dirname "$dirname-wt"
     echo -- git worktree add "../$worktree_dirname/%" --detach
 end
 _git_abbr gwta --set-cursor --function abbr_git_worktree_add
@@ -380,9 +387,9 @@ _git_abbr gwtrmf git worktree remove --force
 #
 
 function abbr_git_clone
-    set -l args --recursive
-    set -l postfix_args
-    set -l clipboard (fish_clipboard_paste)
+    set --local args --recursive
+    set --local postfix_args
+    set --local clipboard (fish_clipboard_paste)
     # if clipboard is a git url
     # TODO: also handle url of the form https://github.com/<user>/<repo>
 
@@ -394,13 +401,13 @@ function abbr_git_clone
         set --append postfix_args (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
     else if string match --quiet --regex "^git clone .*\.git\$" -- "$clipboard"
         # example: git clone https://github.com/nushell/nushell.git
-        set -l url (string replace --all --regex '^git clone (.*)\.git$' '$1' $clipboard)
-        set -l reponame (string split --max=1 --right / $url)[-1]
-        set -a postfix_args $url
-        set -a postfix_args "&& cd $reponame"
+        set --local url (string replace --all --regex '^git clone (.*)\.git$' '$1' $clipboard)
+        set --local reponame (string split --max=1 --right / $url)[-1]
+        set --append postfix_args $url
+        set --append postfix_args "&& cd $reponame"
     end
 
-    set -l depth (string replace --all --regex '[^0-9]' '' $argv[1])
+    set --local depth (string replace --all --regex '[^0-9]' '' $argv[1])
     if test -n $depth
         set --append args --depth=$depth
     end
@@ -409,7 +416,7 @@ end
 
 _git_abbr git_clone_at_depth --position command --regex "gc[0-9]*" --function abbr_git_clone
 
-set -l sleep_duration 1.5
+set --local sleep_duration 1.5
 
 _git_abbr gac --set-cursor "git add --update && git status && sleep $sleep_duration && git commit"
 _git_abbr gacp --set-cursor "git add --update % && git status && sleep $sleep_duration && git commit && git push"

@@ -140,32 +140,36 @@ _git_abbr gcm git commit
 _git_abbr gcma git commit --amend
 # TODO: <kpbaks 2023-06-02 12:23:43> add a gmcm<> variant that adds all modified files and commits them
 # conventional commits
-# https://daily-dev-tips.com/posts/git-basics-conventional-commits/
-_git_abbr gcmB --set-cursor git commit --message "'build: %'"
-_git_abbr gcmC --set-cursor git commit --message "'chore: %'"
-_git_abbr gcmI --set-cursor git commit --message "'ci: %'"
-_git_abbr gcmD --set-cursor git commit --message "'docs: %'"
-_git_abbr gcmF --set-cursor git commit --message "'feat: %'"
-_git_abbr gcmX --set-cursor git commit --message "'fix: %'"
-_git_abbr gcmM --set-cursor git commit --message "'merge: %'"
-_git_abbr gcmP --set-cursor git commit --message "'perf: %'"
-_git_abbr gcmR --set-cursor git commit --message "'refactor: %'"
-_git_abbr gcmV --set-cursor git commit --message "'revert: %'"
-_git_abbr gcmS --set-cursor git commit --message "'style: %'"
-_git_abbr gcmT --set-cursor git commit --message "'test: %'"
 
-_git_abbr gcmb --set-cursor git commit --message "'build(%): '"
-_git_abbr gcmc --set-cursor git commit --message "'chore(%): '"
-_git_abbr gcmi --set-cursor git commit --message "'ci(%): '"
-_git_abbr gcmd --set-cursor git commit --message "'docs(%): '"
-_git_abbr gcmf --set-cursor git commit --message "'feat(%): '"
-_git_abbr gcmx --set-cursor git commit --message "'fix(%): '"
-_git_abbr gcmm --set-cursor git commit --message "'merge(%): '"
-_git_abbr gcmp --set-cursor git commit --message "'perf(%): '"
-_git_abbr gcmr --set-cursor git commit --message "'refactor(%): '"
-_git_abbr gcmv --set-cursor git commit --message "'revert(%): '"
-_git_abbr gcms --set-cursor git commit --message "'style(%): '"
-_git_abbr gcmt --set-cursor git commit --message "'test(%): '"
+# https://daily-dev-tips.com/posts/git-basics-conventional-commits/
+# Poor mans dictionary :(
+set --local conventional_commit_types_to_abbreviations \
+    "build b" \
+    "chore c" \
+    "ci i" \
+    "docs d" \
+    "feat f" \
+    "fix x" \
+    "merge m" \
+    "perf p" \
+    "refactor r" \
+    "revert v" \
+    "style s" \
+    "test t"
+
+printf "%s\n" $conventional_commit_types_to_abbreviations | while read -l type key
+    set --local key_uppercased (string upper $key)
+    _git_abbr gcm$key_uppercased --set-cursor git commit --message "'$type: %'"
+    _git_abbr gcm$key_uppercased"!" --set-cursor git commit --message "'$type!: %' # Only use this for BREAKING CHANGES like breaking backwards compatibility!"
+
+    # NOTE:use lowercase for the type with scope, to encourage using commit scopes more often
+    # to create a more structured commit history
+    _git_abbr gcm$key --set-cursor git commit --message "'$type(%): '"
+    _git_abbr gcm$key"!" --set-cursor git commit --message "'$type(%)!: ' # Only use this for BREAKING CHANGES like breaking backwards compatibility!"
+end
+
+
+# https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with--to-draw-attention-to-breaking-change
 
 # git config
 _git_abbr gcfg git config

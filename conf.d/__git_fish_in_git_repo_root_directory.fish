@@ -27,10 +27,6 @@ function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
     # The user is in a git repo root directory, that is different from the last git repo root directory visited
     # in this fish session. Emit the event.
     emit in_git_repo_root_directory $PWD
-    # TODO: <kpbaks 2023-09-09 17:21:13> what is the purpose of the lines below?
-    # set --query __fish_user_data_dir; or set --universal __fish_user_data_dir ~/.local/share/fish
-    # set --local plugin_dir $__fish_user_data_dir/plugins
-    # test -d $plugin_dir; or mkdir -p $plugin_dir
 end
 
 function __git.fish::remind_me_to_create_remote --on-event in_git_repo_root_directory
@@ -49,8 +45,33 @@ end
 
 function __git.fish::auto_fetch --on-event in_git_repo_root_directory
     set --query GIT_FISH_AUTO_FETCH; or set --universal GIT_FISH_AUTO_FETCH 1
-    test GIT_FISH_AUTO_FETCH = 1; or return
+    test $GIT_FISH_AUTO_FETCH = 1; or return
     command git fetch --quiet
+    set --local head_hash (command git rev-parse HEAD)
+    set --local branch_name (command git rev-parse --abbrev-ref HEAD)
+    set --local upstream_hash (command git ls-remote origin --tags refs/heads/$branch_name | string match --regex --groups-only "^(\S+)")
+    if test $head_hash != $upstream_hash
+        # TODO: <kpbaks 2023-09-19 21:33:09> figure out if ahead or behind
+        __git.fish::echo "You are behind the remote branch. Run git pull to update!"
+        __git.fish::echo "or you are ahead of the remote branch. Run git push to update!"
+    end
+
+
+    # Figure out what commits that are in the remote branch but not in the local branch
+    # set --local commits (command git log --pretty=format:"%h" $head_hash..$upstream_hash)
+    # set --local num_commits (count $commits)
+    # if test $num_commits -eq 0
+    #     return
+    # end
+    #
+    # set --local yellow (set_color yellow)
+    # set --local green (set_color green)
+    # set --local reset (set_color normal)
+    # __git.fish::echo (printf "You are %s%d%s commits behind the remote branch. Run %sgit pull%s to update!" \
+    # $yellow $num_commits $reset $green $reset)
+
+
+
 end
 
 # when inside a git repo, check if the number of unstaged changes (i.e. lines)

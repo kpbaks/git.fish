@@ -1,4 +1,4 @@
-set -l C complete --command gi
+set --local C complete --command gi
 
 $C -s h -l help -d 'Show help information'
 $C -s m -l merge -d 'Merge with existing .gitignore file'

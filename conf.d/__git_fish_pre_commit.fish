@@ -15,11 +15,15 @@ if not command --query pre-commit
     return
 end
 
-set --global _git_fish_git_directories_visisted
+# Disable by default
+set --query GIT_FISH_CHECK_FOR_PRE_COMMIT_ENABLED; or set --universal GIT_FISH_CHECK_FOR_PRE_COMMIT_ENABLED 0
 
-function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
+function __git.fish::check_for_pre_commit --on-event in_git_repo_root_directory
+    test $GIT_FISH_CHECK_FOR_PRE_COMMIT_ENABLED -eq 1; or return
+    set --query __git_fish_git_directories_visisted
+    or set --global __git_fish_git_directories_visisted
     # Do not want to spam the user with the same message over and over again in the same shell session
-    contains -- $PWD $_git_fish_git_directories_visisted; and return
+    contains -- $PWD $__git_fish_git_directories_visisted; and return
 
     # used to highlight the .pre-commit-config.yaml file when it is printed
     set --local dot_pre_commit_config_yaml (set_color --bold)".pre-commit-config.yaml"(set_color normal)
@@ -68,7 +72,7 @@ function _git_fish_check_for_pre_commit --on-event in_git_repo_root_directory
     # if not, add it to the list of visited directories
     # this is to prevent annoying the user by asking them again and again in
     # the same shell session.
-    if not contains -- $PWD $_git_fish_git_directories_visisted
-        set --append _git_fish_git_directories_visisted $PWD
+    if not contains -- $PWD $__git_fish_git_directories_visisted
+        set --append __git_fish_git_directories_visisted $PWD
     end
 end

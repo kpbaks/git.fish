@@ -10,13 +10,22 @@ status is-interactive; or return
 # working directory is the root of a git repository is delegated
 # to this function only.
 
-set --global __git_fish_last_git_repo_root_directory ""
+function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
+    # FIXME: <kpbaks 2023-09-20 18:37:03> improve this function
+    test -d .git; or return # If the current directory is not a git repo, do nothing
 
-function _in_git_repo_root_directory --on-variable PWD
-    test -d .git; or return
-    test $PWD = $__git_fish_last_git_repo_root_directory; or return
-    set --global __git_fish_last_git_repo_root_directory $PWD
+    set --query __git_fish_last_git_repo_root_directory
+    or set --global __git_fish_last_git_repo_root_directory ""
 
+    # Do not want to emit the event if the user has just changed to a subdirectory, and then back to the root directory
+    set --local been_here_recently 0
+    echo "PWD: $PWD, __git_fish_last_git_repo_root_directory: $__git_fish_last_git_repo_root_directory"
+    test $PWD = $__git_fish_last_git_repo_root_directory; or set been_here_recently 1
+    set __git_fish_last_git_repo_root_directory $PWD # Update the last git repo root directory after the check above
+    test $been_here_recently -eq 1; or return
+
+    # The user is in a git repo root directory, that is different from the last git repo root directory visited
+    # in this fish session. Emit the event.
     emit in_git_repo_root_directory $PWD
     # TODO: <kpbaks 2023-09-09 17:21:13> what is the purpose of the lines below?
     # set --query __fish_user_data_dir; or set --universal __fish_user_data_dir ~/.local/share/fish

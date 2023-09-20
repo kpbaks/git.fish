@@ -8,6 +8,7 @@ command --query fzf; and set --global GIT_FISH_FZF_EXISTS
 set --global GIT_FISH_ABBREVIAITONS
 set --global GIT_FISH_EXPANDED_ABBREVIAITONS
 
+# TODO: <kpbaks 2023-09-20 19:31:28> change function name
 function _git_abbr
     set --local abbr $argv[1]
     set --local expanded $argv[2..]
@@ -16,6 +17,7 @@ function _git_abbr
     set --append GIT_FISH_EXPANDED_ABBREVIAITONS "$expanded"
 end
 
+# TODO: <kpbaks 2023-09-20 19:31:28> change function name
 function git.fish.abbreviations
     # printf " - %s\n" $GIT_FISH_ABBREVIAITONS
     # echo $GIT_FISH_ABBREVIAITONS \
@@ -46,7 +48,6 @@ function git.fish.abbreviations
     set --local padding_length (math $length_of_longest_abbr - (string length $abbreviation_heading))
     set --local padding (string repeat --count $padding_length ' ')
 
-
     set --local git_color (set_color "#f44d27") # taken from git's logo
     set --local reset (set_color normal)
     # printf "there are %s%d%s abbreviations\n" $git_color (count $GIT_FISH_ABBREVIAITONS) $reset
@@ -56,7 +57,6 @@ function git.fish.abbreviations
     echo $hr
     printf "%s%s | %s\n" $abbreviation_heading $padding $expanded_heading
     echo $hr
-
 
     for i in (seq (count $GIT_FISH_ABBREVIAITONS))
         set --local abbr $GIT_FISH_ABBREVIAITONS[$i]
@@ -135,45 +135,43 @@ _git_abbr gco git checkout
 # git cherry-pick
 _git_abbr gcp git cherry-pick
 
-
 # git commit
 _git_abbr gcm git commit
 _git_abbr gcma git commit --amend
 # TODO: <kpbaks 2023-06-02 12:23:43> add a gmcm<> variant that adds all modified files and commits them
 # conventional commits
 # https://daily-dev-tips.com/posts/git-basics-conventional-commits/
-_git_abbr gcmb --set-cursor git commit --message "'build: %'"
-_git_abbr gcmc --set-cursor git commit --message "'chore: %'"
-_git_abbr gcmi --set-cursor git commit --message "'ci: %'"
-_git_abbr gcmd --set-cursor git commit --message "'docs: %'"
-_git_abbr gcmf --set-cursor git commit --message "'feat: %'"
-_git_abbr gcmx --set-cursor git commit --message "'fix: %'"
-_git_abbr gcmm --set-cursor git commit --message "'merge: %'"
-_git_abbr gcmp --set-cursor git commit --message "'perf: %'"
-_git_abbr gcmr --set-cursor git commit --message "'refactor: %'"
-_git_abbr gcmv --set-cursor git commit --message "'revert: %'"
-_git_abbr gcms --set-cursor git commit --message "'style: %'"
-_git_abbr gcmt --set-cursor git commit --message "'test: %'"
+_git_abbr gcmB --set-cursor git commit --message "'build: %'"
+_git_abbr gcmC --set-cursor git commit --message "'chore: %'"
+_git_abbr gcmI --set-cursor git commit --message "'ci: %'"
+_git_abbr gcmD --set-cursor git commit --message "'docs: %'"
+_git_abbr gcmF --set-cursor git commit --message "'feat: %'"
+_git_abbr gcmX --set-cursor git commit --message "'fix: %'"
+_git_abbr gcmM --set-cursor git commit --message "'merge: %'"
+_git_abbr gcmP --set-cursor git commit --message "'perf: %'"
+_git_abbr gcmR --set-cursor git commit --message "'refactor: %'"
+_git_abbr gcmV --set-cursor git commit --message "'revert: %'"
+_git_abbr gcmS --set-cursor git commit --message "'style: %'"
+_git_abbr gcmT --set-cursor git commit --message "'test: %'"
 
-_git_abbr gcmB --set-cursor git commit --message "'build(%): '"
-_git_abbr gcmC --set-cursor git commit --message "'chore(%): '"
-_git_abbr gcmI --set-cursor git commit --message "'ci(%): '"
-_git_abbr gcmD --set-cursor git commit --message "'docs(%): '"
-_git_abbr gcmF --set-cursor git commit --message "'feat(%): '"
-_git_abbr gcmX --set-cursor git commit --message "'fix(%): '"
-_git_abbr gcmM --set-cursor git commit --message "'merge(%): '"
-_git_abbr gcmP --set-cursor git commit --message "'perf(%): '"
-_git_abbr gcmR --set-cursor git commit --message "'refactor(%): '"
-_git_abbr gcmV --set-cursor git commit --message "'revert(%): '"
-_git_abbr gcmS --set-cursor git commit --message "'style(%): '"
-_git_abbr gcmT --set-cursor git commit --message "'test(%): '"
+_git_abbr gcmb --set-cursor git commit --message "'build(%): '"
+_git_abbr gcmc --set-cursor git commit --message "'chore(%): '"
+_git_abbr gcmi --set-cursor git commit --message "'ci(%): '"
+_git_abbr gcmd --set-cursor git commit --message "'docs(%): '"
+_git_abbr gcmf --set-cursor git commit --message "'feat(%): '"
+_git_abbr gcmx --set-cursor git commit --message "'fix(%): '"
+_git_abbr gcmm --set-cursor git commit --message "'merge(%): '"
+_git_abbr gcmp --set-cursor git commit --message "'perf(%): '"
+_git_abbr gcmr --set-cursor git commit --message "'refactor(%): '"
+_git_abbr gcmv --set-cursor git commit --message "'revert(%): '"
+_git_abbr gcms --set-cursor git commit --message "'style(%): '"
+_git_abbr gcmt --set-cursor git commit --message "'test(%): '"
 
 # git config
 _git_abbr gcfg git config
 _git_abbr gcfgl git config --list
 _git_abbr gcfgg git config --global
 _git_abbr gcfgl git config --local
-
 
 # git diff
 _git_abbr gd git diff
@@ -205,7 +203,6 @@ _git_abbr gfa --set-cursor "git fetch --all% # Fetch the latest changes from all
 _git_abbr gft --set-cursor "git fetch --tags% # Also fetch tags from the remote upstream repository"
 _git_abbr gfp --set-cursor "git fetch --prune% # Delete local references to remote branches that have been deleted upstream"
 
-
 # git grep
 _git_abbr gg git grep
 
@@ -235,7 +232,6 @@ end
 _git_abbr gm --set-cursor --function abbr_git_merge
 _git_abbr gma git merge --abort
 _git_abbr gmc git merge --continue
-
 
 # git mv
 _git_abbr gmv git mv
@@ -270,7 +266,6 @@ _git_abbr grbi git rebase --interactive
 # git reflog
 _git_abbr grl git reflog
 
-
 # git restore
 function abbr_git_restore
     # if there is only one modified file, append it to the expand command
@@ -287,7 +282,6 @@ _git_abbr gr --set-cursor --function abbr_git_restore
 
 # git rm
 _git_abbr grm git rm
-
 
 # git show
 _git_abbr gsh git show
@@ -322,7 +316,6 @@ _git_abbr gsma --set-cursor --function abbr_git_submodule_add
 _git_abbr gsms git submodule status
 _git_abbr gsml git submodule status
 _git_abbr gsmf git submodule foreach git
-
 
 # git switch
 function abbr_git_switch
@@ -363,11 +356,9 @@ function abbr_git_switch
                 | read --line branches
             echo -- "$cmd $branches[1]%"
     end
-
 end
 
 _git_abbr gsw --set-cursor --function abbr_git_switch
-
 
 # git worktree
 _git_abbr gwt git worktree
@@ -423,7 +414,6 @@ _git_abbr gacp --set-cursor "git add --update % && git status && sleep $sleep_du
 
 set --erase GIT_FISH_FZF_EXISTS
 
-
 # other git tools -------------------------------------------------------------
 
 # lazygit
@@ -432,9 +422,8 @@ _git_abbr lg lazygit
 # gitui
 _git_abbr gui gitui
 
-
 # _git_abbr gam 'git ls-files --modified | xargs git add && git status'
-_git_abbr wip "git ls-files --modified | xargs git add && git status && git commit -m 'wip, squash me'"
+_git_abbr wip "git ls-files --modified | xargs git add && git status && git commit --message 'wip, squash me'"
 
 # unstage a file
 _git_abbr gun --set-cursor git restore --staged %

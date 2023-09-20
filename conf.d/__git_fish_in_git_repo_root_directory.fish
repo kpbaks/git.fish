@@ -9,9 +9,7 @@ status is-interactive; or return
 # This way, the responsibility of checking whether the current
 # working directory is the root of a git repository is delegated
 # to this function only.
-
 function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
-    # FIXME: <kpbaks 2023-09-20 18:37:03> improve this function
     test -d .git; or return # If the current directory is not a git repo, do nothing
 
     set --query __git_fish_last_git_repo_root_directory
@@ -19,7 +17,6 @@ function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
 
     # Do not want to emit the event if the user has just changed to a subdirectory, and then back to the root directory
     set --local been_here_recently 0
-    echo "PWD: $PWD, __git_fish_last_git_repo_root_directory: $__git_fish_last_git_repo_root_directory"
     test $PWD = $__git_fish_last_git_repo_root_directory; or set been_here_recently 1
     set __git_fish_last_git_repo_root_directory $PWD # Update the last git repo root directory after the check above
     test $been_here_recently -eq 1; or return

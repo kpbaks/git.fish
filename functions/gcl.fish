@@ -11,7 +11,7 @@ function gcl --description "Print the output of `git config --list` in a pretty 
     if not argparse $options -- $argv
         printf "%serror:%s unknown flag given\n" $red $reset >&2
         eval (status function) --help
-        return 1
+        return 2
     end
 
     if set --query _flag_help
@@ -26,9 +26,8 @@ function gcl --description "Print the output of `git config --list` in a pretty 
     end
 
 
-    set --local default_param_color (set_color blue)
-    set --local important_param_color (set_color yellow)
-    set --local reset (set_color normal)
+    set --local default_param_color $blue
+    set --local important_param_color $yellow
     set --local bar "│"
     set --local output_separator " $bar "
     set --local params
@@ -101,17 +100,7 @@ function gcl --description "Print the output of `git config --list` in a pretty 
         set --local param_cell (printf "%s%s%s%s" $param_color $param $reset $padding_of_param)
         set --local separator_cell (printf "%s" $output_separator)
         set --local row_length (math "$(string length $param_cell) + $(string length $separator_cell) + $(string length $value)")
-        set --local ellipsis " ... "
-        set --local ellipsis_length (string length $ellipsis)
-        set --local free_space (math "$COLUMNS - $ellipsis_length")
 
-        if test $row_length -gt $free_space
-            # Ellipsize the value cell
-            # TODO: not entirely accurate, but good enough for now
-            set --local cutoff (math "$free_space - $(string length $param_cell) - $(string length $separator_cell)")
-            set value (string sub --start 1 --end $cutoff -- $value)
-            set value (printf "%s%s%s%s" $value (set_color --bold red) $ellipsis $reset)
-        end
         set --local value_cell (printf "%s%s%s" $value_color $value $reset)
 
         printf "%s%s%s\n" \

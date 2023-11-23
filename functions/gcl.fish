@@ -15,13 +15,19 @@ function gcl --description "Print the output of `git config --list` in a pretty 
     end
 
     if set --query _flag_help
-        printf "%sPrint the output of $(printf (echo "git config --list" | fish_indent --ansi))%s%s in a pretty format!\n" $bold $reset $bold $reset >&2
+        # Overall description of the command
+        printf "Show the output of $(printf (echo "git config --list" | fish_indent --ansi))%s in a pretty format!\n" $reset >&2
         printf "\n" >&2
+        # Usage
         printf "%sUsage:%s %s%s%s [options]\n" $bold $reset (set_color $fish_color_command) (status current-command) $reset >&2
         printf "\n" >&2
+        # Description of the options and flags
         printf "%sOptions:%s\n" $bold $reset >&2
         printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset >&2
         printf "\t%s-l%s, %s--local%s     Show the local git config instead of the global\n" $green $reset $green $reset >&2
+        printf "\n" >&2
+
+        __git.fish::help_footer
         return 0
     end
 

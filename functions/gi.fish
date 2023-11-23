@@ -3,8 +3,9 @@ function gi --description 'Get .gitignore file from https://www.toptal.com/devel
     # TODO: <kpbaks 2023-09-26 09:55:39> give files/directories as input and add them to .gitignore
     set --local options (fish_opt --short=h --long=help)
     set --append options (fish_opt --short=m --long=merge)
+    set --append options (fish_opt --short=l --long=list)
     if not argparse $options -- $argv
-        return 1
+        return 2
     end
 
     set --local argc (count $argv)
@@ -15,6 +16,14 @@ function gi --description 'Get .gitignore file from https://www.toptal.com/devel
     set --local yellow (set_color yellow)
     set --local cyan (set_color cyan)
     set --local bold (set_color --bold)
+
+    if set --query _flag_list
+        # The gitignore.io API treats the language "list" as a special case, where it returns a list of all supported languages/frameworks
+        # This way, we can reuse the same code for when we query the gitignore.io API for a specific language/framework
+        # It returns a comma separated list of languages/frameworks
+        gi list | string replace --regex --all "[ ,]" "\n"
+        return 0
+    end
 
     if set --query _flag_help; or test $argc -eq 0
         set -l option_color $green
@@ -59,6 +68,8 @@ function gi --description 'Get .gitignore file from https://www.toptal.com/devel
         return 1
     end
 
+
+
     # NOTE: <kpbaks 2023-09-08 19:28:44> the items in the query needs to be separated by commas
     set --local query (string trim $argv | string replace --regex --all " +" ,)
     set --local gitignore ($http_get_command $http_get_command_args https://www.toptal.com/developers/gitignore/api/$query)
@@ -74,7 +85,7 @@ function gi --description 'Get .gitignore file from https://www.toptal.com/devel
         # So if you type "pytho" it will suggest "python"
         printf "%shint:%s You probably misspelled a language/framework name\n" $cyan $reset >&2
         printf "      or the language/framework is not supported.\n" >&2
-        printf "      Try running %s%s to see a list of supported languages/frameworks\n" (printf (echo "gi list" | fish_indent --ansi)) $reset >&2
+        printf "      Try running %s%s to see a list of supported languages/frameworks\n" (printf (echo "gi --list" | fish_indent --ansi)) $reset >&2
 
         return 1
     end

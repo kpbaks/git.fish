@@ -1,5 +1,6 @@
 function gi --description 'Get .gitignore file from https://www.toptal.com/developers/gitignore/api'
     # https://docs.gitignore.io/
+    # TODO: <kpbaks 2023-09-26 09:55:39> give files/directories as input and add them to .gitignore
     set --local options (fish_opt --short=h --long=help)
     set --append options (fish_opt --short=m --long=merge)
     if not argparse $options -- $argv
@@ -57,11 +58,11 @@ Part of $(set_color cyan)git.fish$(set_color normal) at https://github.com/kpbak
         set --local d ━
         set --local hr (string repeat --count $n $d)
         printf "%serror:%s response from gitignore.io was\n" $red $reset >&2
-		echo $hr >&2
+        echo $hr >&2
         printf "%s\n" $gitignore >&2
-		echo $hr >&2
+        echo $hr >&2
         # TODO: <kpbaks 2023-09-08 19:41:14> Use a hamming distance algorithm, suggest the closest match
-		# So if you type "pytho" it will suggest "python"
+        # So if you type "pytho" it will suggest "python"
         printf "%shint:%s You probably misspelled a language/framework name\n" $cyan $reset >&2
         printf "      or the language/framework is not supported.\n" >&2
         printf "      Try running %s%s to see a list of supported languages/frameworks\n" (printf (echo "gi list" | fish_indent --ansi)) $reset >&2

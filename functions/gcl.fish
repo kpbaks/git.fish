@@ -1,22 +1,27 @@
-function gcl --description "Print the git config in a nice format"
+function gcl --description "Print the output of `git config --list` in a pretty format!"
+    set --local reset (set_color normal)
+    set --local red (set_color red)
+    set --local green (set_color green)
+    set --local blue (set_color blue)
+    set --local yellow (set_color yellow)
+    set --local bold (set_color --bold)
+
     set --local options (fish_opt --short h --long help)
     set --append options (fish_opt --short l --long local)
     if not argparse $options -- $argv
+        printf "%serror:%s unknown flag given\n" $red $reset >&2
+        eval (status function) --help
         return 1
     end
 
     if set --query _flag_help
-        set --local usage "$(set_color --bold)Print the git config in a nice format$(set_color normal)
-
-$(set_color yellow)Usage:$(set_color normal) $(set_color blue)$(status current-command)$(set_color normal) [options]
-
-$(set_color yellow)Options:$(set_color normal)
-	$(set_color green)-h$(set_color normal), $(set_color green)--help$(set_color normal)      Show this help message and exit
-	$(set_color green)-l$(set_color normal), $(set_color green)--local$(set_color normal)     Show the local git config
-
-Part of $(set_color cyan)git.fish$(set_color normal) at https://github.com/kpbs5/git.fish"
-
-        echo $usage
+        printf "%sPrint the output of $(printf (echo "git config --list" | fish_indent --ansi))%s%s in a pretty format!\n" $bold $reset $bold $reset >&2
+        printf "\n" >&2
+        printf "%sUsage:%s %s%s%s [options]\n" $bold $reset (set_color $fish_color_command) (status current-command) $reset >&2
+        printf "\n" >&2
+        printf "%sOptions:%s\n" $bold $reset >&2
+        printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset >&2
+        printf "\t%s-l%s, %s--local%s     Show the local git config instead of the global\n" $green $reset $green $reset >&2
         return 0
     end
 
@@ -41,23 +46,11 @@ Part of $(set_color cyan)git.fish$(set_color normal) at https://github.com/kpbs5
     for param in $params
         set --local length (string length $param)
         set character_length_of_longest_param (math "max $character_length_of_longest_param,$length")
-        # if test $length -gt $character_length_of_longest_param
-        #     set character_length_of_longest_param $length
-        # end
     end
     set --local character_length_of_longest_value 0
     for value in $values
         set --local length (string length $value)
         set character_length_of_longest_value (math "max $character_length_of_longest_value,$length")
-        # if test $length -gt $character_length_of_longest_value
-        #     set character_length_of_longest_value $length
-        # end
-    end
-
-    if set --query _flag_local
-        __git.fish::echo "local git config:"
-    else
-        __git.fish::echo "global git config:"
     end
 
     for i in (seq (count $params))

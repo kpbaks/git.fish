@@ -9,7 +9,6 @@ status is-interactive; or return
 # https://github.com/compilerla/conventional-pre-commit
 # --------------------------------------------------------------------------------------------------
 
-
 if not command --query pre-commit
     __git.fish::echo "pre-commit not installed. no hooks will be enabled."
     return

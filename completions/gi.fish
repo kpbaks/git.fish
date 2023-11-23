@@ -1,6 +1,6 @@
-set --local C complete --command gi
+set --local c complete --command gi
 
-$C -s h -l help -d 'Show help information'
-$C -s m -l merge -d 'Merge with existing .gitignore file'
+$c -s h -l help -d 'Show help information'
+$c -s m -l merge -d 'Merge with existing .gitignore file'
 
-$C -a '(gi list | string replace --regex --all "[ ,]" "\n")'
+$c -a '(gi list | string replace --regex --all "[ ,]" "\n")'

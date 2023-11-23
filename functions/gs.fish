@@ -1,4 +1,4 @@
-function gs
+function gs --description 'opinionated git status'
     set -l no_color (set_color normal)
     set -l green (set_color green)
     set -l red (set_color red)

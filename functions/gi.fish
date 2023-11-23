@@ -14,26 +14,35 @@ function gi --description 'Get .gitignore file from https://www.toptal.com/devel
     set --local green (set_color green)
     set --local yellow (set_color yellow)
     set --local cyan (set_color cyan)
+    set --local bold (set_color --bold)
 
     if set --query _flag_help; or test $argc -eq 0
-        set --local usage "$(set_color --bold)Download common .gitignore rules for various programming languages and frameworks from https://docs.gitignore.io/$(set_color normal)
-
-$(set_color yellow --underline)Usage:$(set_color normal) $(set_color blue)$(status current-command)$(set_color normal) [options] LANG [LANG...]
-
-$(set_color yellow --underline)Arguments:$(set_color normal)
-$(set_color green)LANG$(set_color normal)    Programming language or framework to download .gitignore rules for. Multiple languages can be specified.
-
-$(set_color yellow --underline)Options:$(set_color normal)
-$(set_color green)-h$(set_color normal), $(set_color green)--help$(set_color normal)      Show this help message and exit
-$(set_color green)-m$(set_color normal), $(set_color green)--merge$(set_color normal)     Merge with existing .gitignore file, avoiding duplicates
-
-$(set_color yellow --underline)Examples:$(set_color normal)
-$(set_color blue)$(status current-command)$(set_color normal) python > .gitignore
-$(set_color blue)$(status current-command)$(set_color normal) python flask > .gitignore
-
-Part of $(set_color cyan)git.fish$(set_color normal) at https://github.com/kpbaks/git.fish"
-
-        echo $usage
+        set -l option_color $green
+        set -l section_title_color $yellow
+        # Overall description of the command
+        printf "%sDownload common .gitignore rules for various programming languages and frameworks from %shttps://docs.gitignore.io/%s%s and merge them with your .gitignore%s\n" $bold (set_color --underline cyan) $reset $bold $reset >&2
+        printf "\n" >&2
+        # Usage
+        printf "%sUsage:%s %s%s%s [options] LANG [LANG...]\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset >&2
+        printf "\n" >&2
+        # Arguments
+        printf "%sArguments:%s\n" $section_title_color $reset >&2
+        printf "\t%sLANG%s    Programming language or framework to download .gitignore rules for.\n" $option_color $reset >&2
+        printf "\n" >&2
+        # Options
+        printf "%sOptions:%s\n" $section_title_color $reset >&2
+        printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset >&2
+        printf "\t%s-l%s, %s--list%s      List all supported languages/frameworks\n" $green $reset $green $reset >&2
+        printf "\t%s-m%s, %s--merge%s     Merge with existing .gitignore file, avoiding duplicates\n" $green $reset $green $reset >&2
+        printf "\n" >&2
+        # Examples
+        printf "%sExamples:%s\n" $section_title_color $reset >&2
+        printf "\t" >&2
+        echo "gi python > .gitignore" | fish_indent --ansi >&2
+        printf "\t" >&2
+        echo "gi python flask > .gitignore" | fish_indent --ansi >&2
+        printf "\n" >&2
+        __git.fish::help_footer
         return 0
     end
 

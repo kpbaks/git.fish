@@ -1,9 +1,14 @@
-function gi --description 'Get .gitignore file from https://www.toptal.com/developers/gitignore/api'
+function gign --description 'Get .gitignore file from https://www.toptal.com/developers/gitignore/api'
     # https://docs.gitignore.io/
     # TODO: <kpbaks 2023-09-26 09:55:39> give files/directories as input and add them to .gitignore
     set --local options (fish_opt --short=h --long=help)
-    set --append options (fish_opt --short=m --long=merge)
+    # TODO: implement
+    set --append options (fish_opt --short=a --long=add --required-val --multiple-vals)
     set --append options (fish_opt --short=l --long=list)
+    set --append options (fish_opt --short=m --long=merge)
+    # TODO: implement
+    set --append options (fish_opt --short=s --long=simplify)
+
     if not argparse $options -- $argv
         return 2
     end
@@ -41,15 +46,18 @@ function gi --description 'Get .gitignore file from https://www.toptal.com/devel
         # Options
         printf "%sOptions:%s\n" $section_title_color $reset >&2
         printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset >&2
+        # printf "\t%s-a%s, %s--add%s       Add the rules to your .gitignore file\n" $green $reset $green $reset >&2
         printf "\t%s-l%s, %s--list%s      List all supported languages/frameworks\n" $green $reset $green $reset >&2
+        # TODO: only show if .gitignore exists
         printf "\t%s-m%s, %s--merge%s     Merge with existing .gitignore file, avoiding duplicates\n" $green $reset $green $reset >&2
+        # printf "\t%s-s%s, %s--simplify%s  Simplify your .gitigore by removing reduntant rules\n" $green $reset $green $reset >&2
         printf "\n" >&2
         # Examples
         printf "%sExamples:%s\n" $section_title_color $reset >&2
         printf "\t" >&2
-        echo "gi python > .gitignore" | fish_indent --ansi >&2
+        printf "%s python > .gitignore" (status current-command) | fish_indent --ansi >&2
         printf "\t" >&2
-        echo "gi python flask > .gitignore" | fish_indent --ansi >&2
+        printf "%s python flask > .gitignore" (status current-command) | fish_indent --ansi >&2
         printf "\n" >&2
         __git.fish::help_footer
         return 0
@@ -67,8 +75,6 @@ function gi --description 'Get .gitignore file from https://www.toptal.com/devel
         printf "%sPlease install curl or wget to run this command%s" $red $reset >&2
         return 1
     end
-
-
 
     # NOTE: <kpbaks 2023-09-08 19:28:44> the items in the query needs to be separated by commas
     set --local query (string trim $argv | string replace --regex --all " +" ,)

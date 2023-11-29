@@ -1,5 +1,4 @@
 status --is-interactive; or return
-# command --query git; or return
 
 set --global __GIT_FISH_ABBREVIATIONS
 set --global __GIT_FISH_EXPANDED_ABBREVIAITONS
@@ -291,8 +290,8 @@ function abbr_git_switch
         return
     end
     # Check how many branches there are
-    set --local branches_count (command git branch | count)
-    switch $branches_count
+    set --local num_branches (command git branch | count)
+    switch $num_branches
         case 1
             # If there is only one local branch, there is nothing to switch to.
             # So we just output the command. With a comment explaining that there is no other branch.
@@ -304,14 +303,14 @@ function abbr_git_switch
             # that you switch between often. E.g. master and develop.
             set --local other_branch (command git branch | string match --invert --regex '^\*' | string trim)
             set --append cmd $other_branch
-            echo "# You are in a git repo with only 2 branches.
-# My guess is that you want to switch to branch: $other_branch"
+            echo -- "$cmd $other_branch% # you only have 1 other local branch"
         case '*'
             # If there are more than 2 branches, then append the most recently used branch to the command
-            command git branch --sort=-committerdate \
+            set -l branches (command git branch --sort=-committerdate \
                 | string match --invert --regex '^\*' \
-                | read --line branches
-            echo -- "$cmd $branches[1]%"
+                | string trim
+            )
+            echo -- "$cmd $branches[1]% # you have $(count $branches) other local branches: [ $(string join ', ' $branches) ]"
     end
 end
 

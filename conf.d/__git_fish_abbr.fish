@@ -376,6 +376,8 @@ __git.fish::abbr wip "git ls-files --modified | xargs git add && git status && g
 # unstage a file
 __git.fish::abbr gun --set-cursor git restore --staged %
 
+__git.fish::abbr gt git tag
+
 # other git tools ---------------------------------------------------------------------------------
 
 # lazygit

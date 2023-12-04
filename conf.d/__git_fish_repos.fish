@@ -314,7 +314,6 @@ function repos --description "manage the list of visited repos"
         --bind=ctrl-f:page-down \
         --bind=ctrl-b:page-up \
         --reverse \
-        --color="border:#f44d27" \
         --preview 'git -c color.status=always -C {} status' \
         | read -l selected_repo
 

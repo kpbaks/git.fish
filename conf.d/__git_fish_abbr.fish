@@ -17,19 +17,15 @@ set --query GIT_FISH_GH_ABBR_ENABLE; or set --universal GIT_FISH_GH_ABBR_ENABLE 
 test $GIT_FISH_GH_ABBR_ENABLE = 1
 and command --query gh
 and begin
-    # set --local A abbr --add
-    set --local A __git.fish::abbr
-
-    $A ghs gh status
-
+    __git.fish::abbr ghs gh status
     # open the current repo in the browser
-    $A ghb gh browse
-
-    $A ghp gh pr list
-    $A ghr gh repo view --web
-    $A ghg gh gist list
-    $A ghi gh issue
-    $A ghil gh issue list
+    __git.fish::abbr ghb gh browse
+    __git.fish::abbr ghp gh pr list
+    __git.fish::abbr ghr gh repo view --web
+    __git.fish::abbr ghg gh gist list
+    __git.fish::abbr ghi gh issue
+    __git.fish::abbr ghil --set-curosr "gh issue list --state=open% # state can be [ open | close | all ]"
+    __git.fish::abbr ghilw gh issue list --web
 end
 # -------------------------------------------------------------------------------------------------
 
@@ -43,7 +39,12 @@ function abbr_git_add
     set --local addable_files (git ls-files --modified --others --deleted)
     # 2. if there is exactly one file, append it to the command
     if test (count $addable_files) -eq 1
-        set --append cmd $addable_files
+        if string match --quiet --regex "\s" -- "$addable_files"
+            # filepath contains spaces, so we wrap them in single qoutes such that the shell will treat the path as a single word
+            set --append cmd "'$addable_files'"
+        else
+            set --append cmd $addable_files
+        end
     end
 
     echo -- "$cmd % && git status"
@@ -112,6 +113,8 @@ set --local conventional_commit_types_to_abbreviations \
     "style s" \
     "test t"
 
+
+# TODO: create an emphemeral keybinding for tab that will remove the () and move the cursor to "feat: |"
 # https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with--to-draw-attention-to-breaking-change
 printf "%s\n" $conventional_commit_types_to_abbreviations | while read -l type key
     set --local key_uppercased (string upper $key)
@@ -123,6 +126,8 @@ printf "%s\n" $conventional_commit_types_to_abbreviations | while read -l type k
     __git.fish::abbr gcm$key --set-cursor git commit --message "'$type(%): '"
     __git.fish::abbr gcm$key"!" --set-cursor git commit --message "'$type(%)!: ' # Only use this for BREAKING CHANGES like breaking backwards compatibility!"
 end
+
+# TODO: make gcm{m,M}{,!} special such that it prepopulates the commit message with something like "merge: merge {{branch-merging-from}} -> {{branch-merging-into}}"
 
 # git config
 __git.fish::abbr gcfg git config
@@ -295,7 +300,7 @@ function abbr_git_switch
         case 1
             # If there is only one local branch, there is nothing to switch to.
             # So we just output the command. With a comment explaining that there is no other branch.
-            echo -- "$cmd % # There is no other local branch to switch to."
+            echo -- "$cmd --create % # There is no other local branch to switch to, but you can create one :D"
         case 2
             # if there are 2, then append the other branch name to the command
             # else output the command.

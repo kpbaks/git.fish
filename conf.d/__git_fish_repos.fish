@@ -303,7 +303,6 @@ function repos --description "manage the list of visited repos"
         --header-first \
         --scroll-off=5 \
         --color='marker:#00ff00' \
-        --color='border:#F80069' \
         --no-scrollbar \
         --color="gutter:-1" \
         --color="hl:#FFB600" \

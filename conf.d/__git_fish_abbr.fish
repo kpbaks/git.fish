@@ -24,7 +24,7 @@ and begin
     __git.fish::abbr ghr gh repo view --web
     __git.fish::abbr ghg gh gist list
     __git.fish::abbr ghi gh issue
-    __git.fish::abbr ghil --set-curosr "gh issue list --state=open% # state can be [ open | close | all ]"
+    __git.fish::abbr ghil --set-cursor "gh issue list --state=open% # state can be [ open | close | all ]"
     __git.fish::abbr ghilw gh issue list --web
 end
 # -------------------------------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 # ideas:
 # - create a separate cli in rust for this
 # --------------------------------------------------------------------------------------------------
-status is-interactive; or return
+status is-interactive; or return 0
 
 for cmd in fzf sqlite3
     if not command --query $cmd
@@ -20,7 +20,7 @@ end
 # This database will be used to store the last time a repo was visited
 set --query GIT_FISH_REPOS_DB; or set --universal GIT_FISH_REPOS_DB $__fish_user_data_dir/git.fish/repos.sqlite3
 
-mkdir -p (path dirname $GIT_FISH_REPOS_DB)
+command mkdir -p (path dirname $GIT_FISH_REPOS_DB)
 if not test -f $GIT_FISH_REPOS_DB
     set --local schema "
 		CREATE TABLE repos (
@@ -61,7 +61,8 @@ function __git.fish::repos::add_git_repo_to_db --argument-names dir
 	"
     command sqlite3 $GIT_FISH_REPOS_DB $query
 
-    set --local git_color (set_color "#f44d27") # taken from git's logo
+    # set --local git_color (set_color "#f44d27") # taken from git's logo
+    set -l git_color (set_color red)
     set --local reset (set_color normal)
 
     # if the repo has not been visited before, then print a message
@@ -82,8 +83,8 @@ end
 
 # Intended to be used by the other repos-<command> functions, to check if the database is up to date
 function __git.fish::repos::check
-    set --local git_color (set_color "#f44d27") # taken from git's logo
-    set --local reset (set_color normal)
+    # set --local git_color (set_color "#f44d27") # taken from git's logo
+    # set --local reset (set_color normal)
 
     set --local select_all_query "SELECT path FROM repos;"
     set --local paths (command sqlite3 $GIT_FISH_REPOS_DB $select_all_query)
@@ -112,7 +113,8 @@ end
 function __git.fish::repos::list --description "list all the git repos that have been visited"
     __git.fish::repos::check
 
-    set --local git_color (set_color "#f44d27") # taken from git's logo
+    # set --local git_color (set_color "#f44d27") # taken from git's logo
+    set -l git_color (set_color red)
     set --local reset (set_color normal)
 
     set --local github_icon ""
@@ -229,18 +231,20 @@ end
 
 # This function is the public interface to the repos functionality
 function repos --description "manage the list of visited repos"
-    set --local git_color (set_color "#f44d27") # taken from git's logo
+    # set --local git_color (set_color "#f44d27") # taken from git's logo
+    set -l git_color (set_color red)
     set --local normal (set_color normal)
-    set --local prefix (printf "%s[git.fish]%s" $git_color $normal)
 
-    set --local options (fish_opt --short h --long help)
+    set -l options h/help
     if not argparse $options -- $argv
-        return 1
+        eval (status function) --help
+        return 2
     end
 
     if set --query _flag_help
         # TODO: <kpbaks 2023-09-20 20:33:11> improve the help message
-        echo "usage: repos [init|clear|list|check]"
+        echo "usage: repos [init|clear|list|check]" >&2
+        __git.fish::help_footer >&2
         return 0
     end
 
@@ -262,7 +266,8 @@ function repos --description "manage the list of visited repos"
                 return 0
             case '*'
                 __git.fish::echo "Unknown command: $verb"
-                return 1
+                eval (status function) --help
+                return 2
         end
     end
 

@@ -1,5 +1,6 @@
-function gstat
-    set --local options (fish_opt --short=l --long=no-log --long-only)
+function goverview
+    set --local options (fish_opt --short=h --long=help)
+    set --append options (fish_opt --short=l --long=no-log --long-only)
     set --append options (fish_opt --short=n --long=no --long-only --required-val)
     set --append options (fish_opt --short=d --long=maxdepth --required-val)
 
@@ -14,9 +15,11 @@ function gstat
     set --local yellow (set_color yellow)
     set --local red (set_color red)
     set --local blue (set_color blue)
-    set --local git_color (set_color "#f44d27") # taken from git's logo
+    # set --local git_color (set_color "#f44d27") # taken from git's logo
+    set --local git_color (set_color red)
 
     if set --query _flag_help
+        # TODO: format in same style as the other commands
         set_color green --bold
         printf "gstat - find git repos in the subtree of the current directory\n"
         set_color normal
@@ -27,6 +30,7 @@ function gstat
         printf "  -s, --no-status  do not show the status\n"
         printf "  -b, --no-branch  do not show the branch\n"
         printf "  -h, --help       show this help\n"
+        __git.fish::help_footer
         return 0
     end
 

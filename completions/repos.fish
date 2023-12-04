@@ -1,4 +1,4 @@
-set --local c complete --command repos
+set --local c complete --command (status filename | path basename | string split --fields=1 .)
 $c -f # disable file completion for repos command
 
 set --local verbs clear list check init

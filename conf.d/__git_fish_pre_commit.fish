@@ -5,6 +5,9 @@ status is-interactive; or return
 # - Add a way to list all the abbreviations specific to git.fish
 # - Print if the hooks are installed or not, or enabled or not (outcommented)
 # - have an environment variable/file with the default hooks to install
+# - Detect what kind of project it is e.g. python,c++, rust etc
+#   and add some hooks specific for the language
+#   - python: https://github.com/astral-sh/ruff-pre-commit
 
 # https://github.com/compilerla/conventional-pre-commit
 # --------------------------------------------------------------------------------------------------

@@ -3,6 +3,8 @@ function git.fish --description "Interact with `kpbaks/git.fish` plugin"
     set --local red (set_color red)
     set --local green (set_color green)
     set --local yellow (set_color yellow)
+    set -l git_color (set_color red)
+    set --local reset (set_color normal)
 
     set --local argc (count $argv)
     if test $argc -eq 0
@@ -57,8 +59,7 @@ function git.fish --description "Interact with `kpbaks/git.fish` plugin"
             set --local padding_length (math $longest_abbr_length - (string length $abbreviation_heading))
             set --local padding (string repeat --count $padding_length ' ')
 
-            set --local git_color (set_color "#f44d27") # taken from git's logo
-            set --local reset (set_color normal)
+            # set --local git_color (set_color "#f44d27") # taken from git's logo
             # printf "there are %s%d%s abbreviations\n" $git_color (count $__GIT_FISH_ABBREVIATIONS) $reset
             __git.fish::echo (printf "there are %s%d%s abbreviations\n" $git_color (count $__GIT_FISH_ABBREVIATIONS) $reset)
 
@@ -87,6 +88,6 @@ function git.fish --description "Interact with `kpbaks/git.fish` plugin"
             #
         case "*"
             echo "Unknown verb: $verb"
-            return 1
+            return 2
     end
 end

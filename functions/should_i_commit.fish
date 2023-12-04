@@ -6,12 +6,14 @@ function should_i_commit --description 'Check if you should commit, based on the
     set --local red (set_color red)
     set --local green (set_color green)
     set --local reset (set_color normal)
-    set --local options (fish_opt --short=h --long=help)
-    set --local min_args 1
-    set --local max_args 1
-    if not argparse --min-args $min_args --max-args $max_args $options -- $argv
+    set -l options h/help
+    # set --local git_color (set_color "#f44d27") # taken from git's logo
+    set --local git_color (set_color red)
+    if not argparse --min-args 1 --max-args 1 $options -- $argv
+        # TODO: format in same style as the other commands
         printf "%sUsage: %s <threshold>%s\n" $red (status current-filename) $reset >&2
-        return 1
+        __git.fish::help_footer >&2
+        return 2
     end
 
     set --local threshold $argv[1]
@@ -51,7 +53,6 @@ function should_i_commit --description 'Check if you should commit, based on the
         return
     end
 
-    set --local git_color (set_color "#f44d27") # taken from git's logo
     set --local template "%s%s%s
 in this repo %s%s%s at %s%s%s
 %s%s%s lines have changed (insertions: %s%s%s, deletions: %s%s%s)

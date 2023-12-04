@@ -1,7 +1,7 @@
-status is-interactive; or return
+status is-interactive; or return 0
 
 set --query GIT_FISH_GIT_ALIAS_REMINDER_ENABLE; or set --universal GIT_FISH_GIT_ALIAS_REMINDER_ENABLE 0
-test $GIT_FISH_GIT_ALIAS_REMINDER_ENABLE -eq 1; or return
+test $GIT_FISH_GIT_ALIAS_REMINDER_ENABLE -eq 1; or return 0
 
 function __git.fish::remind_me_about_my_git_aliases --on-event fish_postexec
     # if the user typed a git command, remind them about their aliases

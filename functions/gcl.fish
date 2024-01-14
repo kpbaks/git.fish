@@ -85,7 +85,7 @@ function gcl --description "Print the output of `git config --list` in a pretty 
             # value is command invocation e.g. "!~/.local/bin/gh-2.29.0 auth git-credential"
             set value_color $reset
             # Wrap in `printf` to remove trailing newline
-            set value (printf (string sub --start 2 -- $value | fish_indent --ansi))
+            set value (printf (string sub --start=2 -- $value | fish_indent --ansi))
         end
 
         set -l param_color $default_param_color
@@ -102,7 +102,7 @@ function gcl --description "Print the output of `git config --list` in a pretty 
             set param_color (set_color green)
             if string match --quiet --regex "^!" -- $value
                 # values starting with ! are shell commands
-                set value todo
+                set value (printf (string sub --start=2 -- $value | fish_indent --ansi))
             else
                 # otherwise they are abbreviated git commands e.g. "co" -> "'git' checkout"
                 # Wrap in `printf` to remove trailing newline

@@ -6,16 +6,43 @@ function should_i_commit --description 'Check if you should commit, based on the
     set -l reset (set_color normal)
     set -l red (set_color red)
     set -l green (set_color green)
+    set -l yellow (set_color yellow)
+    set -l bold (set_color --bold)
     set -l git_color (set_color red)
+    # set -l git_color (set_color "#f44d27") # taken from git's logo
 
     set -l options h/help
-    # set -l git_color (set_color "#f44d27") # taken from git's logo
-    if not argparse --min-args 1 --max-args 1 $options -- $argv
+    if not argparse $options -- $argv
+        # printf "%serror%s: unknown flag given\n" $red $reset >&2
+        printf "\n" >&2
+        eval (status function) --help
+        return 2
+    end
+
+    if set --query _flag_help
         # TODO: format in same style as the other commands
-        printf "%sUsage: %s <threshold>%s\n" $red (status current-filename) $reset >&2
+        set -l option_color $green
+        set -l section_title_color $yellow
+
+        printf "%sCheck if you should commit, based on the number of lines changed in the repo since your last commit.%s\n" $bold $reset >&2
+        printf "\n" >&2
+        # Usage
+        printf "%sUSAGE:%s %s%s%s <threshold:int> [options]\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset >&2
+        printf "\n" >&2
+        # Description of the options and flags
+        printf "%sOPTIONS:%s\n" $section_title_color $reset >&2
+        printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $option_color $reset $option_color $reset >&2
+
         printf "\n" >&2
         __git.fish::help_footer >&2
 
+        return 0
+    end
+
+    if test (count $argv) -ne 1
+        printf "%serror%s: exactly one argument is required\n" $red $reset >&2
+        printf "\n" >&2
+        eval (status function) --help
         return 2
     end
 

@@ -1,11 +1,11 @@
-status --is-interactive; or return
+status --is-interactive; or return 0
 
 set --global __GIT_FISH_ABBREVIATIONS
 set --global __GIT_FISH_EXPANDED_ABBREVIAITONS
 
 function __git.fish::abbr
-    set --local abbr $argv[1]
-    set --local expanded $argv[2..]
+    set -l abbr $argv[1]
+    set -l expanded $argv[2..]
     abbr --add $argv
     set --append __GIT_FISH_ABBREVIATIONS "$abbr"
     set --append __GIT_FISH_EXPANDED_ABBREVIAITONS "$expanded"
@@ -30,7 +30,12 @@ end
 # -------------------------------------------------------------------------------------------------
 
 set --query GIT_FISH_GIT_ABBR_ENABLE; or set --universal GIT_FISH_GIT_ABBR_ENABLE 1
-test $GIT_FISH_GIT_ABBR_ENABLE = 1; or return
+test $GIT_FISH_GIT_ABBR_ENABLE = 1; or return 0
+
+# set -g __git_fish_git_status_command "git status --untracked-files=all --short --branch"
+# set -g __git_fish_git_status_command "git status"
+set -g __git_fish_git_status_command "gstatus"
+
 
 # git add
 function abbr_git_add
@@ -47,17 +52,17 @@ function abbr_git_add
         end
     end
 
-    echo -- "$cmd % && git status"
+    echo -- "$cmd % && $__git_fish_git_status_command"
 end
 
 __git.fish::abbr ga --set-cursor --function abbr_git_add
-__git.fish::abbr gaa 'git add --all && git status'
-__git.fish::abbr gam 'git ls-files --modified | xargs git add && git status'
+__git.fish::abbr gaa "git add --all && $__git_fish_git_status_command"
+__git.fish::abbr gam "git ls-files --modified | xargs git add && $__git_fish_git_status_command"
 
 function abbr_git_add_modified_and_commit_previous
     # 1. find the previous commit
-    set --local cmd "git ls-files --modified | xargs git add && git status"
-    set --local previous_commit (history search --max 1 --prefix "git commit --message")
+    set -l cmd "git ls-files --modified | xargs git add && $__git_fish_git_status_command"
+    set -l previous_commit (history search --max 1 --prefix "git commit --message")
     # 2. if there is a previous commit, add it to the command
     if test -n "$previous_commit"
         set --append cmd "&& $previous_commit"
@@ -68,12 +73,12 @@ end
 # This one is nice to have, if your pre-commit hook did not pass, as you would
 # have to add the, now, modified files again and then commit them with the same message.
 __git.fish::abbr gamcp --set-cursor --function abbr_git_add_modified_and_commit_previous
-__git.fish::abbr gau 'git ls-files --others | xargs git add && git status'
-__git.fish::abbr gad 'git ls-files --deleted | xargs git add && git status'
-__git.fish::abbr gap 'git add --patch && git status'
+__git.fish::abbr gau "git ls-files --others | xargs git add && $__git_fish_git_status_command"
+__git.fish::abbr gad "git ls-files --deleted | xargs git add && $__git_fish_git_status_command"
+__git.fish::abbr gap "git add --patch && $__git_fish_git_status_command"
 
 # git branch
-set --local git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]"
+set -l git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]"
 
 __git.fish::abbr gb git branch
 __git.fish::abbr gbl git branch --format="'$git_branch_format'" --sort=-committerdate
@@ -113,7 +118,7 @@ set --local conventional_commit_types_to_abbreviations \
     "style s" \
     "test t"
 
-
+# TODO: for the commit types that have a scope, populate the scope with the basename of the modified file, if only one file is modified
 # TODO: create an emphemeral keybinding for tab that will remove the () and move the cursor to "feat: |"
 # https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with--to-draw-attention-to-breaking-change
 printf "%s\n" $conventional_commit_types_to_abbreviations | while read -l type key
@@ -160,7 +165,7 @@ end
 __git.fish::abbr gdt --set-cursor --function abbr_git_difftool
 
 # git fetch
-__git.fish::abbr gf --set-cursor "git fetch % && git status"
+__git.fish::abbr gf --set-cursor "git fetch % && $__git_fish_git_status_command"
 __git.fish::abbr gfa --set-cursor "git fetch --all% # Fetch the latest changes from all remote upstream repositories"
 __git.fish::abbr gft --set-cursor "git fetch --tags% # Also fetch tags from the remote upstream repository"
 __git.fish::abbr gfp --set-cursor "git fetch --prune% # Delete local references to remote branches that have been deleted upstream"
@@ -210,7 +215,6 @@ function abbr_git_push
     set --local remote_branch (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if test $status -ne 0
         echo -- "git push --set-upstream origin $branch% # no remote branch found, creating one"
-        return
     else
         echo -- git push
     end
@@ -250,8 +254,9 @@ __git.fish::abbr gsh git show
 # git show-branch
 __git.fish::abbr gsb git show-branch
 
-# git status
-__git.fish::abbr gs git status --untracked-files=all
+# $__git_fish_git_status_command
+# __git.fish::abbr gs git status --untracked-files=all
+__git.fish::abbr gs $__git_fish_git_status_command
 __git.fish::abbr gss git status --short --branch --untracked-files=all
 
 # git stash
@@ -284,7 +289,7 @@ function abbr_git_switch
     # check that we are in a git repo
     if not command git rev-parse --is-inside-work-tree >/dev/null
         echo -- $cmd
-        return
+        return 0
     end
     # credit: https://stackoverflow.com/a/52222248/12323154
     if not command git symbolic-ref --quiet HEAD >/dev/null 2>/dev/null
@@ -292,7 +297,7 @@ function abbr_git_switch
         # so we can't switch to a branch, but we likely want to switch to the main branch
         # again. So we append '-' to the command.
         echo -- "$cmd -"
-        return
+        return 0
     end
     # Check how many branches there are
     set --local num_branches (command git branch | count)
@@ -368,14 +373,14 @@ __git.fish::abbr git_clone_at_depth --position command --regex "gc[0-9]*" --func
 
 set --local sleep_duration 1.5
 
-__git.fish::abbr gac --set-cursor "git add --update && git status && sleep $sleep_duration && git commit"
-__git.fish::abbr gacp --set-cursor "git add --update % && git status && sleep $sleep_duration && git commit && git push"
+__git.fish::abbr gac --set-cursor "git add --update && $__git_fish_git_status_command && sleep $sleep_duration && git commit"
+__git.fish::abbr gacp --set-cursor "git add --update % && $__git_fish_git_status_command && sleep $sleep_duration && git commit && git push"
 
 # command --query fzf; and set --global GIT_FISH_FZF_EXISTS
 # set --erase GIT_FISH_FZF_EXISTS
 
-# __git.fish::abbr gam 'git ls-files --modified | xargs git add && git status'
-__git.fish::abbr wip "git ls-files --modified | xargs git add && git status && git commit --message 'wip, squash me'"
+# __git.fish::abbr gam 'git ls-files --modified | xargs git add && $__git_fish_git_status_command'
+__git.fish::abbr wip "git ls-files --modified | xargs git add && $__git_fish_git_status_command && git commit --message 'wip, squash me'"
 
 # unstage a file
 __git.fish::abbr gun --set-cursor git restore --staged %

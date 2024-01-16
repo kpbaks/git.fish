@@ -83,8 +83,11 @@ as this is above your set threshold of %s%s%s!
     set -l milliseconds_since_last_commit (math "$seconds_since_last_commit * 1000")
 
     # format the time since last commit in a human readable way
-    # TODO: what if peopletime is not installed?
-    set -l time_since_last_commit (peopletime $milliseconds_since_last_commit | string trim)
+    if functions --query peopletime # kpbaks/peopletime.fish
+        set -f time_since_last_commit (peopletime $milliseconds_since_last_commit | string trim)
+    else
+        set -f time_since_last_commit (command git log -1 --format=%cr)
+    end
 
     printf $template \
         $git_color "GIT COMMIT ALERT!" $reset \

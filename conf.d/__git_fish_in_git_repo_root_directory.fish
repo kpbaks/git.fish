@@ -1,4 +1,4 @@
-status is-interactive; or return
+status is-interactive; or return 0
 
 # The purpose of this function is to emit an event whenever
 # the current working directory changes to a directory that
@@ -41,19 +41,25 @@ function __git.fish::remind_me_to_create_remote --on-event in_git_repo_root_dire
 end
 
 function __git.fish::auto_fetch --on-event in_git_repo_root_directory
-    set --query GIT_FISH_AUTO_FETCH; or set --universal GIT_FISH_AUTO_FETCH 1
-    test $GIT_FISH_AUTO_FETCH = 1; or return
+    set --query GIT_FISH_AUTO_FETCH; or set --global GIT_FISH_AUTO_FETCH 0
+    test $GIT_FISH_AUTO_FETCH -eq 1; or return 0
+
+    command git rev-parse @{upstream} >/dev/null 2>/dev/null; or return 0 # No remote branch detected
+
+    # Remote branch detected
     command git fetch --quiet
-    set --local head_hash (command git rev-parse HEAD)
-    set --local branch_name (command git rev-parse --abbrev-ref HEAD)
-    set --local upstream_hash (command git ls-remote origin --tags refs/heads/$branch_name | string match --regex --groups-only "^(\S+)")
+
+    set -l head_hash (command git rev-parse HEAD)
+    set -l branch_name (command git rev-parse --abbrev-ref HEAD)
+    set -l upstream_hash (command git ls-remote origin --tags refs/heads/$branch_name | string match --regex --groups-only "^(\S+)")
+
     if test $head_hash != $upstream_hash
         # TODO: <kpbaks 2023-09-19 21:33:09> figure out if ahead or behind
-        __git.fish::echo "You are behind the remote branch. Run git pull to update!"
-        __git.fish::echo "or you are ahead of the remote branch. Run git push to update!"
+        __git.fish::echo "You are behind the remote branch. Run $(printf "git pull" | fish_indent --ansi) to update!"
+        __git.fish::echo "or you are ahead of the remote branch. Run $(printf "git push" | fish_indent --ansi) to update!"
     end
 
-
+    # TODO: implement this
     # Figure out what commits that are in the remote branch but not in the local branch
     # set --local commits (command git log --pretty=format:"%h" $head_hash..$upstream_hash)
     # set --local num_commits (count $commits)

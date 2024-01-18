@@ -34,7 +34,7 @@ test $GIT_FISH_GIT_ABBR_ENABLE = 1; or return 0
 
 # set -g __git_fish_git_status_command "git status --untracked-files=all --short --branch"
 # set -g __git_fish_git_status_command "git status"
-set -g __git_fish_git_status_command "gstatus"
+set -g __git_fish_git_status_command gstatus
 
 
 # git add
@@ -99,6 +99,21 @@ __git.fish::abbr gcp git cherry-pick
 # git commit
 __git.fish::abbr gcm git commit
 __git.fish::abbr gcma git commit --amend
+function abbr_git_commit_skip_selected_pre_commit_hook
+    if test -f .pre-commit-config.yaml; and command --query yq; and command --query fzf
+        set -l hooks (string match --regex --groups-only -- "-\s+id: (\S+)" < .pre-commit-config.yaml)
+
+        # https://pre-commit.com/#temporarily-disabling-hooks
+        set -l fzf_opts --multi --height=~30%
+        set -l selected_hooks (printf "%s\n" $hooks | command fzf $fzf_opts)
+        if test (count $selected_hooks) -gt 0
+            printf "SKIP=%s " (string join "," -- $selected_hooks)
+        end
+    end
+
+    printf "git commit\n"
+end
+__git.fish::abbr sgcm --set-cursor --function abbr_git_commit_skip_selected_pre_commit_hook
 # TODO: <kpbaks 2023-06-02 12:23:43> add a gmcm<> variant that adds all modified files and commits them
 # conventional commits
 

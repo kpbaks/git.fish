@@ -49,8 +49,8 @@ function gstatus --description 'opinionated `git status`'
     end
     echo $hr
     begin
-        printf "%schanges to be committed:%s\n" $bold_green $reset
-        set -l changes_to_be_committed (command git diff --color=always --cached --stat HEAD | string trim --chars=" ")
+        printf "%schanges to be committed%s:\n" $bold_green $reset
+        set -l changes_to_be_committed (command git diff --color=always --staged --stat HEAD | string trim --chars=" ")
         for change in $changes_to_be_committed[..-2]
             echo $change | read --delimiter "|" file histogram_line
             set -l dirname (path dirname $file)
@@ -78,10 +78,10 @@ function gstatus --description 'opinionated `git status`'
         printf "%s" $indent
         printf "%s%d%s file%s changed" $blue $files_changed $reset (test $files_changed -eq 1; and echo ""; or echo "s")
         if test $insertions -gt 0
-            printf ", %s%d%s insertion%s(+)" $green $insertions $reset (test $insertions -eq 1; and echo ""; or echo "s")
+            printf ", %s%d%s insertion%s(%s+%s)" $green $insertions $reset (test $insertions -eq 1; and echo ""; or echo "s") $green $reset
         end
         if test $deletions -gt 0
-            printf ", %s%d%s deletion%s(-)" $red $deletions $reset (test $deletions -eq 1; and echo ""; or echo "s")
+            printf ", %s%d%s deletion%s(%s-%s)" $red $deletions $reset (test $deletions -eq 1; and echo ""; or echo "s") $red $reset
         end
         switch $number_of_lines_changed_in_repo_since_last_commit
             case 0
@@ -96,11 +96,14 @@ function gstatus --description 'opinionated `git status`'
     echo $hr
     begin
         # TODO: `git status` shows if a file is modified or deleted, how can we do that?
+        #  maybe use `git ls-files -t`
         printf "%schanges not staged%s for commit:\n" $bold_yellow $reset
         printf "  (use %s%s to update what will be committed)\n" (printf (echo "git add ..." | fish_indent --ansi)) $reset
         printf "  (use %s%s to discard changes in working directory)\n" (printf (echo "git restore ..." | fish_indent --ansi)) $reset
+        printf "  (use the abbreviation %sgam%s to add ALL %smodified%s files)\n" (set_color $fish_color_command) $reset $yellow $reset
+
         # TODO: why is histrogram not as spiky as when stdout is a tty?
-        set -l diffs (command git diff --stat --color=always HEAD | string trim --chars=" ")
+        set -l diffs (command git diff --stat --color=always | string trim --chars=" ")
         for diff in $diffs[..-2]
             echo $diff | read --delimiter "|" file histogram_line
             set -l dirname (path dirname $file)
@@ -111,6 +114,7 @@ function gstatus --description 'opinionated `git status`'
             end
         end
         printf "\n"
+        # TODO: this is no longer correct
         echo $diffs[-1] \
             | string match --regex --all --groups-only '(\d+)' \
             | read --line --local files_changed insertions deletions
@@ -128,10 +132,10 @@ function gstatus --description 'opinionated `git status`'
         printf "%s" $indent
         printf "%s%d%s file%s changed" $blue $files_changed $reset (test $files_changed -eq 1; and echo ""; or echo "s")
         if test $insertions -gt 0
-            printf ", %s%d%s insertion%s(+)" $green $insertions $reset (test $insertions -eq 1; and echo ""; or echo "s")
+            printf ", %s%d%s insertion%s(%s+%s)" $green $insertions $reset (test $insertions -eq 1; and echo ""; or echo "s") $green $reset
         end
         if test $deletions -gt 0
-            printf ", %s%d%s deletion%s(-)" $red $deletions $reset (test $deletions -eq 1; and echo ""; or echo "s")
+            printf ", %s%d%s deletion%s(%s-%s)" $red $deletions $reset (test $deletions -eq 1; and echo ""; or echo "s") $red $reset
         end
         switch $number_of_lines_changed_in_repo_since_last_commit
             case 0
@@ -147,8 +151,9 @@ function gstatus --description 'opinionated `git status`'
     begin
         printf "%suntracked%s files:\n" $bold_red $reset
         printf "  (use %s%s to include in what will be committed)\n" (printf (echo "git add ..." | fish_indent --ansi)) $reset
+        printf "  (use the abbreviation %sgau%s to add ALL %suntracked%s files)\n" (set_color $fish_color_command) $reset $red $reset
 
-        for f in (command git ls-files --others)
+        for f in (command git ls-files --others --exclude-standard)
             set -l dirname (path dirname $f)
             if test $dirname = "."
                 printf "%s%s%s%s\n" $indent $bold_red $f $reset

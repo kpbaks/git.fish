@@ -1,6 +1,9 @@
 # git.fish
 
-Collection of abbreviations and interactive fish-shell integration's I use to make `git` easier!
+
+
+
+Collection of abbreviations and interactive fish-shell integrations I use to make `git` easier!
 
 ## Requirements
 
@@ -31,7 +34,7 @@ fisher install kpbaks/git.fish
 
 #### `gcl`
 
-`gcl` short for `git config --list` lists all git config settings in a colored and formatted table. Without setting any options the users global config will be shown. If you only want the settings for the current git repository you can use `gcl [-l|--local]`
+`gcl` short for `git config --list` lists all git config settings in a colored and formatted table. Without setting any options the user's global config will be shown. If you only want the settings for the current git repository you can use `gcl [-l|--local]`
 
 ![gcl-output](https://github.com/kpbaks/git.fish/assets/57013304/7d466f54-b6a7-4ddd-9fa1-8d19ed91d1f8)
 
@@ -49,6 +52,8 @@ GIT_FISH_GH_ABBR_ENABLE
 GIT_FISH_GIT_ALIAS_REMINDER_ENABLE
 GIT_FISH_AUTO_FETCH
 GIT_FISH_REMIND_ME_TO_CREATE_REMOTE
+
+GIT_FISH_REMIND_ME_ABOUT_MY_GIT_ALIASES
 
 # set --query GIT_FISH_GITUI_KEYBIND_ENABLE; or set --universal GIT_FISH_GITUI_KEYBIND_ENABLE 0
 

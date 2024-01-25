@@ -24,7 +24,7 @@ and begin
     __git.fish::abbr ghr gh repo view --web
     __git.fish::abbr ghg gh gist list
     __git.fish::abbr ghi gh issue
-    __git.fish::abbr ghil --set-cursor "gh issue list --state=open% # state can be [ open | close | all ]"
+    __git.fish::abbr ghil --set-cursor "gh issue list --state=open% # state can be one of: open | closed | all"
     __git.fish::abbr ghilw gh issue list --web
 end
 # -------------------------------------------------------------------------------------------------
@@ -32,9 +32,10 @@ end
 set --query GIT_FISH_GIT_ABBR_ENABLE; or set --universal GIT_FISH_GIT_ABBR_ENABLE 1
 test $GIT_FISH_GIT_ABBR_ENABLE = 1; or return 0
 
-# set -g __git_fish_git_status_command "git status --untracked-files=all --short --branch"
-# set -g __git_fish_git_status_command "git status"
-set -g __git_fish_git_status_command gstatus
+set -g git_fish_git_status_command "git status --untracked-files=all --short --branch"
+# set -g git_fish_git_status_command "git status"
+# set -g git_fish_git_status_command gstatus
+
 
 
 # git add
@@ -52,16 +53,16 @@ function abbr_git_add
         end
     end
 
-    echo -- "$cmd % && $__git_fish_git_status_command"
+    echo -- "$cmd % && $git_fish_git_status_command"
 end
 
-__git.fish::abbr ga --set-cursor --function abbr_git_add
-__git.fish::abbr gaa "git add --all && $__git_fish_git_status_command"
-__git.fish::abbr gam "git ls-files --modified | xargs git add && $__git_fish_git_status_command"
+# __git.fish::abbr ga --set-cursor --function abbr_git_add
+__git.fish::abbr gaa "git add --all && $git_fish_git_status_command"
+__git.fish::abbr gam "git ls-files --modified | xargs git add && $git_fish_git_status_command"
 
 function abbr_git_add_modified_and_commit_previous
     # 1. find the previous commit
-    set -l cmd "git ls-files --modified | xargs git add && $__git_fish_git_status_command"
+    set -l cmd "git ls-files --modified | xargs git add && $git_fish_git_status_command"
     set -l previous_commit (history search --max 1 --prefix "git commit --message")
     # 2. if there is a previous commit, add it to the command
     if test -n "$previous_commit"
@@ -73,12 +74,13 @@ end
 # This one is nice to have, if your pre-commit hook did not pass, as you would
 # have to add the, now, modified files again and then commit them with the same message.
 __git.fish::abbr gamcp --set-cursor --function abbr_git_add_modified_and_commit_previous
-__git.fish::abbr gau "git ls-files --others | xargs git add && $__git_fish_git_status_command"
-__git.fish::abbr gad "git ls-files --deleted | xargs git add && $__git_fish_git_status_command"
-__git.fish::abbr gap "git add --patch && $__git_fish_git_status_command"
+__git.fish::abbr gau "git ls-files --others | xargs git add && $git_fish_git_status_command"
+__git.fish::abbr gad "git ls-files --deleted | xargs git add && $git_fish_git_status_command"
+__git.fish::abbr gap "git add --patch && $git_fish_git_status_command"
 
 # git branch
 set -l git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]"
+set -l git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:green)(%(committerdate:relative))%(color:reset) - [%(color:red)%(authorname)%(color:reset)] - %(contents:subject)"
 
 __git.fish::abbr gb git branch
 __git.fish::abbr gbl git branch --format="'$git_branch_format'" --sort=-committerdate
@@ -180,7 +182,7 @@ end
 __git.fish::abbr gdt --set-cursor --function abbr_git_difftool
 
 # git fetch
-__git.fish::abbr gf --set-cursor "git fetch % && $__git_fish_git_status_command"
+__git.fish::abbr gf --set-cursor "git fetch % && $git_fish_git_status_command"
 __git.fish::abbr gfa --set-cursor "git fetch --all% # Fetch the latest changes from all remote upstream repositories"
 __git.fish::abbr gft --set-cursor "git fetch --tags% # Also fetch tags from the remote upstream repository"
 __git.fish::abbr gfp --set-cursor "git fetch --prune% # Delete local references to remote branches that have been deleted upstream"
@@ -223,6 +225,7 @@ __git.fish::abbr pull git pull --progress
 # git push
 
 function abbr_git_push
+    # TODO: what if there are new tags not pushed?, then add `--tags`
     # check if the local branch has a remote branch of the same name
     # if not, run `git push --set-upstream origin <branch-name>`
     # if yes, run `git push`
@@ -269,9 +272,9 @@ __git.fish::abbr gsh git show
 # git show-branch
 __git.fish::abbr gsb git show-branch
 
-# $__git_fish_git_status_command
+# $git_fish_git_status_command
 # __git.fish::abbr gs git status --untracked-files=all
-__git.fish::abbr gs $__git_fish_git_status_command
+__git.fish::abbr gs $git_fish_git_status_command
 __git.fish::abbr gss git status --short --branch --untracked-files=all
 
 # git stash
@@ -388,14 +391,15 @@ __git.fish::abbr git_clone_at_depth --position command --regex "gc[0-9]*" --func
 
 set --local sleep_duration 1.5
 
-__git.fish::abbr gac --set-cursor "git add --update && $__git_fish_git_status_command && sleep $sleep_duration && git commit"
-__git.fish::abbr gacp --set-cursor "git add --update % && $__git_fish_git_status_command && sleep $sleep_duration && git commit && git push"
+__git.fish::abbr gac --set-cursor "git add --update && $git_fish_git_status_command && sleep $sleep_duration && git commit"
+__git.fish::abbr gacp --set-cursor "git add --update % && $git_fish_git_status_command && sleep $sleep_duration && git commit && git push"
+
 
 # command --query fzf; and set --global GIT_FISH_FZF_EXISTS
 # set --erase GIT_FISH_FZF_EXISTS
 
-# __git.fish::abbr gam 'git ls-files --modified | xargs git add && $__git_fish_git_status_command'
-__git.fish::abbr wip "git ls-files --modified | xargs git add && $__git_fish_git_status_command && git commit --message 'wip, squash me'"
+# __git.fish::abbr gam 'git ls-files --modified | xargs git add && $git_fish_git_status_command'
+__git.fish::abbr wip "git ls-files --modified | xargs git add && $git_fish_git_status_command && git commit --message 'wip, squash me'"
 
 # unstage a file
 __git.fish::abbr gun --set-cursor git restore --staged %

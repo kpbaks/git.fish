@@ -1,4 +1,4 @@
-function ga
+function ga -d "Wrapper around `git add`. Part of git.fish"
     set -l options h/help
     if not argparse $options -- $argv
         return 2
@@ -21,14 +21,15 @@ function ga
     # TODO: what if a file has contents that are both staged and modified?
 
     set -l fzf_preview "git diff --color=always {2}"
-    set -l git_color (set_color "#f44d27") # taken from git's logo
+    # set -l git_color (set_color "#f44d27") # taken from git's logo
 
     # TODO: improve colors
+    # TODO: change color of header
     set -l fzf_opts \
         --ansi \
         --multi \
         --border=none \
-        --height=80% \
+        --height=85% \
         --reverse \
         --cycle \
         --pointer='|>' \
@@ -39,9 +40,9 @@ function ga
         --header-first \
         --scroll-off=5 \
         --color='marker:#00ff00' \
-        --color="header:#$fish_color_command" \
-        --color="info:#$fish_color_keyword" \
-        --color="prompt:#$fish_color_autosuggestion" \
+        # --color="header:#$fish_color_command" \
+        # --color="info:#$fish_color_keyword" \
+        # --color="prompt:#$fish_color_autosuggestion" \
         --color='border:#f44d27' \
         --color="gutter:-1" \
         --color="hl:#FFB600" \
@@ -56,7 +57,7 @@ function ga
         --border-label=" $(string upper "git.fish") " \
         --header="Select which modified files to stage. <ctrl-a> to select all. <ctrl-z> to deselect all" \
         --preview="$fzf_preview"
-        # --header-lines=3 \
+    # --header-lines=3 \
 
     set -l reset (set_color normal)
     set -l blue (set_color blue)

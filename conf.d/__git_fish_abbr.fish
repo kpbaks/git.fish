@@ -32,7 +32,8 @@ end
 set --query GIT_FISH_GIT_ABBR_ENABLE; or set --universal GIT_FISH_GIT_ABBR_ENABLE 1
 test $GIT_FISH_GIT_ABBR_ENABLE = 1; or return 0
 
-set -g git_fish_git_status_command "git status --untracked-files=all --short --branch"
+set --query git_fish_git_status_command
+or set -g git_fish_git_status_command "git status --untracked-files=all --short --branch"
 # set -g git_fish_git_status_command "git status"
 # set -g git_fish_git_status_command gstatus
 

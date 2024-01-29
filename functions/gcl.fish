@@ -7,6 +7,7 @@ function gcl --description "Print the output of `git config --list` in a pretty 
     set -l bold (set_color --bold)
 
     set -l options h/help l/local
+
     if not argparse $options -- $argv
         printf "%serror%s: unknown flag given\n" $red $reset >&2
         eval (status function) --help
@@ -20,10 +21,10 @@ function gcl --description "Print the output of `git config --list` in a pretty 
         printf "%sShow the output of $(printf (echo "git config --list" | fish_indent --ansi))%s%s in a pretty format!%s\n" $bold $reset $bold $reset >&2
         printf "\n" >&2
         # Usage
-        printf "%sUsage:%s %s%s%s [options]\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset >&2
+        printf "%sUSAGE:%s %s%s%s [options]\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset >&2
         printf "\n" >&2
         # Description of the options and flags
-        printf "%sOptions:%s\n" $section_title_color $reset >&2
+        printf "%sOPTIONS:%s\n" $section_title_color $reset >&2
         printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset >&2
         printf "\t%s-l%s, %s--local%s     Show the local git config instead of the global\n" $green $reset $green $reset >&2
         printf "\n" >&2
@@ -32,6 +33,10 @@ function gcl --description "Print the output of `git config --list` in a pretty 
         return 0
     end
 
+    if command git rev-parse --is-inside-work-tree >/dev/null 2>&1; and not set --query _flag_local
+        # Default to also show local in inside a git repository
+        set -f _flag_local
+    end
 
     set -l default_param_color $blue
     set -l important_param_color $yellow

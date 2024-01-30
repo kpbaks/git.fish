@@ -345,6 +345,8 @@ end
 
 __git.fish::abbr gsw --set-cursor --function abbr_git_switch
 
+__git.fish::abbr gswc git switch --create
+
 # git worktree
 __git.fish::abbr gwt git worktree
 # it is best practive to create a worktree in a directory that is a sibling of the current directory
@@ -361,11 +363,9 @@ __git.fish::abbr gwtrm git worktree remove
 __git.fish::abbr gwtrmf git worktree remove --force
 
 function abbr_git_clone
-    set --local args --recurse-submodules
-    set --local postfix_args
-    set --local clipboard (fish_clipboard_paste)
-    # if clipboard is a git url
-    # TODO: also handle url of the form https://github.com/<user>/<repo>
+    set -l args --recurse-submodules
+    set -l postfix_args
+    set -l clipboard (fish_clipboard_paste)
 
     # You ctrl+l && ctrl+c a git url
     if string match --quiet --regex "^(https?|git)://.*\.git\$" -- "$clipboard"
@@ -375,17 +375,21 @@ function abbr_git_clone
         set --append postfix_args (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
     else if string match --quiet --regex "^git clone .*\.git\$" -- "$clipboard"
         # example: git clone https://github.com/nushell/nushell.git
-        set --local url (string replace --all --regex '^git clone (.*)\.git$' '$1' $clipboard)
-        set --local reponame (string split --max=1 --right / $url)[-1]
+        set -l url (string replace --all --regex '^git clone (.*)\.git$' '$1' $clipboard)
+        set -l reponame (string split --max=1 --right / $url)[-1]
         set --append postfix_args $url
         set --append postfix_args "&& cd $reponame"
+    else if string match --groups-only --regex "^\s*git clone https://git(hub|lab)\.com/([^/]+)/(.+)" $clipboard | read --line _hub owner repository
+        # example: git clone https://github.com/bevyengine/bevy
+        set --append postfix_args $clipboard
+        set --append postfix_args "&& cd $repository"
     end
 
-    set --local depth (string replace --all --regex '[^0-9]' '' $argv[1])
+    set -l depth (string replace --all --regex '[^0-9]' '' $argv[1])
     if test -n $depth
         set --append args --depth=$depth
     end
-    echo -- git clone $args $postfix_args
+    echo git clone $args $postfix_args
 end
 
 __git.fish::abbr git_clone_at_depth --position command --regex "gc[0-9]*" --function abbr_git_clone

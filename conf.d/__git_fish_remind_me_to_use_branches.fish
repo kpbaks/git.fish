@@ -52,6 +52,12 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
     set -l lower_right_corner "┘"
     set -l downwards_tee "┬"
     set -l upwards_tee "┴"
+    # ╯ ╰ ╭ ╮ ─ │ ┬ ┴ ┼
+    # ┌ ┐ └ ┘ ─ │ ┬ ┴ ┼
+    # ┏ ┓ ┗ ┛ ─ │ ┬ ┴ ┼
+    # ┏ ┓ ┗ ┛ ━ ┃ ┳ ┻ ╋
+    # ┌ ┐ └ ┘ ━ ┃ ┳ ┻ ╋
+
 
     set -l output_separator $bar
 
@@ -68,6 +74,8 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
         set --append authors (string trim -- $author)
     end
 
+    set -l author_colors cyan red blue green yellow magenta
+    set -l unique_authors
 
     set -l longest_branch ""
     set -l length_of_longest_branch 0
@@ -131,6 +139,7 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
         return 0
     end
 
+    # TODO: print this less cluttered
     __git.fish::echo "The following $(set_color --italics)local$(set_color normal) branches exist ($(set_color --italics)the $(set_color yellow)*$(set_color normal)$(set_color --italics) indicates the branch you are on$(set_color normal)):"
 
     # Only what to print the top border if there are multiple branches
@@ -170,14 +179,30 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
 
         set -l branch_color $reset
         set -l committerdate_color $blue
-        set -l author_color $red
+
+        begin
+            # Determine the color to use for the author
+            set -l new_author_not_seen_before 1
+            for unique_author in $unique_authors
+                if test $author = $unique_author
+                    set new_author_not_seen_before 0
+                    break
+                end
+            end
+
+            if test $new_author_not_seen_before -eq 1
+                set --append unique_authors $author
+            end
+
+            set -l author_color_index (contains --index -- $author $unique_authors)
+            set -f author_color (set_color $author_colors[(math "$author_color_index % $(count $author_colors)")])
+        end
 
         if string match --regex --quiet "^\* $current_branch\$" $branch
             set branch_color (set_color bryellow --bold)
-            # set committerdate_color (set_color brblue --bold)
-            # set author_color (set_color brred --bold)
         end
 
+        # FIX: do not merge the padding into the variables
         set -l branch "$branch$branch_padding"
         set -l content "$content$content_padding"
         set -l committerdate "$committerdate$committerdate_padding"

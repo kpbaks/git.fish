@@ -41,8 +41,6 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
     set -l red (set_color red)
     set -l brred (set_color brred)
 
-
-
     set -l field_delimiter '#'
     # set -l bar "┃"
     set -l bar "│"
@@ -157,6 +155,7 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
         printf "\n"
     end
 
+
     # Print the columns of the table
     for i in (seq (count $authors))
         set -l branch $branches[$i]
@@ -169,18 +168,14 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
         set -l committerdate_padding (string repeat --count (math "$length_of_longest_committerdate - $(string length $committerdate)") " ")
         set -l author_padding (string repeat --count (math "$length_of_longest_author - $(string length $author)") " ")
 
-        # TODO: <kpbaks 2023-06-10 15:18:27> move the definition of the colors to the top of the file
-        # so colors can be easily changed.
-        set -l branch_color $yellow
+        set -l branch_color $reset
         set -l committerdate_color $blue
         set -l author_color $red
 
-        # Use the bright colors for the branch you are on
-        # to make it stand out
-        if test $branch = $current_branch
+        if string match --regex --quiet "^\* $current_branch\$" $branch
             set branch_color (set_color bryellow --bold)
-            set committerdate_color (set_color brblue --bold)
-            set author_color (set_color brred --bold)
+            # set committerdate_color (set_color brblue --bold)
+            # set author_color (set_color brred --bold)
         end
 
         set -l branch "$branch$branch_padding"

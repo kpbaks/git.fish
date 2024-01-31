@@ -12,7 +12,7 @@ status is-interactive; or return 0
 for cmd in fzf sqlite3
     if not command --query $cmd
         __git.fish::echo "$cmd not found, $(set_color $fish_color_command)repos$(set_color normal) function will not be available"
-        return
+        return 0
     end
 end
 
@@ -22,7 +22,7 @@ set --query GIT_FISH_REPOS_DB; or set --universal GIT_FISH_REPOS_DB $__fish_user
 
 command mkdir -p (path dirname $GIT_FISH_REPOS_DB)
 if not test -f $GIT_FISH_REPOS_DB
-    set --local schema "
+    set -l schema "
 		CREATE TABLE repos (
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			path TEXT UNIQUE NOT NULL,
@@ -37,7 +37,7 @@ end
 function __git.fish::repos::add_git_repo_to_db --argument-names dir
     if not argparse --min-args 1 --max-args 1 -- $argv
         __git.fish::echo "usage: $(status function) <path>"
-        return 1
+        return 2
     end
 
     if not test -d $dir
@@ -50,30 +50,31 @@ function __git.fish::repos::add_git_repo_to_db --argument-names dir
         return 1
     end
 
-    set --local now (date +%s)
+    set -l now (date +%s)
 
     # query the database to see if the repo has been visited before
     # if it has, then update the timestamp, and increment the number of times visited
     # if it hasn't, then add it to the database
-    set --local query "
+    set -l query "
 		INSERT INTO repos (path, timestamp) VALUES ('$dir', $now)
 		ON CONFLICT(path) DO UPDATE SET timestamp=$now, number_of_times_visited=number_of_times_visited+1;
 	"
     command sqlite3 $GIT_FISH_REPOS_DB $query
 
-    # set --local git_color (set_color "#f44d27") # taken from git's logo
+    # set -l git_color (set_color "#f44d27") # taken from git's logo
     set -l git_color (set_color red)
-    set --local reset (set_color normal)
+    set -l reset (set_color normal)
 
     # if the repo has not been visited before, then print a message
-    set --local number_of_times_visited (command sqlite3 $GIT_FISH_REPOS_DB "SELECT number_of_times_visited FROM repos WHERE path='$dir';")
-    test $number_of_times_visited -eq 1; or return
+    set -l number_of_times_visited (command sqlite3 $GIT_FISH_REPOS_DB "SELECT number_of_times_visited FROM repos WHERE path='$dir';")
+    test $number_of_times_visited -eq 1; or return 0
 
-    set --local total_number_of_repos_visited (command sqlite3 $GIT_FISH_REPOS_DB "SELECT COUNT(*) FROM repos;")
-    set --local repo_dir (string replace "$HOME" "~" $dir)
-    __git.fish::echo (printf "added (%s%s%s) to list of visited repos, total: %s%d%s\n" \
+    set -l total_number_of_repos_visited (command sqlite3 $GIT_FISH_REPOS_DB "SELECT COUNT(*) FROM repos;")
+    set -l repo_dir (string replace "$HOME" "~" $dir)
+    __git.fish::echo (printf "added (%s%s%s) to list of visited repos, total: %s%d%s (use %srepos%s to interact with them)\n" \
 			$git_color $repo_dir $reset \
-			$git_color $total_number_of_repos_visited $reset)
+			$git_color $total_number_of_repos_visited $reset) \
+        (set_color $fish_color_command) $reset
 end
 
 # Every time a directory with a .git directory is entered, store it in a universal variable
@@ -83,69 +84,62 @@ end
 
 # Intended to be used by the other repos-<command> functions, to check if the database is up to date
 function __git.fish::repos::check
-    # set --local git_color (set_color "#f44d27") # taken from git's logo
-    # set --local reset (set_color normal)
-
-    set --local select_all_query "SELECT path FROM repos;"
-    set --local paths (command sqlite3 $GIT_FISH_REPOS_DB $select_all_query)
+    set -l paths (command sqlite3 $GIT_FISH_REPOS_DB "SELECT path FROM repos;")
 
     # iterate over the list of paths
     # check if the path exists, if it does not then remove it from the database
-    set --local repos_removed 0
-    set --local repos_to_delete_from_db
+    set -l repos_to_delete_from_db
     for path in $paths
         if not test -d $path
             set --append repos_to_delete_from_db $path
         end
     end
 
-    # print how many repos were removed
-    set --local repos_deleted_count (count $repos_to_delete_from_db)
-    test $repos_deleted_count -eq 0; and return
-    set --local delete_query "DELETE FROM repos WHERE path IN ($(string join ',' $repos_to_delete_from_db));"
+    test (count $repos_to_delete_from_db) -eq 0; and return 0
+    # TODO: surround repos_to_delete_from_db in single quotes to avoid word splitting
+    set -l delete_query "DELETE FROM repos WHERE path IN ($(string join ',' $repos_to_delete_from_db));"
     echo $delete_query
-    return
+    return 0
     command sqlite3 $GIT_FISH_REPOS_DB $delete_query
-
-    __git.fish::echo (printf "Removed %s%d%s repos from list of visited repos" $git_color $repos_deleted_count $reset)
+    __git.fish::echo (printf "Removed %s%d%s repos from list of visited repos" $git_color (count $repos_to_delete_from_db) $reset)
 end
 
 function __git.fish::repos::list --description "list all the git repos that have been visited"
     __git.fish::repos::check
 
-    # set --local git_color (set_color "#f44d27") # taken from git's logo
+    # set -l git_color (set_color "#f44d27") # taken from git's logo
     set -l git_color (set_color red)
-    set --local reset (set_color normal)
+    set -l reset (set_color normal)
 
-    set --local github_icon ""
-    set --local gitlab_icon ""
-    set --local bitbucket_icon ""
-    set --local git_icon ""
+    set -l github_icon ""
+    set -l gitlab_icon ""
+    set -l bitbucket_icon ""
+    set -l git_icon ""
 
-    set --local select_all_query "SELECT * FROM repos;"
+    set -l select_all_query "SELECT * FROM repos;"
 
     # TODO: <kpbaks 2023-06-05 21:15:20> add --relative flag to print relative timestamps
     # use `path mtime --relative`
 
-    set --local paths
-    set --local timestamps
-    set --local number_of_times_visited_list
+    set -l paths
+    set -l timestamps
+    set -l number_of_times_visited_list
     command sqlite3 $GIT_FISH_REPOS_DB $select_all_query | while read -d "|" -l id path timestamp number_of_times_visited
         set --append paths $path
         set --append timestamps $timestamp
         set --append number_of_times_visited_list $number_of_times_visited
     end
 
-    set --local longest_path_length 0
+    set -l longest_path_length 0
     for path in $paths
         set longest_path_length (math "max $longest_path_length,$(string length $path)")
     end
 
 
-    set --local git_repos_visited_count (count $paths)
+    set -l git_repos_visited_count (count $paths)
     if test $git_repos_visited_count -eq 0
         __git.fish::echo "no repos have been visited"
-        return
+        return 0
     end
 
     # TODO: improve this output
@@ -158,18 +152,18 @@ function __git.fish::repos::list --description "list all the git repos that have
     printf "%s%d repo%s visited%s\n" $git_color $git_repos_visited_count (test $git_repos_visited_count -eq 1; and echo ""; or echo "s") $reset
     # 1 is added to the log10 of the count as the width will have to be
     # at least 1 more than the log10 of the count e.g. 12 repos will have 2 digits
-    set --local index_width (math "floor(log10($git_repos_visited_count)) + 1")
-    set --local count 0
+    set -l index_width (math "floor(log10($git_repos_visited_count)) + 1")
+    set -l count 0
     for repo in $paths
         set count (math $count + 1)
-        set --local remote_origin_url (git -C $repo config --get remote.origin.url)
-        set --local repo_length (string length $repo)
-        set --local padding_amount (math "$longest_path_length - $repo_length + 1")
+        set -l remote_origin_url (git -C $repo config --get remote.origin.url)
+        set -l repo_length (string length $repo)
+        set -l padding_amount (math "$longest_path_length - $repo_length + 1")
         # if test $padding_amount -eq 0
         #     set padding_amount 1
         # end
-        set --local padding (string repeat --count $padding_amount ' ')
-        set --local directory_styling --bold
+        set -l padding (string repeat --count $padding_amount ' ')
+        set -l directory_styling --bold
         # Highlight the repo if it is the current directory
         if test $repo = $PWD
             set directory_styling blue --italics
@@ -201,9 +195,9 @@ function __git.fish::repos::init --description "Initialize the repos database by
         return 1
     end
 
-    set --local found_git_repos_count 0
+    set -l found_git_repos_count 0
     find -type d -name .git -exec dirname {} \; | path resolve | while read -l path
-        set --local insert_query "INSERT INTO repos (path, timestamp, number_of_times_visited) VALUES ('$path', strftime('%s', 'now'), 0);"
+        set -l insert_query "INSERT INTO repos (path, timestamp, number_of_times_visited) VALUES ('$path', strftime('%s', 'now'), 0);"
         command sqlite3 $GIT_FISH_REPOS_DB $insert_query
         set found_git_repos_count (math $found_git_repos_count + 1)
         # TODO: <kpbaks 2023-09-20 20:28:46> highlight the path that they share as a prefix
@@ -217,7 +211,7 @@ function __git.fish::repos::clear --description "clear the list of visited repos
     # TODO: <kpbaks 2023-09-20 20:32:12> add a --select flag to select which repos to clear with fzf
     # TODO: <kpbaks 2023-09-20 20:32:37> or use $argv to select which repos to clear, and then
     # have completion for `repos clear` to show the list of repos, so it is easier to select
-    set --local number_of_repos_in_db (command sqlite3 $GIT_FISH_REPOS_DB "SELECT COUNT(*) FROM repos;")
+    set -l number_of_repos_in_db (command sqlite3 $GIT_FISH_REPOS_DB "SELECT COUNT(*) FROM repos;")
     command sqlite3 $GIT_FISH_REPOS_DB "DELETE FROM repos;"
     switch $number_of_repos_in_db
         case 0
@@ -231,10 +225,6 @@ end
 
 # This function is the public interface to the repos functionality
 function repos --description "manage the list of visited repos"
-    # set --local git_color (set_color "#f44d27") # taken from git's logo
-    set -l git_color (set_color red)
-    set --local normal (set_color normal)
-
     set -l options h/help
     if not argparse $options -- $argv
         eval (status function) --help
@@ -248,10 +238,8 @@ function repos --description "manage the list of visited repos"
         return 0
     end
 
-    set --local argc (count $argv)
-    if test $argc -eq 1
-        set --local verb $argv[1]
-        switch $verb
+    if test (count $argv) -eq 1
+        switch $argv[1]
             case clear
                 __git.fish::repos::clear
                 return 0
@@ -276,8 +264,8 @@ function repos --description "manage the list of visited repos"
 
     # TODO: <kpbaks 2023-09-20 20:33:37> add a flag to control the sorting of the repos, e.g. by timestamp, or by number of times visited
     # and if it is ascending or descending
-    set --local select_all_query "SELECT * FROM repos ORDER BY timestamp DESC;"
-    set --local repos (command sqlite3 $GIT_FISH_REPOS_DB $select_all_query)
+    set -l select_all_query "SELECT * FROM repos ORDER BY timestamp DESC;"
+    set -l repos (command sqlite3 $GIT_FISH_REPOS_DB $select_all_query)
     # if there are no repos, just return
     # this will prevent the fzf prompt from showing up
     if test (count $repos) -eq 0
@@ -285,21 +273,28 @@ function repos --description "manage the list of visited repos"
         return 1
     end
 
-    set --local valid_repos (command sqlite3 $GIT_FISH_REPOS_DB "select path from repos order by timestamp desc;")
+    set -l valid_repos (command sqlite3 $GIT_FISH_REPOS_DB "select path from repos order by timestamp desc;")
 
     # fzf delimits items with newlines, so we need to convert the array i.e. transpose it.
     # to be delimited by newlines
     # TODO: <kpbaks 2023-09-16 13:58:19> improve the visuals of the fzf prompt
     # see kpbaks/fuzzy-file.fish for inspiration
     # TODO: <kpbaks 2023-09-20 18:06:08> make the preview command configurable with a variable
-    # TODO: <kpbaks 2023-09-20 20:04:32> create keybind to open remote origin url in browser
-    printf "%s\n" $valid_repos \
-        | command fzf \
+    # TODO: <kpbaks 2023-09-20 20:04:32> create keybind to open remote origin url in browser ctrl+o
+    set -l reset (set_color normal)
+    set -l blue (set_color blue)
+
+    # printf "%s\n" $valid_repos \
+    for valid_repo in $valid_repos
+        set -l dirname (path dirname $valid_repo)
+        printf "%s%s%s/%s\n" $blue $dirname $reset (path basename $valid_repo)
+    end | command fzf \
         --prompt "$git_icon select the git repo to cd into: " \
         --border-label=" $(string upper "repos") " \
         --height 80% \
         --cycle \
         --no-mouse \
+        --ansi \
         --header-first \
         --scroll-off=5 \
         --color='marker:#00ff00' \
@@ -322,5 +317,5 @@ function repos --description "manage the list of visited repos"
     end
 
     __git.fish::echo "Changing directory to selected repo: $selected_repo"
-    cd $selected_repo
+    builtin cd $selected_repo
 end

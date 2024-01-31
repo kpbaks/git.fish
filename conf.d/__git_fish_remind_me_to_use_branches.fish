@@ -78,7 +78,7 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
     set -l unique_authors
 
     set -l longest_branch ""
-    set -l length_of_longest_branch 0
+    set -l length_of_longest_branch (string length branch)
     for branch in $branches
         if test (string length $branch) -gt (string length $longest_branch)
             set longest_branch $branch
@@ -86,7 +86,7 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
         end
     end
     set -l longest_content ""
-    set -l length_of_longest_content 0
+    set -l length_of_longest_content (string length commit-msg)
     for content in $contents
         if test (string length $content) -gt (string length $longest_content)
             set longest_content $content
@@ -94,7 +94,7 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
         end
     end
     set -l longest_committerdate ""
-    set -l length_of_longest_committerdate 0
+    set -l length_of_longest_committerdate (string length committerdate)
     for committerdate in $committerdates
         if test (string length $committerdate) -gt (string length $longest_committerdate)
             set longest_committerdate $committerdate
@@ -102,7 +102,7 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
         end
     end
     set -l longest_author ""
-    set -l length_of_longest_author 0
+    set -l length_of_longest_author (string length author)
     for author in $authors
         if test (string length $author) -gt (string length $longest_author)
             set longest_author $author
@@ -143,6 +143,9 @@ function __git.fish::reminders::use-branches --on-event in_git_repo_root_directo
     __git.fish::echo "The following $(set_color --italics)local$(set_color normal) branches exist ($(set_color --italics)the $(set_color yellow)*$(set_color normal)$(set_color --italics) indicates the branch you are on$(set_color normal)):"
 
     # Only what to print the top border if there are multiple branches
+    # TODO: print the top border like in nushell:
+    # "╭────name────┬─type─┬──size──┬───modified────╮"
+
     if test (count $branches) -ne 1
         printf "%s" $upper_left_corner
         if test $show_branch -eq 1

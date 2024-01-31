@@ -1,15 +1,13 @@
 function gign --description 'Get .gitignore file from https://www.toptal.com/developers/gitignore/api'
     # https://docs.gitignore.io/
+    set -l options h/help l/list m/merge s/simplify
     # TODO: <kpbaks 2023-09-26 09:55:39> give files/directories as input and add them to .gitignore
-    set --local options (fish_opt --short=h --long=help)
     # TODO: implement
     set --append options (fish_opt --short=a --long=add --required-val --multiple-vals)
-    set --append options (fish_opt --short=l --long=list)
-    set --append options (fish_opt --short=m --long=merge)
-    # TODO: implement
-    set --append options (fish_opt --short=s --long=simplify)
+    # TODO: implement --simplify
 
     if not argparse $options -- $argv
+        eval (status function) --help
         return 2
     end
 
@@ -26,7 +24,7 @@ function gign --description 'Get .gitignore file from https://www.toptal.com/dev
         # The gitignore.io API treats the language "list" as a special case, where it returns a list of all supported languages/frameworks
         # This way, we can reuse the same code for when we query the gitignore.io API for a specific language/framework
         # It returns a comma separated list of languages/frameworks
-        gi list | string replace --regex --all "[ ,]" "\n"
+        gign list | string replace --regex --all "[ ,]" "\n"
         return 0
     end
 
@@ -37,29 +35,31 @@ function gign --description 'Get .gitignore file from https://www.toptal.com/dev
         printf "%sDownload common .gitignore rules for various programming languages and frameworks from %shttps://docs.gitignore.io/%s%s and merge them with your .gitignore%s\n" $bold (set_color --underline cyan) $reset $bold $reset >&2
         printf "\n" >&2
         # Usage
-        printf "%sUsage:%s %s%s%s [options] LANG [LANG...]\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset >&2
+        printf "%sUSAGE:%s %s%s%s [options] LANG [LANG...]\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset >&2
         printf "\n" >&2
         # Arguments
-        printf "%sArguments:%s\n" $section_title_color $reset >&2
+        printf "%sARGUMENTS:%s\n" $section_title_color $reset >&2
         printf "\t%sLANG%s    Programming language or framework to download .gitignore rules for.\n" $option_color $reset >&2
         printf "\n" >&2
         # Options
-        printf "%sOptions:%s\n" $section_title_color $reset >&2
+        printf "%sOPTIONS:%s\n" $section_title_color $reset >&2
         printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset >&2
         # printf "\t%s-a%s, %s--add%s       Add the rules to your .gitignore file\n" $green $reset $green $reset >&2
         printf "\t%s-l%s, %s--list%s      List all supported languages/frameworks\n" $green $reset $green $reset >&2
-        # TODO: only show if .gitignore exists
-        printf "\t%s-m%s, %s--merge%s     Merge with existing .gitignore file, avoiding duplicates\n" $green $reset $green $reset >&2
-        # printf "\t%s-s%s, %s--simplify%s  Simplify your .gitigore by removing reduntant rules\n" $green $reset $green $reset >&2
+        if test -f .gitignore
+            printf "\t%s-m%s, %s--merge%s     Merge with existing .gitignore file, avoiding duplicates\n" $green $reset $green $reset >&2
+            # printf "\t%s-s%s, %s--simplify%s  Simplify your .gitigore by removing reduntant rules\n" $green $reset $green $reset >&2
+        end
         printf "\n" >&2
         # Examples
-        printf "%sExamples:%s\n" $section_title_color $reset >&2
+        printf "%sEXAMPLES:%s\n" $section_title_color $reset >&2
         printf "\t" >&2
         printf "%s python > .gitignore" (status current-command) | fish_indent --ansi >&2
         printf "\t" >&2
         printf "%s python flask > .gitignore" (status current-command) | fish_indent --ansi >&2
         printf "\n" >&2
         __git.fish::help_footer
+
         return 0
     end
 
@@ -76,7 +76,7 @@ function gign --description 'Get .gitignore file from https://www.toptal.com/dev
         return 1
     end
 
-    # NOTE: <kpbaks 2023-09-08 19:28:44> the items in the query needs to be separated by commas
+    # The items in the query needs to be separated by commas
     set --local query (string trim $argv | string replace --regex --all " +" ,)
     set --local gitignore ($http_get_command $http_get_command_args https://www.toptal.com/developers/gitignore/api/$query)
     if string match --quiet --regex "ERROR:" $gitignore
@@ -89,7 +89,7 @@ function gign --description 'Get .gitignore file from https://www.toptal.com/dev
         echo $hr >&2
         # TODO: <kpbaks 2023-09-08 19:41:14> Use a hamming distance algorithm, suggest the closest match
         # So if you type "pytho" it will suggest "python"
-        printf "%shint:%s You probably misspelled a language/framework name\n" $cyan $reset >&2
+        printf "%shint%s: You probably misspelled a language/framework name\n" $cyan $reset >&2
         printf "      or the language/framework is not supported.\n" >&2
         printf "      Try running %s%s to see a list of supported languages/frameworks\n" (printf (echo "gi --list" | fish_indent --ansi)) $reset >&2
 

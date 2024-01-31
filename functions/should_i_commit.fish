@@ -20,7 +20,6 @@ function should_i_commit --description 'Check if you should commit, based on the
     end
 
     if set --query _flag_help
-        # TODO: format in same style as the other commands
         set -l option_color $green
         set -l section_title_color $yellow
 

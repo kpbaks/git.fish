@@ -9,7 +9,7 @@ function gstatus --description 'opinionated `git status`'
     set -l bold_red (set_color --bold red)
     set -l bold_green (set_color --bold green)
 
-    set -l options h/help
+    set -l options h/help H/hint
     if not argparse $options -- $argv
         printf "\n" >&2
         eval (status function) --help
@@ -60,7 +60,9 @@ function gstatus --description 'opinionated `git status`'
                 printf "%s%s%s%s/%s%s%s %s %s\n" $indent $blue (path dirname $file) $reset $bold_green (path basename $file) $reset $bar $histogram_line
             end
         end
-        printf "\n"
+        if test (count $changes_to_be_committed) -gt 0
+            printf "\n"
+        end
         echo $changes_to_be_committed[-1] \
             | string match --regex --all --groups-only '(\d+)' \
             | read --line --local files_changed insertions deletions
@@ -98,9 +100,11 @@ function gstatus --description 'opinionated `git status`'
         # TODO: `git status` shows if a file is modified or deleted, how can we do that?
         #  maybe use `git ls-files -t`
         printf "%schanges not staged%s for commit:\n" $bold_yellow $reset
-        printf "  (use %s%s to update what will be committed)\n" (printf (echo "git add ..." | fish_indent --ansi)) $reset
-        printf "  (use %s%s to discard changes in working directory)\n" (printf (echo "git restore ..." | fish_indent --ansi)) $reset
-        printf "  (use the abbreviation %sgam%s to add ALL %smodified%s files)\n" (set_color $fish_color_command) $reset $yellow $reset
+        if set --query _flag_hint
+            printf "  (use %s%s to update what will be committed)\n" (printf (echo "git add ..." | fish_indent --ansi)) $reset
+            printf "  (use %s%s to discard changes in working directory)\n" (printf (echo "git restore ..." | fish_indent --ansi)) $reset
+            printf "  (use the abbreviation %sgam%s to add ALL %smodified%s files)\n" (set_color $fish_color_command) $reset $yellow $reset
+        end
 
         # TODO: why is histrogram not as spiky as when stdout is a tty?
         set -l diffs (command git diff --stat --color=always | string trim --chars=" ")
@@ -113,8 +117,10 @@ function gstatus --description 'opinionated `git status`'
                 printf "%s%s%s%s/%s%s%s %s %s\n" $indent $blue (path dirname $file) $reset $bold_yellow (path basename $file) $reset $bar $histogram_line
             end
         end
-        printf "\n"
-        # TODO: this is no longer correct
+        if test (count $diffs) -gt 0
+            printf "\n"
+        end
+
         echo $diffs[-1] \
             | string match --regex --all --groups-only '(\d+)' \
             | read --line --local files_changed insertions deletions
@@ -150,8 +156,10 @@ function gstatus --description 'opinionated `git status`'
     echo $hr
     begin
         printf "%suntracked%s files:\n" $bold_red $reset
-        printf "  (use %s%s to include in what will be committed)\n" (printf (echo "git add ..." | fish_indent --ansi)) $reset
-        printf "  (use the abbreviation %sgau%s to add ALL %suntracked%s files)\n" (set_color $fish_color_command) $reset $red $reset
+        if set --query _flag_hint
+            printf "  (use %s%s to include in what will be committed)\n" (printf (echo "git add ..." | fish_indent --ansi)) $reset
+            printf "  (use the abbreviation %sgau%s to add ALL %suntracked%s files)\n" (set_color $fish_color_command) $reset $red $reset
+        end
 
         for f in (command git ls-files --others --exclude-standard)
             set -l dirname (path dirname $f)

@@ -312,10 +312,10 @@ function repos --description "manage the list of visited repos"
         | read -l selected_repo
 
     if test -z $selected_repo
-        __git.fish::echo "No repo selected. Staying right here 😊"
+        # __git.fish::echo "No repo selected. Staying right here 😊"
         return 0
     end
 
-    __git.fish::echo "Changing directory to selected repo: $selected_repo"
+    # __git.fish::echo "Changing directory to selected repo: $selected_repo"
     builtin cd $selected_repo
 end

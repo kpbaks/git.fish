@@ -96,11 +96,10 @@ function __git.fish::repos::check
     end
 
     test (count $repos_to_delete_from_db) -eq 0; and return 0
-    # TODO: surround repos_to_delete_from_db in single quotes to avoid word splitting
-    set -l delete_query "DELETE FROM repos WHERE path IN ($(string join ',' $repos_to_delete_from_db));"
-    echo $delete_query
-    return 0
+    set -l delete_query "DELETE FROM repos WHERE path IN ($(string join ',' $(printf "'%s' " $repos_to_delete_from_db)));"
+    # echo $delete_query
     command sqlite3 $GIT_FISH_REPOS_DB $delete_query
+    # TODO: the count printed is wrong
     __git.fish::echo (printf "Removed %s%d%s repos from list of visited repos" $git_color (count $repos_to_delete_from_db) $reset)
 end
 

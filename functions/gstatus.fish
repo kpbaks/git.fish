@@ -1,6 +1,6 @@
 function gstatus --description 'opinionated `git status`'
 
-    set -l options h/help H/hint
+    set -l options h/help H/hint b/no-branches s/no-staged u/no-unstaged U/no-untracked
     if not argparse $options -- $argv
         printf "\n" >&2
         eval (status function) --help
@@ -41,15 +41,17 @@ function gstatus --description 'opinionated `git status`'
 
     set -l current_branch (command git rev-parse --abbrev-ref HEAD)
 
-    begin
-        printf "%sbranches%s:\n" $blue $reset
-        # TODO: indent
-        command git branch
-    end
-    begin
+    if not set --query _flag_no_branches
+        printf "%slocal branches%s:\n" $blue $reset
+        command git branch | while read branch
+            if test $branch = "* $current_branch"
+                printf "%s%s%s%s\n" $indent $green $branch $reset
+            else
+                printf "%s%s\n" $indent $branch
+            end
+        end
+
         printf "\n"
-        # TODO: are we up to date with the remote?
-        # TODO: is there a plummer command for this?
         set -l remote_branches (command git branch --remotes | string trim)
         # Check if origin/$current_branch exists
         if not contains -- origin/$current_branch $remote_branches
@@ -59,18 +61,29 @@ function gstatus --description 'opinionated `git status`'
             command git rev-list --left-right --count $current_branch...origin/$current_branch | read local remote
             if test $local -eq 0 -a $remote -eq 0
                 printf "%scurrent branch: %s%s%s is up to date with its remote counterpart: %s%s%s\n" $indent $green $current_branch $reset $red origin/$current_branch $reset
+            else if test $local -gt 0 -a $remote -gt 0
+                printf "%scurrent branch: %s%s%s is %s%d%s commit%s ahead and %s%d%s commit%s behind its remote counterpart: %s%s%s\n" $indent \
+                    $green $current_branch $reset \
+                    $green $local $reset (test $local -eq 1; and echo ""; or echo "s") \
+                    $red $remote $reset (test $remote -eq 1; and echo ""; or echo "s") \
+                    $red origin/$current_branch $reset
+            else if test $local -gt 0
+                printf "%scurrent branch: %s%s%s is %s%d%s commit%s ahead of its remote counterpart: %s%s%s\n" $indent \
+                    $green $current_branch $reset \
+                    $green $local $reset (test $local -eq 1; and echo ""; or echo "s") \
+                    $red origin/$current_branch $reset
             else
-                if test $local -gt 0
-                    printf "local %d\n" $local
-                end
-                if test $remote -gt 0
-                    printf "remote %d\n" $remote
-                end
+                printf "%scurrent branch: %s%s%s is %s%d%s commit%s behind its remote counterpart: %s%s%s\n" $indent \
+                    $green $current_branch $reset \
+                    $red $remote $reset (test $remote -eq 1; and echo ""; or echo "s") \
+                    $red origin/$current_branch $reset
             end
+            # TODO: maybe suggest to push/pull if $local/$remote exceeds some threshold e.g. 3?
         end
+        echo $hr
     end
-    echo $hr
-    begin
+
+    if not set --query _flag_no_staged
         printf "%schanges to be committed%s:\n" $bold_green $reset
         set -l changes_to_be_committed (command git diff --color=always --staged --stat HEAD | string trim --chars=" ")
         for change in $changes_to_be_committed[..-2]
@@ -115,17 +128,18 @@ function gstatus --description 'opinionated `git status`'
                 printf ", in total %s%d%s lines have changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
         end
         printf "\n"
+
+        echo $hr
     end
 
-    echo $hr
-    begin
+    if not set --query _flag_no_unstaged
         # TODO: `git status` shows if a file is modified or deleted, how can we do that?
         #  maybe use `git ls-files -t`
         printf "%schanges not staged%s for commit:\n" $bold_yellow $reset
         if set --query _flag_hint
-            printf "  (use %s%s to update what will be committed)\n" (printf (echo "git add ..." | fish_indent --ansi)) $reset
-            printf "  (use %s%s to discard changes in working directory)\n" (printf (echo "git restore ..." | fish_indent --ansi)) $reset
-            printf "  (use the abbreviation %sgam%s to add ALL %smodified%s files)\n" (set_color $fish_color_command) $reset $yellow $reset
+            printf "%s(use %s%s to update what will be committed)\n" $indent (printf (echo "git add ..." | fish_indent --ansi)) $reset
+            printf "%s(use %s%s to discard changes in working directory)\n" $indent (printf (echo "git restore ..." | fish_indent --ansi)) $reset
+            printf "%s(use the abbreviation %sgam%s to add ALL %smodified%s files)\n" $indent (set_color $fish_color_command) $reset $yellow $reset
         end
 
         # TODO: why is histrogram not as spiky as when stdout is a tty?
@@ -173,14 +187,15 @@ function gstatus --description 'opinionated `git status`'
                 printf ", in total %s%d%s lines have changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
         end
         printf "\n"
+
+        echo $hr
     end
 
-    echo $hr
-    begin
+    if not set --query _flag_no_untracked
         printf "%suntracked%s files:\n" $bold_red $reset
         if set --query _flag_hint
-            printf "  (use %s%s to include in what will be committed)\n" (printf (echo "git add ..." | fish_indent --ansi)) $reset
-            printf "  (use the abbreviation %sgau%s to add ALL %suntracked%s files)\n" (set_color $fish_color_command) $reset $red $reset
+            printf "%s(use %s%s to include in what will be committed)\n" $indent (printf (echo "git add ..." | fish_indent --ansi)) $reset
+            printf "%s(use the abbreviation %sgau%s to add ALL %suntracked%s files)\n" $indent (set_color $fish_color_command) $reset $red $reset
         end
 
         for f in (command git ls-files --others --exclude-standard)

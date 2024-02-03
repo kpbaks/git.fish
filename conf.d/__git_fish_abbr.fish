@@ -1,5 +1,8 @@
 status --is-interactive; or return 0
 
+# TODO: integrate some of the abbrs from
+# https://github.com/jhillyerd/plugin-git
+
 set --global __GIT_FISH_ABBREVIATIONS
 set --global __GIT_FISH_EXPANDED_ABBREVIAITONS
 
@@ -41,23 +44,24 @@ or set -g git_fish_git_status_command "git status --untracked-files=all --short 
 
 # git add
 function abbr_git_add
-    set --local cmd "git add"
-    # 1. find all modified, untracked, and deleted files
-    set --local addable_files (git ls-files --modified --others --deleted)
-    # 2. if there is exactly one file, append it to the command
+    set -l cmd "git add"
+    # 1. Find all modified, untracked, and deleted files
+    set -l addable_files (command git ls-files --modified --others --deleted)
+    # 2. If there is exactly one file, append it to the command
     if test (count $addable_files) -eq 1
         if string match --quiet --regex "\s" -- "$addable_files"
-            # filepath contains spaces, so we wrap them in single qoutes such that the shell will treat the path as a single word
+            # Filepath contains spaces, so we wrap them in single qoutes such that the shell will treat the path as a single word
             set --append cmd "'$addable_files'"
         else
             set --append cmd $addable_files
         end
     end
 
-    echo -- "$cmd % && $git_fish_git_status_command"
+    printf "%s %%\n" $cmd
+    echo $git_fish_git_status_command
 end
 
-# __git.fish::abbr ga --set-cursor --function abbr_git_add
+__git.fish::abbr ga --set-cursor --function abbr_git_add
 __git.fish::abbr gaa "git add --all && $git_fish_git_status_command"
 __git.fish::abbr gam "git ls-files --modified | xargs git add && $git_fish_git_status_command"
 

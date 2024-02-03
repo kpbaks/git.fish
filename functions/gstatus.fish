@@ -84,7 +84,14 @@ function gstatus --description 'opinionated `git status`'
                     $red $remote $reset (test $remote -eq 1; and echo ""; or echo "s") \
                     $red origin/$current_branch $reset
             end
-            # TODO: maybe suggest to push/pull if $local/$remote exceeds some threshold e.g. 3?
+
+            set -l commit_threshold 3
+            if test $local -ge $commit_threshold
+                printf "%syou may want to push your changes to the remote\n" $indent
+            end
+            if test $remote -ge $commit_threshold
+                printf "%syou may want to pull changes from the remote\n" $indent
+            end
         end
         echo $hr
     end

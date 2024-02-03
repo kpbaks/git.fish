@@ -1,4 +1,12 @@
 function gstatus --description 'opinionated `git status`'
+
+    set -l options h/help H/hint
+    if not argparse $options -- $argv
+        printf "\n" >&2
+        eval (status function) --help
+        return 2
+    end
+
     set -l reset (set_color normal)
     set -l red (set_color red)
     set -l green (set_color green)
@@ -9,30 +17,23 @@ function gstatus --description 'opinionated `git status`'
     set -l bold_red (set_color --bold red)
     set -l bold_green (set_color --bold green)
 
-    set -l options h/help H/hint
-    if not argparse $options -- $argv
-        printf "\n" >&2
-        eval (status function) --help
-        return 2
-    end
-
     if set --query _flag_help
         set -l option_color $green
         set -l section_title_color $yellow
         # Overall description of the command
-        printf "%sOpinionated $(printf (echo "git status" | fish_indent --ansi))%s\n" $bold $reset >&2
-        printf "\n" >&2
+        printf "%sOpinionated $(printf (echo "git status" | fish_indent --ansi))%s\n" $bold $reset
+        printf "\n"
         # Usage
-        printf "%sUSAGE:%s %s%s%s\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset >&2
-        printf "\n" >&2
+        printf "%sUSAGE:%s %s%s%s\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset
+        printf "\n"
         # Description
-        printf "%sOPTIONS:%s\n" $section_title_color $reset >&2
-        printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset >&2
-        printf "\n" >&2
+        printf "%sOPTIONS:%s\n" $section_title_color $reset
+        printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset
+        printf "\n"
 
         __git.fish::help_footer
         return 0
-    end
+    end >&2
 
     set -l indent (string repeat --count 4 " ")
     set -l bar "│"
@@ -42,10 +43,31 @@ function gstatus --description 'opinionated `git status`'
 
     begin
         printf "%sbranches%s:\n" $blue $reset
+        # TODO: indent
         command git branch
     end
     begin
+        printf "\n"
         # TODO: are we up to date with the remote?
+        # TODO: is there a plummer command for this?
+        set -l remote_branches (command git branch --remotes | string trim)
+        # Check if origin/$current_branch exists
+        if not contains -- origin/$current_branch $remote_branches
+            printf "current branch: %s%s%s has no remote counterpart\n" $green $current_branch $reset
+            printf "%s(use %s%s to create a branch on the remote)\n" (printf "git push --set-upstream origin %s" $indent $current_branch | fish_indent --ansi) $reset
+        else
+            command git rev-list --left-right --count $current_branch...origin/$current_branch | read local remote
+            if test $local -eq 0 -a $remote -eq 0
+                printf "%scurrent branch: %s%s%s is up to date with its remote counterpart: %s%s%s\n" $indent $green $current_branch $reset $red origin/$current_branch $reset
+            else
+                if test $local -gt 0
+                    printf "local %d\n" $local
+                end
+                if test $remote -gt 0
+                    printf "remote %d\n" $remote
+                end
+            end
+        end
     end
     echo $hr
     begin

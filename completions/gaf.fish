@@ -1,1 +1,1 @@
-complete -c ga --do-complete 'git add '
+complete -c gaf --do-complete 'git add '

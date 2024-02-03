@@ -1,4 +1,4 @@
-function ga -d "Wrapper around `git add`. Part of git.fish"
+function gaf -d "Wrapper around `git add`. Part of git.fish"
     set -l options h/help
     if not argparse $options -- $argv
         return 2

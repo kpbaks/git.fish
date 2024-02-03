@@ -28,7 +28,13 @@ function gstatus --description 'opinionated `git status`'
         printf "\n"
         # Description
         printf "%sOPTIONS:%s\n" $section_title_color $reset
-        printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset
+        printf "\t%s-h%s, %s--help%s            Show this help message and exit\n" $green $reset $green $reset
+        printf "\t%s-H%s, %s--hint%s            Show hints for how to interact with the {,un}/staged, untracked files\n" $green $reset $green $reset
+        printf "\t%s-b%s, %s--no-branches%s     Do not show branches\n" $green $reset $green $reset
+        printf "\t%s-s%s, %s--no-staged%s       Do not show staged files\n" $green $reset $green $reset
+        printf "\t%s-u%s, %s--no-unstaged%s     Do not show unstaged files\n" $green $reset $green $reset
+        printf "\t%s-U%s, %s--no-untracked%s    Do not show untracked files\n" $green $reset $green $reset
+
         printf "\n"
 
         __git.fish::help_footer
@@ -142,7 +148,7 @@ function gstatus --description 'opinionated `git status`'
             printf "%s(use the abbreviation %sgam%s to add ALL %smodified%s files)\n" $indent (set_color $fish_color_command) $reset $yellow $reset
         end
 
-        # TODO: why is histrogram not as spiky as when stdout is a tty?
+        # Q: why is histrogram not as spiky as when stdout is a tty?
         set -l diffs (command git diff --stat --color=always | string trim --chars=" ")
         for diff in $diffs[..-2]
             echo $diff | read --delimiter "|" file histogram_line

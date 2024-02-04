@@ -41,6 +41,11 @@ function gstatus --description 'opinionated `git status`'
         return 0
     end >&2
 
+    if not command git rev-parse --is-inside-work-tree 2>/dev/null
+        printf "%serror:%s not inside a git repository\n" (set_color red) (set_color normal) >&2
+        return 2
+    end
+
     set -l indent (string repeat --count 4 " ")
     set -l bar "│"
     set -l hr (string repeat --count (math "min(100, $COLUMNS)") "─")
@@ -66,7 +71,7 @@ function gstatus --description 'opinionated `git status`'
         else
             command git rev-list --left-right --count $current_branch...origin/$current_branch | read local remote
             if test $local -eq 0 -a $remote -eq 0
-                printf "%scurrent branch: %s%s%s is up to date with its remote counterpart: %s%s%s\n" $indent $green $current_branch $reset $red origin/$current_branch $reset
+                printf "%scurrent branch: %s%s%s is up to date 😎 with its remote counterpart: %s%s%s\n" $indent $green $current_branch $reset $red origin/$current_branch $reset
             else if test $local -gt 0 -a $remote -gt 0
                 printf "%scurrent branch: %s%s%s is %s%d%s commit%s ahead and %s%d%s commit%s behind its remote counterpart: %s%s%s\n" $indent \
                     $green $current_branch $reset \

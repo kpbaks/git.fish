@@ -163,7 +163,18 @@ __git.fish::abbr gcfgg git config --global
 __git.fish::abbr gcfgl git config --local
 
 # git diff
-__git.fish::abbr gd git diff
+function abbr_git_diff
+    command --query difft # if installed
+    and not set --query --export GIT_EXTERNAL_DIFF # and not already set as an env var
+    # FIXME: this does not filter properly
+    and not string match --regex "^\s*GIT_EXTERNAL_DIFF=\S+ " (commandline) # and not already set as a oneof env var override
+    and printf "GIT_EXTERNAL_DIFF=difft " # then use as the diff tool
+
+    printf "git diff\n"
+end
+__git.fish::abbr gd -f abbr_git_diff --set-cursor
+
+# TODO: create a function for this similar to `gstatus`
 __git.fish::abbr gds git diff --stat
 
 function parse_git_difftool_tool_help_output
@@ -225,6 +236,8 @@ __git.fish::abbr gmc git merge --continue
 __git.fish::abbr gmv git mv
 
 # git pull
+# TODO: create a user setting to choose between `--rebase` `--no-rebase` `--ff-only`
+# TODO: maybe add `--no-rebase`
 __git.fish::abbr gp git pull --progress
 __git.fish::abbr pull git pull --progress
 # git push
@@ -272,7 +285,16 @@ __git.fish::abbr gr --set-cursor --function abbr_git_restore
 __git.fish::abbr grm git rm
 
 # git show
-__git.fish::abbr gsh git show
+function abbr_git_show
+    set -l expansion "git show HEAD"
+    if command --query difft
+        set -p expansion "GIT_EXTERNAL_DIFF=difft"
+        set -a expansion --ext-diff
+    end
+    echo $expansion
+end
+
+__git.fish::abbr gsh -f abbr_git_show --set-cursor
 
 # git show-branch
 __git.fish::abbr gsb git show-branch
@@ -422,3 +444,6 @@ __git.fish::abbr lg lazygit
 
 # gitui
 # __git.fish::abbr gui gitui
+
+
+# TODO: implement a abbr or function that does this: https://stackoverflow.com/questions/19576742/how-to-clone-all-repos-at-once-from-github

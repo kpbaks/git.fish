@@ -166,8 +166,7 @@ __git.fish::abbr gcfgl git config --local
 function abbr_git_diff
     command --query difft # if installed
     and not set --query --export GIT_EXTERNAL_DIFF # and not already set as an env var
-    # FIXME: this does not filter properly
-    and not string match --regex "^\s*GIT_EXTERNAL_DIFF=\S+ " (commandline) # and not already set as a oneof env var override
+    and not string match --quiet "*GIT_EXTERNAL_DIFF=*" (commandline --cut-at-cursor) # and not already set as a oneof env var override
     and printf "GIT_EXTERNAL_DIFF=difft " # then use as the diff tool
 
     printf "git diff\n"

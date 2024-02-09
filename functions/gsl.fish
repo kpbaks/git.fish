@@ -13,5 +13,5 @@ function gsl -d 'prettify the output of `git shortlog`'
         else
             string pad --right --char=- --width (math min "min 100,$COLUMNS") $line
         end
-    end
+    end | less --raw-control-chars --quit-if-one-screen
 end

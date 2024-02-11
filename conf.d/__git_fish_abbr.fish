@@ -237,8 +237,12 @@ __git.fish::abbr gmv git mv
 # git pull
 # TODO: create a user setting to choose between `--rebase` `--no-rebase` `--ff-only`
 # TODO: maybe add `--no-rebase`
-__git.fish::abbr gp git pull --progress
-__git.fish::abbr pull git pull --progress
+__git.fish::abbr gp git pull
+__git.fish::abbr gpnrb git pull --no-rebase
+__git.fish::abbr gprb git pull --rebase
+__git.fish::abbr gpnff git pull --no-ff
+__git.fish::abbr pull git pull
+
 # git push
 
 function abbr_git_push
@@ -279,9 +283,10 @@ end
 
 # __git.fish::abbr gr git restore
 __git.fish::abbr gr --set-cursor --function abbr_git_restore
+__git.fish::abbr grm "git ls-files --modifies | xargs git restore"
 
 # git rm
-__git.fish::abbr grm git rm
+# __git.fish::abbr grm git rm
 
 # git show
 function abbr_git_show
@@ -293,7 +298,7 @@ function abbr_git_show
     echo $expansion
 end
 
-__git.fish::abbr gsh -f abbr_git_show --set-cursor
+__git.fish::abbr gsh -f abbr_git_show
 
 # git show-branch
 __git.fish::abbr gsb git show-branch
@@ -329,10 +334,10 @@ __git.fish::abbr gsmf git submodule foreach git
 
 # git switch
 function abbr_git_switch
-    set --local cmd git switch
+    set -l cmd git switch
     # check that we are in a git repo
     if not command git rev-parse --is-inside-work-tree >/dev/null
-        echo -- $cmd
+        echo $cmd
         return 0
     end
     # credit: https://stackoverflow.com/a/52222248/12323154
@@ -340,35 +345,38 @@ function abbr_git_switch
         # We are in a detached HEAD state
         # so we can't switch to a branch, but we likely want to switch to the main branch
         # again. So we append '-' to the command.
-        echo -- "$cmd -"
+        echo "# you are in a detached HEAD state"
+        echo "$cmd -"
         return 0
     end
     # Check how many branches there are
-    set --local num_branches (command git branch | count)
+    set -l num_branches (command git branch | count)
     switch $num_branches
         case 1
             # If there is only one local branch, there is nothing to switch to.
             # So we just output the command. With a comment explaining that there is no other branch.
-            echo -- "$cmd --create % # There is no other local branch to switch to, but you can create one :D"
+            echo "# There is no other local branch to switch to, but you can create one :D"
+            echo "$cmd --create"
         case 2
             # if there are 2, then append the other branch name to the command
             # else output the command.
             # This is a nice quality of life improvement when you have a repo with two branches
             # that you switch between often. E.g. master and develop.
-            set --local other_branch (command git branch | string match --invert --regex '^\*' | string trim)
-            set --append cmd $other_branch
-            echo -- "$cmd $other_branch% # you only have 1 other local branch"
+            set -l other_branch (command git branch | string match --invert --regex '^\*' | string trim)
+            echo "# you only have 1 other local branch"
+            echo "$cmd $other_branch"
         case '*'
             # If there are more than 2 branches, then append the most recently used branch to the command
             set -l branches (command git branch --sort=-committerdate \
                 | string match --invert --regex '^\*' \
                 | string trim
             )
-            echo -- "$cmd $branches[1]% # you have $(count $branches) other local branches: [ $(string join ', ' $branches) ]"
+            echo "# you have $(count $branches) other local branches: [ $(string join ', ' $branches) ]"
+            echo "$cmd $branches[1]"
     end
 end
 
-__git.fish::abbr gsw --set-cursor --function abbr_git_switch
+__git.fish::abbr gsw -f abbr_git_switch
 
 __git.fish::abbr gswc git switch --create
 
@@ -376,11 +384,11 @@ __git.fish::abbr gswc git switch --create
 __git.fish::abbr gwt git worktree
 # it is best practive to create a worktree in a directory that is a sibling of the current directory
 function abbr_git_worktree_add
-    set --local dirname (path basename $PWD)
-    set --local worktree_dirname "$dirname-wt"
-    echo -- git worktree add "../$worktree_dirname/%" --detach
+    set -l dirname (path basename $PWD)
+    set -l worktree_dirname "$dirname-wt"
+    echo git worktree add "../$worktree_dirname/%" --detach
 end
-__git.fish::abbr gwta --set-cursor --function abbr_git_worktree_add
+__git.fish::abbr gwta --set-cursor -f abbr_git_worktree_add
 __git.fish::abbr gwtl git worktree list
 __git.fish::abbr gwtm git worktree move
 __git.fish::abbr gwtp git worktree prune
@@ -419,17 +427,16 @@ end
 
 __git.fish::abbr git_clone_at_depth --position command --regex "gc[0-9]*" --function abbr_git_clone
 
-set --local sleep_duration 1.5
+set -l sleep_duration 1.5
 
-__git.fish::abbr gac --set-cursor "git add --update && $git_fish_git_status_command && sleep $sleep_duration && git commit"
-__git.fish::abbr gacp --set-cursor "git add --update % && $git_fish_git_status_command && sleep $sleep_duration && git commit && git push"
-
+# __git.fish::abbr gac --set-cursor "git add --update && $git_fish_git_status_command && sleep $sleep_duration && git commit"
+# __git.fish::abbr gacp --set-cursor "git add --update % && $git_fish_git_status_command && sleep $sleep_duration && git commit && git push"
 
 # command --query fzf; and set --global GIT_FISH_FZF_EXISTS
 # set --erase GIT_FISH_FZF_EXISTS
 
 # __git.fish::abbr gam 'git ls-files --modified | xargs git add && $git_fish_git_status_command'
-__git.fish::abbr wip "git ls-files --modified | xargs git add && $git_fish_git_status_command && git commit --message 'wip, squash me'"
+__git.fish::abbr gwip "git ls-files --modified | xargs git add && $git_fish_git_status_command && git commit --message 'wip, squash me'"
 
 # unstage a file
 __git.fish::abbr gun --set-cursor git restore --staged %

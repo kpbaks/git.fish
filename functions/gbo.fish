@@ -12,7 +12,12 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
     set -l green (set_color green)
     set -l blue (set_color blue)
     set -l red (set_color red)
+    set -l cyan (set_color cyan)
+    set -l magenta (set_color magenta)
+    set -l italics (set_color --italics)
+    set -l normal (set_color $fish_color_normal)
     set -l color_border (set_color $fish_color_normal)
+    set -l color_header $cyan
 
     if set --query _flag_help
         set -l option_color $green
@@ -38,7 +43,7 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
     end
     set -l current_branch (command git rev-parse --abbrev-ref HEAD)
 
-    set -l field_delimiter '#'
+    set -l field_delimiter '@@' # Just have to unique string that is not in the output of the git command
     # set -l bar "┃"
     set -l bar "│"
     # use thinner underline
@@ -67,48 +72,58 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
         set all --all
     end
 
+    set -l now (command date +%s)
+
     # Read data for each column into a separate array
     set -l branches
     set -l contents
     set -l authors
     set -l committerdates
-    command git branch $all --format="%(HEAD) %(refname:short) $field_delimiter %(contents:subject) $field_delimiter %(committerdate:relative) $field_delimiter %(authorname)" --sort=-committerdate \
-        | while read --delimiter $field_delimiter branch content committerdate author
+    set -l committerdates_as_unix_timestamps
+    # TODO: for some repos (e.g. helix) the format output by the git command is incorrect
+    command git branch $all --format="%(HEAD) %(refname:short) $field_delimiter %(contents:subject) $field_delimiter %(committerdate:relative) $field_delimiter %(committerdate:unix) $field_delimiter %(authorname)" --sort=-committerdate \
+        | while read --delimiter $field_delimiter branch content committerdate committerdate_as_unix_timestamp author
         set -a branches (string trim -- $branch)
         set -a contents (string trim -- $content)
         set -a committerdates (string trim -- $committerdate)
+        set -a committerdates_as_unix_timestamps (string trim -- $committerdate_as_unix_timestamp)
         set -a authors (string trim -- $author)
     end
 
-    set -l author_colors cyan red blue green yellow magenta
+    set -l author_colors cyan red blue green yellow magenta brcyan brred brblue brgreen bryellow brmagenta
     set -l unique_authors
 
-    set -l longest_branch branch
-    set -l length_of_longest_branch (string length branch)
+    set -l branch_header "branch"
+    set -l commit_header "commit"
+    set -l committerdate_header "committerdate"
+    set -l author_header "author"
+
+    set -l longest_branch $branch_header
+    set -l length_of_longest_branch (string length $branch_header)
     for branch in $branches
         if test (string length $branch) -gt (string length $longest_branch)
             set longest_branch $branch
             set length_of_longest_branch (string length $branch)
         end
     end
-    set -l longest_content commit
-    set -l length_of_longest_content (string length commit-msg)
+    set -l longest_content $commit_header
+    set -l length_of_longest_content (string length $commit_header)
     for content in $contents
         if test (string length $content) -gt (string length $longest_content)
             set longest_content $content
             set length_of_longest_content (string length $content)
         end
     end
-    set -l longest_committerdate committerdate
-    set -l length_of_longest_committerdate (string length committerdate)
+    set -l longest_committerdate $committerdate_header
+    set -l length_of_longest_committerdate (string length $committerdate_header)
     for committerdate in $committerdates
         if test (string length $committerdate) -gt (string length $longest_committerdate)
             set longest_committerdate $committerdate
             set length_of_longest_committerdate (string length $committerdate)
         end
     end
-    set -l longest_author author
-    set -l length_of_longest_author (string length author)
+    set -l longest_author $author_header
+    set -l length_of_longest_author (string length $author_header)
     for author in $authors
         if test (string length $author) -gt (string length $longest_author)
             set longest_author $author
@@ -146,38 +161,59 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
     end
 
     if set --query _flag_legend
-        # TODO: print this less cluttered
-        __git.fish::echo "The following $(set_color --italics)local$(set_color normal) branches exist ($(set_color --italics)the $(set_color yellow)*$(set_color normal)$(set_color --italics) indicates the branch you are on$(set_color normal)):"
+        printf " - the %s*%s indicates the branch you are on\n" $yellow $reset
+        if set --query _flag_all
+            set -l remote_git_url (command git config --local --get remote.origin.url)
+            printf " - branches starting with %sorigin%s are remote branches at %s%s%s\n" $red $reset $red $remote_git_url $reset
+        end
     end
 
-    # Only what to print the top border if there are multiple branches
-    # TODO: print the top border like in nushell:
+    # Print the top border like in nushell:
     # "╭────name────┬─type─┬──size──┬───modified────╮"
 
+    # Only what to print the top border if there are multiple branches
     # if test (count $branches) -gt 1
     printf "%s%s%s" $color_border $upper_left_corner $reset
     if test $show_branch -eq 1
-        printf "%s%s%s%s" $color_border (string repeat --count (math "$length_of_longest_branch + 2") $underline) $downwards_tee $reset
-        # printf "%s" $downwards_tee
+        set -l left_line $underline
+        set -l right_line (string repeat --count (math "$length_of_longest_branch - $(string length $branch_header) + 1") $underline)
+        printf "%s%s%s" $color_border $left_line $reset
+        printf "%s%s%s" $color_header branch $reset
+
+        printf "%s%s%s%s" $color_border $right_line $downwards_tee $reset
     end
     if test $show_content -eq 1
-        printf "%s%s%s%s" $color_border (string repeat --count (math "$length_of_longest_content + 2") $underline) $downwards_tee $reset
+        set -l left_line $underline
+        set -l right_line (string repeat --count (math "$length_of_longest_content - $(string length $commit_header) + 1") $underline)
+        printf "%s%s%s" $color_border $left_line $reset
+        printf "%s%s%s" $color_header commit $reset
+        printf "%s%s%s%s" $color_border $right_line $downwards_tee $reset
+
     end
     if test $show_author -eq 1
-        printf "%s%s%s%s" $color_border (string repeat --count (math "$length_of_longest_author + 2") $underline) $downwards_tee $reset
+        set -l left_line $underline
+        set -l right_line (string repeat --count (math "$length_of_longest_author - $(string length $author_header) + 1") $underline)
+        printf "%s%s%s" $color_border $left_line $reset
+        printf "%s%s%s" $color_header author $reset
+        printf "%s%s%s%s" $color_border $right_line $downwards_tee $reset
+
     end
     if test $show_committerdate -eq 1
-        printf "%s%s%s" $color_border (string repeat --count (math "$length_of_longest_committerdate + 2") $underline) $reset
+        set -l left_line $underline
+        set -l right_line (string repeat --count (math "$length_of_longest_committerdate - $(string length $committerdate_header) + 1") $underline)
+        printf "%s%s%s" $color_border $left_line $reset
+        printf "%s%s%s" $color_header committerdate $reset
+        printf "%s%s%s" $color_border $right_line $reset
     end
     printf "%s\n" $upper_right_corner
     # end
-
 
     # Print the columns of the table
     for i in (seq (count $authors))
         set -l branch $branches[$i]
         set -l content $contents[$i]
         set -l committerdate $committerdates[$i]
+        set -l committerdate_as_unix_timestamp $committerdates_as_unix_timestamps[$i]
         set -l author $authors[$i]
 
         set -l branch_padding (string repeat --count (math "$length_of_longest_branch - $(string length $branch)") " ")
@@ -232,6 +268,24 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
                 $output_separator
         end
         if test $show_committerdate -eq 1
+            # Assign a heatmap like color to each committerdate, similar to how GitHub does it
+            # Intervals are chosen arbitrarily, as I don't know what interval GitHub uses.
+            set -l seconds_since_last_commit (math "$now - $committerdate_as_unix_timestamp")
+            set -l committerdate_color
+            if test $seconds_since_last_commit -lt 86400 # 1 day
+                set committerdate_color (set_color "#e60505")
+            else if test $seconds_since_last_commit -lt 172800 # 2 days
+                set committerdate_color (set_color "#e93116")
+            else if test $seconds_since_last_commit -lt 604800 # 1 week
+                set committerdate_color (set_color "#ee5933")
+            else if test $seconds_since_last_commit -lt 1209600 # 2 weeks
+                set committerdate_color (set_color "#f27750")
+            else if test $seconds_since_last_commit -lt 2592000 # 1 month
+                set committerdate_color (set_color "#f59f7e")
+            else
+                set committerdate_color (set_color $fish_color_normal)
+            end
+            # set committerdate_color $red
             printf " %s%s%s %s" \
                 $committerdate_color $committerdate $reset \
                 $output_separator

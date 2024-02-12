@@ -246,6 +246,7 @@ __git.fish::abbr pull git pull
 # git push
 
 function abbr_git_push
+    # TODO: list the commits
     # TODO: what if there are new tags not pushed?, then add `--tags`
     # check if the local branch has a remote branch of the same name
     # if not, run `git push --set-upstream origin <branch-name>`
@@ -259,7 +260,7 @@ function abbr_git_push
     end
 end
 
-for abbr in gP push
+for abbr in gP # push
     __git.fish::abbr $abbr --set-cursor --function abbr_git_push
 end
 
@@ -453,3 +454,6 @@ __git.fish::abbr lg lazygit
 
 
 # TODO: implement a abbr or function that does this: https://stackoverflow.com/questions/19576742/how-to-clone-all-repos-at-once-from-github
+
+# functions/gbo.fish
+__git.fish::abbr gboa gbo --all

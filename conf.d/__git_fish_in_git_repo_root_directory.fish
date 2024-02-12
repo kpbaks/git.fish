@@ -39,7 +39,8 @@ function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
     emit in_git_repo_root_directory $PWD
 end
 
-function __git.fish::remind_me_to_connect_with_remote --on-event in_git_repo_root_directory
+function __git.fish::reminders::connect-to-remote --on-event in_git_repo_root_directory
+    # TODO: create these variables once
     set --query GIT_FISH_REMIND_ME_TO_CREATE_REMOTE; or set --global GIT_FISH_REMIND_ME_TO_CREATE_REMOTE 0
     test $GIT_FISH_REMIND_ME_TO_CREATE_REMOTE -eq 1; or return 0
 
@@ -49,6 +50,9 @@ function __git.fish::remind_me_to_connect_with_remote --on-event in_git_repo_roo
     __git.fish::echo "No remote branch detected. Connect to one with:"
     printf "\t"
     # TODO: <kpbaks 2023-09-09 17:19:23> improve aesthetics of this message
+    # TODO: predict the name of the upstream from the name of the user (use git config) to get it
+    # TODO: what if user.name has not been set?
+    set -q __git_fish_username; or set -g __git_fish_username (command git config --global --get user.name)
     set -l connect_to_remote_cmd "git push -u 'remote' 'branch'"
     echo $connect_to_remote_cmd | fish_indent --ansi
     # end
@@ -58,9 +62,11 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
     set --query GIT_FISH_AUTO_FETCH; or set --global GIT_FISH_AUTO_FETCH 0
     test $GIT_FISH_AUTO_FETCH -eq 1; or return 0
 
+    # TODO: maybe print a warning if this is the case
     command git rev-parse @{upstream} >/dev/null 2>/dev/null; or return 0 # No remote branch detected
 
     # Remote branch detected
+    # TODO: maybe but in background with `&` to not block for a second or 2, which is annoying
     command git fetch --quiet
 
     set -l head_hash (command git rev-parse HEAD)
@@ -69,6 +75,7 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
 
     if test $head_hash != $upstream_hash
         # TODO: <kpbaks 2023-09-19 21:33:09> figure out if ahead or behind
+        # See how I do it in `gstatus`
         __git.fish::echo "You are behind the remote branch. Run $(printf "git pull" | fish_indent --ansi) to update!"
         __git.fish::echo "or you are ahead of the remote branch. Run $(printf "git push" | fish_indent --ansi) to update!"
     end
@@ -94,7 +101,7 @@ end
 # when inside a git repo, check if the number of unstaged changes (i.e. lines)
 # is greater than `$GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD`
 # if so, print a reminder to commit
-function __git.fish::remind_me_to_commit --on-event in_git_repo_root_directory
+function __git.fish::reminders::commit --on-event in_git_repo_root_directory
     set --query GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD; or set --universal GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD 50
     set --query GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED; or set --universal GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED 0
     test $GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED -eq 1; or return 0
@@ -107,7 +114,7 @@ function __git.fish::remind_me_to_commit --on-event in_git_repo_root_directory
     should_i_commit $GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD
 end
 
-function __git.fish::avoid_being_on_main_branch --on-event in_git_repo_root_directory
+function __git.fish::reminders::avoid_being_on_main_branch --on-event in_git_repo_root_directory
     set --query GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH; or set --universal GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH 0
     test $GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH -eq 1; or return 0
 
@@ -128,4 +135,25 @@ function __git.fish::avoid_being_on_main_branch --on-event in_git_repo_root_dire
         __git.fish::echo (printf "You are on the %s%s%s branch. You should be on a %sfeature%s branch!" \
 			$yellow $current_branch $reset $green $reset)
     end
+end
+
+# function __git.fish::reminders::select-merge-strategy --on-event in_git_repo_root_directory
+#     # '--rebase'
+#     # '--no-rebase'
+#     # '--ff-only'
+
+# end
+
+# TODO: <kpbaks 2023-08-30 17:53:40> implement
+# https://github.com/cocogitto/cocogitto
+# https://gitmoji.dev/
+# https://github.com/orhun/git-cliff
+
+# TODO: use https://github.com/compilerla/conventional-pre-commit
+
+function __git.fish::reminders::use-branches --on-event in_git_repo_root_directory
+    set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED; or set --universal GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED 0
+    test $GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED -eq 1; or return 0
+    # functions/gbo.fish
+    gbo --unchecked # We already know that we are in a git repo
 end

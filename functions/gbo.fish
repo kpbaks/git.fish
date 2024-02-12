@@ -1,5 +1,5 @@
 # (g)it (b)ranch (o)verview
-function gbo -d "'(g)it (b)ranch (o)verview'"
+function gbo -d "Print a tabular overview of the current status of each git branch"
     set -l options h/help a/all u/unchecked l/legend
 
     if not argparse $options -- $argv
@@ -20,12 +20,22 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
     set -l color_header $cyan
 
     if set --query _flag_help
-        set -l option_color $green
+        set -l option_color (set_color $fish_color_option)
         set -l section_title_color $yellow
+        printf "%sPrint a tabular overview of the current status of each git branch%s\n" (set_color --bold) $reset
+        printf "\n"
+        printf "%sUSAGE%s: %s%s%s [OPTIONS]\n" $section_title_color $reset (set_color $fish_color_command) (status function) $reset
+        printf "\n"
+        printf "%sOPTIONS%s:\n" $section_title_color $reset
+        printf "\t%s-a%s, %s--all%s       Show all branches, including remote branches.\n" $option_color $reset $option_color $reset
+        printf "\t%s-u%s, %s--unchecked%s Do not check if we are inside a git worktree.\n" $option_color $reset $option_color $reset
+        printf "\t%s-h%s, %s--help%s      Show this help message and exit.\n" $option_color $reset $option_color $reset
+        printf "\t%s-l%s, %s--legend%s    Show a legend at the beginning of the output.\n" $option_color $reset $option_color $reset
+        printf "\n"
+         __git.fish::help_footer
 
-        echo todo
         return 0
-    end
+    end >&2 # Redirect the help message to stderr
 
     if not set --query _flag_unchecked
         if not command git rev-parse --is-inside-work-tree >/dev/null
@@ -80,7 +90,6 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
     set -l authors
     set -l committerdates
     set -l committerdates_as_unix_timestamps
-    # TODO: for some repos (e.g. helix) the format output by the git command is incorrect
     command git branch $all --format="%(HEAD) %(refname:short) $field_delimiter %(contents:subject) $field_delimiter %(committerdate:relative) $field_delimiter %(committerdate:unix) $field_delimiter %(authorname)" --sort=-committerdate \
         | while read --delimiter $field_delimiter branch content committerdate committerdate_as_unix_timestamp author
         set -a branches (string trim -- $branch)
@@ -254,7 +263,6 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
 
         printf "%s" $output_separator
         if test $show_branch -eq 1
-            # TODO: color the `origin/`
             if string match --quiet "origin*" $branch
                 set rest (string sub --start=7 $branch)
                 printf " %s%s%s%s%s%s %s" $red origin $reset $branch_color $rest $reset $output_separator

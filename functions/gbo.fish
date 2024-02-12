@@ -255,17 +255,19 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
         printf "%s" $output_separator
         if test $show_branch -eq 1
             # TODO: color the `origin/`
-            printf " %s%s%s %s" \
-                $branch_color $branch $reset \
-                $output_separator
+            if string match --quiet "origin*" $branch
+                set rest (string sub --start=7 $branch)
+                printf " %s%s%s%s%s%s %s" $red origin $reset $branch_color $rest $reset $output_separator
+            else
+                printf " %s%s%s %s" $branch_color $branch $reset $output_separator
+            end
+
         end
         if test $show_content -eq 1
             printf " %s %s" (__git.fish::conventional-commits::pretty-print $content) $output_separator
         end
         if test $show_author -eq 1
-            printf " %s%s%s %s" \
-                $author_color $author $reset \
-                $output_separator
+            printf " %s%s%s %s" $author_color $author $reset $output_separator
         end
         if test $show_committerdate -eq 1
             # Assign a heatmap like color to each committerdate, similar to how GitHub does it
@@ -286,9 +288,7 @@ function gbo -d "'(g)it (b)ranch (o)verview'"
                 set committerdate_color (set_color $fish_color_normal)
             end
             # set committerdate_color $red
-            printf " %s%s%s %s" \
-                $committerdate_color $committerdate $reset \
-                $output_separator
+            printf " %s%s%s %s" $committerdate_color $committerdate $reset $output_separator
         end
 
         printf "\n"

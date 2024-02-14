@@ -79,7 +79,8 @@ end
 # This one is nice to have, if your pre-commit hook did not pass, as you would
 # have to add the, now, modified files again and then commit them with the same message.
 __git.fish::abbr gamcp --set-cursor --function abbr_git_add_modified_and_commit_previous
-__git.fish::abbr gau "git ls-files --others | xargs git add && $git_fish_git_status_command"
+# TODO: change to not use xargs
+__git.fish::abbr gau "git ls-files --others --exclude-standard | xargs git add && $git_fish_git_status_command"
 __git.fish::abbr gad "git ls-files --deleted | xargs git add && $git_fish_git_status_command"
 __git.fish::abbr gap "git add --patch && $git_fish_git_status_command"
 

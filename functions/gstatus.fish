@@ -41,8 +41,8 @@ function gstatus --description 'opinionated `git status`'
         return 0
     end >&2
 
-    if not command git rev-parse --is-inside-work-tree 2>/dev/null
-        printf "%serror:%s not inside a git repository\n" (set_color red) (set_color normal) >&2
+    if not command git rev-parse --is-inside-work-tree 2>/dev/null >&2
+        printf "%serror:%s not inside a git repository\n" $red $reset >&2
         return 2
     end
 
@@ -67,7 +67,7 @@ function gstatus --description 'opinionated `git status`'
         # Check if origin/$current_branch exists
         if not contains -- origin/$current_branch $remote_branches
             printf "current branch: %s%s%s has no remote counterpart\n" $green $current_branch $reset
-            printf "%s(use %s%s to create a branch on the remote)\n" (printf "git push --set-upstream origin %s" $indent $current_branch | fish_indent --ansi) $reset
+            printf "%s(use %s%s to create a branch on the remote)\n" $indent (printf (echo "git push --set-upstream origin %s" $current_branch | fish_indent --ansi)) $reset
         else
             command git rev-list --left-right --count $current_branch...origin/$current_branch | read local remote
             if test $local -eq 0 -a $remote -eq 0

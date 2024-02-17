@@ -219,17 +219,24 @@ abbr -a gpnff git pull --no-ff
 
 # git push
 function __git::abbr::git_push
-    # TODO: list the commits that will be pushed
-    # TODO: what if there are new tags not pushed?, then add `--tags`
-    # check if the local branch has a remote branch of the same name
-    # if not, run `git push --set-upstream origin <branch-name>`
-    # if yes, run `git push`
-    set -l branch (git rev-parse --abbrev-ref HEAD)
-    set -l remote_branch (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
-    if test $status -ne 0
-        echo "git push --set-upstream origin $branch% # no remote branch found, creating one"
+    # FIXME: what if the commit msg is longer than 1 line?
+    set -l unpushed_commits (command git log --pretty=format:"%s" @{u}..)
+    if test (count $unpushed_commits) -gt 0
+        # List the commits that will be pushed
+        echo "# unpushed commits:"
+        printf "# - %s\n" $unpushed_commits
     else
-        echo git push
+        echo "# no commits to push ¯\\_(ツ)_/¯"
+    end
+
+    set -l git_push_opts --follow-tags
+    set -l branch (command git rev-parse --abbrev-ref HEAD)
+    set -l remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
+    if test $status -ne 0
+        # Local branch has no remote branch, so create one
+        echo "git push $git_push_opts --set-upstream origin $branch% # no remote branch found, creating one"
+    else
+        echo git push $git_push_opts
     end
 end
 

@@ -3,47 +3,49 @@ status --is-interactive; or return 0
 # TODO: integrate some of the abbrs from
 # https://github.com/jhillyerd/plugin-git
 
-set --global __GIT_FISH_ABBREVIATIONS
-set --global __GIT_FISH_EXPANDED_ABBREVIAITONS
-
-function __git.fish::abbr
-    set -l abbr $argv[1]
-    set -l expanded $argv[2..]
-    abbr --add $argv
-    set --append __GIT_FISH_ABBREVIATIONS "$abbr"
-    set --append __GIT_FISH_EXPANDED_ABBREVIAITONS "$expanded"
+function __git::abbr::list
+    string match --entire --regex '^abbr -a' <(status filename) | fish_indent --ansi
 end
 
 # -------------------------------------------------------------------------------------------------
-set --query GIT_FISH_GH_ABBR_ENABLE; or set --universal GIT_FISH_GH_ABBR_ENABLE 1
+set --query git_fish_abbr_enable_gh
+or set --universal git_fish_abbr_enable_gh 1
 
-test $GIT_FISH_GH_ABBR_ENABLE = 1
+test $git_fish_abbr_enable_gh = 1
 and command --query gh
 and begin
-    __git.fish::abbr ghs gh status
+    abbr -a ghs gh status
     # open the current repo in the browser
-    __git.fish::abbr ghb gh browse
-    __git.fish::abbr ghp gh pr list
-    __git.fish::abbr ghr gh repo view --web
-    __git.fish::abbr ghg gh gist list
-    __git.fish::abbr ghi gh issue
-    __git.fish::abbr ghil --set-cursor "gh issue list --state=open% # state can be one of: open | closed | all"
-    __git.fish::abbr ghilw gh issue list --web
+    abbr -a ghb gh browse
+    abbr -a ghp gh pr list
+    abbr -a ghr gh repo view --web
+    abbr -a ghg gh gist list
+    abbr -a ghi gh issue
+    abbr -a ghil --set-cursor "gh issue list --state=open% # state can be one of: open | closed | all"
+    abbr -a ghilw gh issue list --web
+    # jonwoo
+    abbr -a pr 'gh pr create -t (git show -s --format=%s HEAD) -b (git show -s --format=%B HEAD | tail -n+3)'
 end
 # -------------------------------------------------------------------------------------------------
-
-set --query GIT_FISH_GIT_ABBR_ENABLE; or set --universal GIT_FISH_GIT_ABBR_ENABLE 1
-test $GIT_FISH_GIT_ABBR_ENABLE = 1; or return 0
+set --query git_fish_abbr_append_git_status
+or set --universal git_fish_abbr_append_git_status 1
 
 set --query git_fish_git_status_command
-or set -g git_fish_git_status_command "git status --untracked-files=all --short --branch"
-# set -g git_fish_git_status_command "git status"
-# set -g git_fish_git_status_command gstatus
+or set --universal git_fish_git_status_command "git status --untracked-files=all --short --branch"
+# set --universal git_fish_git_status_command "git status"
+# set --universal git_fish_git_status_command gstatus
 
+set --global __and_git_status
+if test $git_fish_abbr_append_git_status = 1
+    set --global __and_git_status "; and $git_fish_git_status_command"
+end
 
+set --query git_fish_abbr_enable_git
+or set --universal git_fish_abbr_enable_git 1
+test $git_fish_abbr_enable_git = 1; or return 0
 
 # git add
-function abbr_git_add
+function __git::abbr::git_add
     set -l cmd "git add"
     # 1. Find all modified, untracked, and deleted files
     set -l addable_files (command git ls-files --modified --others --deleted)
@@ -58,240 +60,203 @@ function abbr_git_add
     end
 
     printf "%s %%\n" $cmd
-    echo $git_fish_git_status_command
+    echo $__and_git_status
 end
 
-__git.fish::abbr ga --set-cursor --function abbr_git_add
-__git.fish::abbr gaa "git add --all && $git_fish_git_status_command"
-__git.fish::abbr gam "git ls-files --modified | xargs git add && $git_fish_git_status_command"
+abbr -a ga --set-cursor -f __git::abbr::git_add
+abbr -a gaa "git add --all$__and_git_status"
+abbr -a gam "git add (git ls-files --modified)$__and_git_status"
 
-function abbr_git_add_modified_and_commit_previous
+function __git::abbr::git_add_modified_and_commit_previous
     # 1. find the previous commit
-    set -l cmd "git ls-files --modified | xargs git add && $git_fish_git_status_command"
+    set -l cmd "git add (git ls-files --modified)$__and_git_status"
     set -l previous_commit (history search --max 1 --prefix "git commit --message")
     # 2. if there is a previous commit, add it to the command
     if test -n "$previous_commit"
         set --append cmd "&& $previous_commit"
     end
-    echo -- $cmd
+    echo $cmd
 end
 
 # This one is nice to have, if your pre-commit hook did not pass, as you would
 # have to add the, now, modified files again and then commit them with the same message.
-__git.fish::abbr gamcp --set-cursor --function abbr_git_add_modified_and_commit_previous
-# TODO: change to not use xargs
-__git.fish::abbr gau "git ls-files --others --exclude-standard | xargs git add && $git_fish_git_status_command"
-__git.fish::abbr gad "git ls-files --deleted | xargs git add && $git_fish_git_status_command"
-__git.fish::abbr gap "git add --patch && $git_fish_git_status_command"
+abbr -a gamcp --set-cursor -f __git::abbr::git_add_modified_and_commit_previous
+abbr -a gau "git add (git ls-files --others --exclude-standard)$__and_git_status"
+abbr -a gad "git add (git ls-files --deleted)$__and_git_status"
+abbr -a gap "git add --patch$__and_git_status"
 
 # git branch
 set -l git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]"
 set -l git_branch_format "%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:green)(%(committerdate:relative))%(color:reset) - [%(color:red)%(authorname)%(color:reset)] - %(contents:subject)"
 
-__git.fish::abbr gb git branch
-__git.fish::abbr gbl git branch --format="'$git_branch_format'" --sort=-committerdate
-__git.fish::abbr gba git branch --all --format="'$git_branch_format'" --sort=-committerdate
-__git.fish::abbr gbd git branch --delete
-__git.fish::abbr gbD git branch --delete --force
-__git.fish::abbr gbm git branch --move
+abbr -a gb git branch
+# abbr -a gbl git branch --format="'$git_branch_format'" --sort=-committerdate
+# abbr -a gba git branch --all --format="'$git_branch_format'" --sort=-committerdate
+abbr -a gbd git branch --delete
+abbr -a gbD git branch --delete --force
+abbr -a gbm git branch --move
 
 # check if a file is ignored by .gitignore
-__git.fish::abbr gci git check-ignore --verbose --non-matching
+abbr -a gci git check-ignore --verbose --non-matching
 
 # git checkout
-__git.fish::abbr gco git checkout
+abbr -a gco git checkout
 
 # git cherry-pick
-__git.fish::abbr gcp git cherry-pick
+abbr -a gcp git cherry-pick
 
 # git commit
-__git.fish::abbr gcm git commit
-__git.fish::abbr gcma git commit --amend
-function abbr_git_commit_skip_selected_pre_commit_hook
+abbr -a gcm git commit
+abbr -a gcma git commit --amend
+
+function __git::abbr::git_commit_skip_selected_pre_commit_hook
     if test -f .pre-commit-config.yaml; and command --query yq; and command --query fzf
         set -l hooks (string match --regex --groups-only -- "-\s+id: (\S+)" < .pre-commit-config.yaml)
 
         # https://pre-commit.com/#temporarily-disabling-hooks
-        set -l fzf_opts --multi --height=~30%
+        set -l fzf_opts --multi --height=~30% --prompt="select which pre-commit hooks you want to SKIP for this commit: "
         set -l selected_hooks (printf "%s\n" $hooks | command fzf $fzf_opts)
+        commandline --function repaint
         if test (count $selected_hooks) -gt 0
             printf "SKIP=%s " (string join "," -- $selected_hooks)
         end
     end
 
-    printf "git commit\n"
+    echo "git commit"
 end
-__git.fish::abbr sgcm --set-cursor --function abbr_git_commit_skip_selected_pre_commit_hook
-# TODO: <kpbaks 2023-06-02 12:23:43> add a gmcm<> variant that adds all modified files and commits them
-# conventional commits
 
-# https://daily-dev-tips.com/posts/git-basics-conventional-commits/
-# Poor mans dictionary :(
-set --local conventional_commit_types_to_abbreviations \
-    "build b" \
-    "chore c" \
-    "ci i" \
-    "docs d" \
-    "feat f" \
-    "fix x" \
-    "merge m" \
-    "perf p" \
-    "refactor r" \
-    "revert v" \
-    "style s" \
-    "test t"
+# TODO: use a better name
+abbr -a sgcm --set-cursor -f __git::abbr::git_commit_skip_selected_pre_commit_hook
 
-# TODO: for the commit types that have a scope, populate the scope with the basename of the modified file, if only one file is modified
-# TODO: create an emphemeral keybinding for tab that will remove the () and move the cursor to "feat: |"
-# https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with--to-draw-attention-to-breaking-change
-printf "%s\n" $conventional_commit_types_to_abbreviations | while read -l type key
-    set --local key_uppercased (string upper $key)
-    __git.fish::abbr gcm$key_uppercased --set-cursor git commit --message "'$type: %'"
-    __git.fish::abbr gcm$key_uppercased"!" --set-cursor git commit --message "'$type!: %' # Only use this for BREAKING CHANGES like breaking backwards compatibility!"
-
-    # NOTE:use lowercase for the type with scope, to encourage using commit scopes more often
+function __git::abbr::gen_git_commit_conventional_commits -a type key
+    # Use lowercase for the type with scope, to encourage using commit scopes more often
     # to create a more structured commit history
-    __git.fish::abbr gcm$key --set-cursor git commit --message "'$type(%): '"
-    __git.fish::abbr gcm$key"!" --set-cursor git commit --message "'$type(%)!: ' # Only use this for BREAKING CHANGES like breaking backwards compatibility!"
+    # TODO: for the commit types that have a scope, populate the scope with the basename of the modified file, if only one file is modified
+    # TODO: make gcm{m,M}{,!} special such that it prepopulates the commit message with something like "merge: merge {{branch-merging-from}} -> {{branch-merging-into}}"
+    set -l breaking_changes_warning "# only use this for BREAKING CHANGES like breaking backwards compatibility!"
+    abbr -a gcm$key --set-cursor "git commit --message '$type(%): '"
+    abbr -a gcm$key"!" --set-cursor "git commit --message '$type(%)!: ' $breaking_changes_warning"
+    set -l key_uppercased (string upper $key)
+    abbr -a gcm$key_uppercased --set-cursor "git commit --message '$type: %'"
+    abbr -a gcm$key_uppercased"!" --set-cursor "git commit --message '$type: %' $breaking_changes_warning"
 end
 
-# TODO: make gcm{m,M}{,!} special such that it prepopulates the commit message with something like "merge: merge {{branch-merging-from}} -> {{branch-merging-into}}"
+__git::abbr::gen_git_commit_conventional_commits build b
+__git::abbr::gen_git_commit_conventional_commits chore c
+__git::abbr::gen_git_commit_conventional_commits ci i
+__git::abbr::gen_git_commit_conventional_commits docs d
+__git::abbr::gen_git_commit_conventional_commits feat f
+__git::abbr::gen_git_commit_conventional_commits fix x
+__git::abbr::gen_git_commit_conventional_commits merge m
+__git::abbr::gen_git_commit_conventional_commits perf p
+__git::abbr::gen_git_commit_conventional_commits refactor r
+__git::abbr::gen_git_commit_conventional_commits revert v
+__git::abbr::gen_git_commit_conventional_commits style s
+__git::abbr::gen_git_commit_conventional_commits test t
 
-# git config
-__git.fish::abbr gcfg git config
-__git.fish::abbr gcfgl git config --list
-__git.fish::abbr gcfgg git config --global
-__git.fish::abbr gcfgl git config --local
 
 # git diff
-function abbr_git_diff
+function __git::abbr::git_diff
     command --query difft # if installed
     and not set --query --export GIT_EXTERNAL_DIFF # and not already set as an env var
     and not string match --quiet "*GIT_EXTERNAL_DIFF=*" (commandline --cut-at-cursor) # and not already set as a oneof env var override
     and printf "GIT_EXTERNAL_DIFF=difft " # then use as the diff tool
 
-    printf "git diff\n"
+    echo "git diff"
 end
-__git.fish::abbr gd -f abbr_git_diff --set-cursor
+abbr -a gd --set-cursor -f __git::abbr::git_diff
 
 # TODO: create a function for this similar to `gstatus`
-__git.fish::abbr gds git diff --stat
-
-function parse_git_difftool_tool_help_output
-    command git difftool --tool-help | sed --regexp-extended -e '/Use/! d' -e 's/\s*(\w+)\s+(Use.+)$/\1\t\2/'
-end
-
-function abbr_git_difftool
-    # if set -q GIT_FISH_FZF_EXISTS
-    #     set --local tool (parse_git_difftool_tool_help_output | fzf --header "Select a tool" --with-nth 2 | cut -f 1)
-    #     echo "tool: $tool"
-    #     if test $status -eq 0
-    #         echo -- git difftool --tool=$tool
-    #         return
-    #     end
-    # end
-
-    echo -- git difftool --tool=%
-end
-
-# git difftool
-__git.fish::abbr gdt --set-cursor --function abbr_git_difftool
+abbr -a gds git diff --stat
 
 # git fetch
-__git.fish::abbr gf --set-cursor "git fetch % && $git_fish_git_status_command"
-__git.fish::abbr gfa --set-cursor "git fetch --all% # Fetch the latest changes from all remote upstream repositories"
-__git.fish::abbr gft --set-cursor "git fetch --tags% # Also fetch tags from the remote upstream repository"
-__git.fish::abbr gfp --set-cursor "git fetch --prune% # Delete local references to remote branches that have been deleted upstream"
+abbr -a gf --set-cursor "git fetch %$__and_git_status"
+abbr -a gfa --set-cursor "git fetch --all% # fetch the latest changes from all remote upstream repositories"
+abbr -a gft --set-cursor "git fetch --tags% # also fetch tags from the remote upstream repository"
+abbr -a gfp --set-cursor "git fetch --prune% # delete local references to remote branches that have been deleted upstream"
 
 # git grep
-__git.fish::abbr gg git grep
+abbr -a gg git grep
 
 # git log
-__git.fish::abbr gl git log --graph
-__git.fish::abbr glo git log --oneline --decorate --graph --all
+abbr -a gl git log --graph
+abbr -a glo git log --oneline --decorate --graph --all
 
 # git ls-files
-__git.fish::abbr gls git ls-files
-__git.fish::abbr glsm git ls-files --modified
-__git.fish::abbr glsu git ls-files --others --exclude-standard
-__git.fish::abbr glsum git ls-files --unmerged
+abbr -a gls git ls-files
+abbr -a glsm git ls-files --modified
+abbr -a glsu git ls-files --others --exclude-standard
+abbr -a glsum git ls-files --unmerged
 
 # git merge
-function abbr_git_merge
-    set --local cmd git merge
+function __git::abbr::git_merge
+    printf "git merge"
     # if there is 2 local branches, the suggest the other branch as the branch to merge
-    set --local branches (command git branch)
+    set -l branches (command git branch)
     if test (count $branches) -eq 2
-        set --local other_branch (command git branch | string match --invert --regex '^\*' | string trim)
-        set --append cmd $other_branch
+        set -l other_branch (command git branch | string match --invert --regex '^\*' | string trim)
+        printf " %s\n" $other_branch
     end
-
-    echo -- $cmd
 end
-__git.fish::abbr gm --set-cursor --function abbr_git_merge
-__git.fish::abbr gma git merge --abort
-__git.fish::abbr gmc git merge --continue
+
+abbr -a gm --set-cursor -f __git::abbr::git_merge
+abbr -a gma git merge --abort
+abbr -a gmc git merge --continue
 
 # git mv
-__git.fish::abbr gmv git mv
+abbr -a gmv git mv
 
 # git pull
+set --query git_fish_abbr_git_pull_merge_strategy
+or set --universal git_fish_abbr_git_pull_merge_strategy "--ff-only"
+
 # TODO: create a user setting to choose between `--rebase` `--no-rebase` `--ff-only`
 # TODO: maybe add `--no-rebase`
-__git.fish::abbr gp git pull
-__git.fish::abbr gpnrb git pull --no-rebase
-__git.fish::abbr gprb git pull --rebase
-__git.fish::abbr gpnff git pull --no-ff
-__git.fish::abbr pull git pull
+abbr -a gp git pull $git_fish_abbr_git_pull_merge_strategy
+abbr -a gpnrb git pull --no-rebase
+abbr -a gprb git pull --rebase
+abbr -a gpnff git pull --no-ff
 
 # git push
-
-function abbr_git_push
-    # TODO: list the commits
+function __git::abbr::git_push
+    # TODO: list the commits that will be pushed
     # TODO: what if there are new tags not pushed?, then add `--tags`
     # check if the local branch has a remote branch of the same name
     # if not, run `git push --set-upstream origin <branch-name>`
     # if yes, run `git push`
-    set --local branch (git rev-parse --abbrev-ref HEAD)
-    set --local remote_branch (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
+    set -l branch (git rev-parse --abbrev-ref HEAD)
+    set -l remote_branch (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if test $status -ne 0
-        echo -- "git push --set-upstream origin $branch% # no remote branch found, creating one"
+        echo "git push --set-upstream origin $branch% # no remote branch found, creating one"
     else
-        echo -- git push
+        echo git push
     end
 end
 
-for abbr in gP # push
-    __git.fish::abbr $abbr --set-cursor --function abbr_git_push
-end
+abbr -a gP --set-cursor -f __git::abbr::git_push
 
 # git rebase
-__git.fish::abbr grb git rebase
-__git.fish::abbr grbi git rebase --interactive
+abbr -a grb git rebase
+abbr -a grbi git rebase --interactive
 
 # git reflog
-__git.fish::abbr grl git reflog
+abbr -a grl git reflog
 
 # git restore
-function abbr_git_restore
-    # if there is only one modified file, append it to the expand command
-    set --local cmd git restore
+function __git::abbr::git_restore
+    printf "git restore"
     set modified (git ls-files --modified)
     if test (count $modified) -eq 1
-        set --append cmd $modified
+        # if there is only one modified file, append it to the expand command
+        printf " %s\n" $modified
     end
-    echo -- $cmd
 end
 
-# __git.fish::abbr gr git restore
-__git.fish::abbr gr --set-cursor --function abbr_git_restore
-__git.fish::abbr grm "git ls-files --modifies | xargs git restore"
-
-# git rm
-# __git.fish::abbr grm git rm
+abbr -a gr --set-cursor --function __git::abbr::git_restore
+abbr -a grm "git restore (git ls-files --modified)"
 
 # git show
-function abbr_git_show
+function __git::abbr::git_show
     set -l expansion "git show HEAD"
     if command --query difft
         set -p expansion "GIT_EXTERNAL_DIFF=difft"
@@ -300,45 +265,43 @@ function abbr_git_show
     echo $expansion
 end
 
-__git.fish::abbr gsh -f abbr_git_show
+abbr -a gsh -f __git::abbr::git_show
 
 # git show-branch
-__git.fish::abbr gsb git show-branch
+abbr -a gsb git show-branch
 
-# $git_fish_git_status_command
-# __git.fish::abbr gs git status --untracked-files=all
-__git.fish::abbr gs $git_fish_git_status_command
-__git.fish::abbr gss git status --short --branch --untracked-files=all
+abbr -a gs $git_fish_git_status_command
+abbr -a gss git status --short --branch --untracked-files=all
 
 # git stash
-__git.fish::abbr gst --set-cursor git stash push --message "'%'"
-__git.fish::abbr gstp git stash pop
-__git.fish::abbr gsta git stash apply
-__git.fish::abbr gstd git stash drop
-__git.fish::abbr gstl git stash list
+abbr -a gst --set-cursor git stash push --message "'%'"
+abbr -a gstp git stash pop
+abbr -a gsta git stash apply
+abbr -a gstd git stash drop
+abbr -a gstl git stash list
 
 # git submodule
-__git.fish::abbr gsm git submodule
-function abbr_git_submodule_add
-    set --local cmd git submodule add
-    set --local clipboard (fish_clipboard_paste)
+abbr -a gsm git submodule
+function __git::abbr::git_submodule_add
+    set -l cmd git submodule add
+    set -l clipboard (fish_clipboard_paste)
     # if the clipboard is a valid git url, append it to the command
     if string match -q --regex '^https?://.*\.git$' $clipboard
-        set --local project_name (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
+        set -l project_name (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
         set --append cmd $clipboard $project_name
     end
-    echo -- $cmd
+    echo $cmd
 end
-__git.fish::abbr gsma --set-cursor --function abbr_git_submodule_add
-__git.fish::abbr gsms git submodule status
-__git.fish::abbr gsml git submodule status
-__git.fish::abbr gsmf git submodule foreach git
+abbr -a gsma --set-cursor --function __git::abbr::git_submodule_add
+abbr -a gsms git submodule status
+abbr -a gsml git submodule status
+abbr -a gsmf git submodule foreach git
 
 # git switch
 function abbr_git_switch
     set -l cmd git switch
     # check that we are in a git repo
-    if not command git rev-parse --is-inside-work-tree >/dev/null
+    if not command git rev-parse --is-inside-work-tree 2>/dev/null >&2
         echo $cmd
         return 0
     end
@@ -378,24 +341,24 @@ function abbr_git_switch
     end
 end
 
-__git.fish::abbr gsw -f abbr_git_switch
+abbr -a gsw -f abbr_git_switch
 
-__git.fish::abbr gswc git switch --create
+abbr -a gswc git switch --create
 
 # git worktree
-__git.fish::abbr gwt git worktree
+abbr -a gwt git worktree
 # it is best practive to create a worktree in a directory that is a sibling of the current directory
 function abbr_git_worktree_add
     set -l dirname (path basename $PWD)
     set -l worktree_dirname "$dirname-wt"
     echo git worktree add "../$worktree_dirname/%" --detach
 end
-__git.fish::abbr gwta --set-cursor -f abbr_git_worktree_add
-__git.fish::abbr gwtl git worktree list
-__git.fish::abbr gwtm git worktree move
-__git.fish::abbr gwtp git worktree prune
-__git.fish::abbr gwtrm git worktree remove
-__git.fish::abbr gwtrmf git worktree remove --force
+abbr -a gwta --set-cursor -f abbr_git_worktree_add
+abbr -a gwtl git worktree list
+abbr -a gwtm git worktree move
+abbr -a gwtp git worktree prune
+abbr -a gwtrm git worktree remove
+abbr -a gwtrmf git worktree remove --force
 
 function abbr_git_clone
     set -l args --recurse-submodules
@@ -427,34 +390,27 @@ function abbr_git_clone
     echo git clone $args $postfix_args
 end
 
-__git.fish::abbr git_clone_at_depth --position command --regex "gc[0-9]*" --function abbr_git_clone
+abbr -a git_clone_at_depth --position command --regex "gc[0-9]*" --function abbr_git_clone
 
-set -l sleep_duration 1.5
-
-# __git.fish::abbr gac --set-cursor "git add --update && $git_fish_git_status_command && sleep $sleep_duration && git commit"
-# __git.fish::abbr gacp --set-cursor "git add --update % && $git_fish_git_status_command && sleep $sleep_duration && git commit && git push"
-
-# command --query fzf; and set --global GIT_FISH_FZF_EXISTS
-# set --erase GIT_FISH_FZF_EXISTS
-
-# __git.fish::abbr gam 'git ls-files --modified | xargs git add && $git_fish_git_status_command'
-__git.fish::abbr gwip "git ls-files --modified | xargs git add && $git_fish_git_status_command && git commit --message 'wip, squash me'"
+abbr -a gwip "git add (git ls-files --modified) $git_fish_git_status_command && git commit --message 'wip, squash me' --no-verify"
 
 # unstage a file
-__git.fish::abbr gun --set-cursor git restore --staged %
+abbr -a gun --set-cursor git restore --staged %
 
-__git.fish::abbr gt git tag
+abbr -a gt git tag
 
 # other git tools ---------------------------------------------------------------------------------
 
 # lazygit
-__git.fish::abbr lg lazygit
+abbr -a lg lazygit
 
 # gitui
-# __git.fish::abbr gui gitui
+abbr -a gui gitui
 
+# jonwoo
+abbr -a gah 'git stash; and git pull --rebase; and git stash pop'
 
 # TODO: implement a abbr or function that does this: https://stackoverflow.com/questions/19576742/how-to-clone-all-repos-at-once-from-github
 
 # functions/gbo.fish
-__git.fish::abbr gboa gbo --all
+abbr -a gboa gbo --all

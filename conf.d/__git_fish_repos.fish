@@ -284,8 +284,6 @@ function repos --description "manage the list of visited repos"
     # TODO: <kpbaks 2023-09-20 18:06:08> make the preview command configurable with a variable
     # TODO: <kpbaks 2023-09-20 20:04:32> create keybind to open remote origin url in browser ctrl+o
 
-    # TODO: check how wide the terminal is, and if to narrow then put the preview below the fuzzy finder
-    # printf "%s\n" $valid_repos \
 
     set -l fzf_opts \
         --prompt "select the git repo to cd into: " \
@@ -308,6 +306,11 @@ function repos --description "manage the list of visited repos"
         --bind=ctrl-b:page-up \
         --reverse \
         --preview 'git -c color.status=always -C {} status'
+
+    if test $COLUMNS -le 100
+        # Terminal is not wide enough to have the preview to the right
+        set -a fzf_opts --preview-window=down
+    end
 
     for valid_repo in $valid_repos
         set -l dirname (path dirname $valid_repo)

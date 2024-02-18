@@ -10,7 +10,7 @@ Collection of abbreviations and interactive fish-shell integrations I use to mak
 
 ### Optional Requirements
 
-- [pre-commit](https://pre-commit.com/) ...
+- [pre-commit](https://pre-commit.com/) if installed, then the `pre-commit` reminder will be enabled.
 
 ## Installation
 
@@ -86,18 +86,23 @@ repos cd # Change directory to a repository using fzf
 
 ### Reminders
 
+Reminders are actions that are run when you enter a git repository. They are meant to act as helpful reminders to encourage good practices.
 
-## Settings
+#### `pre-commit`
 
-GIT_FISH_PRE_COMMIT_LIST_HOOKS
-GIT_FISH_PRE_COMMIT_ENABLE
-GIT_FISH_PRE_COMMIT_AUTO_INSTALL
-GIT_FISH_GH_ABBR_ENABLE
-GIT_FISH_GIT_ALIAS_REMINDER_ENABLE
-GIT_FISH_AUTO_FETCH
-GIT_FISH_REMIND_ME_TO_CREATE_REMOTE
+If you have [pre-commit](https://pre-commit.com/) installed then a check will be made to see if the repository has a `.pre-commit-config.yaml` file.
 
-GIT_FISH_REMIND_ME_ABOUT_MY_GIT_ALIASES
+- If it does, then the installed pre-commit hooks will be listed.
+- If it does not, then a reminder will be printed to the terminal to encourage you to install - the default pre-commit hooks.
+
+#### `should-i-commit`
+
+Check if there are uncommitted changes in the repository and if there are more than `git_fish_reminders_should_i_commit_threshold` then a reminder will be printed to the terminal.
 
 
-## Ideas
+
+##### Settings
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+`git_fish_reminders_should_i_commit_threshold` | The number of uncommitted changes that will trigger the reminder. | `50` |

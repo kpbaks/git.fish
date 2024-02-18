@@ -1,8 +1,5 @@
 # git.fish
 
-
-
-
 Collection of abbreviations and interactive fish-shell integrations I use to make `git` easier!
 
 ## Requirements
@@ -11,12 +8,9 @@ Collection of abbreviations and interactive fish-shell integrations I use to mak
 - [git](https://git-scm.com/) I don't hope that comes as a surprise ;-)
 - [sqlite3](https://www.sqlite.org/index.html) is used to store visited git directories with the `repos` command.
 
-### Optionals
+### Optional Requirements
 
 - [pre-commit](https://pre-commit.com/) ...
-- [gitui](https://github.com/extrawurst/gitui)
-- [lazygit](https://github.com/jesseduffield/lazygit)
-- [tig](https://github.com/jonas/tig)
 
 ## Installation
 
@@ -30,7 +24,13 @@ fisher install kpbaks/git.fish
 
 ### Abbreviations
 
+---
+
 ### Commands
+
+#### `gbo`
+
+
 
 #### `gcl`
 
@@ -43,6 +43,42 @@ fisher install kpbaks/git.fish
 `gign` can be used to download common `.gitignore` rules from [gitignore.io](https://www.toptal.com/developers/gitignore/)
 See `gign --help` for more information.
 
+#### `goverview`
+
+#### `gsl`
+
+<!-- #### `gss` -->
+
+#### `gstatus`
+
+#### `repos`
+
+`repos` is a command to list and search through git repositories you have visited. It uses a `sqlite3` database to store the paths of visited git directories. The database is stored at `git_fish_repos_sqlite3_db` and is automatically updated when you `cd` around in your shell.
+
+##### Usage
+
+```fish
+repos init [DIR] # Initialize the database by recursively searching for git repositories in DIR
+repos list # List all repositories in the database
+repos clear # Clear the database
+repos check # Update the database by removing non-existing directories
+repos cd # Change directory to a repository using fzf
+```
+<!-- TODO: insert picture of `repos list` -->
+
+##### Settings
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `git_fish_repos_sqlite3_db` | The path to the sqlite3 database file. | `$`__fish_user_data_dir/git.fish/repos.sqlite3` |
+| `git_fish_repos_cd_show_preview` | Use `git_fish_repos_cd_preview_command` to show a preview of the repo in `fzf` | `1` |
+| `git_fish_repos_cd_preview_command` | The command to use to show the fzf preview. | `git -c color.status=always -C {} status` |
+
+---
+
+### Reminders
+
+
 ## Settings
 
 GIT_FISH_PRE_COMMIT_LIST_HOOKS
@@ -54,12 +90,6 @@ GIT_FISH_AUTO_FETCH
 GIT_FISH_REMIND_ME_TO_CREATE_REMOTE
 
 GIT_FISH_REMIND_ME_ABOUT_MY_GIT_ALIASES
-
-# set --query GIT_FISH_GITUI_KEYBIND_ENABLE; or set --universal GIT_FISH_GITUI_KEYBIND_ENABLE 0
-
-# test "$GIT_FISH_GITUI_KEYBIND_ENABLE" = 1; or return
-
-# set --query GIT_FISH_GITUI_KEYBIND; or set --universal GIT_FISH_GITUI_KEYBIND \cg
 
 
 ## Ideas

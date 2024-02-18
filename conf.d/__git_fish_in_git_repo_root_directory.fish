@@ -98,20 +98,25 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
 
 end
 
-# when inside a git repo, check if the number of unstaged changes (i.e. lines)
-# is greater than `$GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD`
-# if so, print a reminder to commit
-function __git.fish::reminders::commit --on-event in_git_repo_root_directory
-    set --query GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD; or set --universal GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD 50
-    set --query GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED; or set --universal GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED 0
-    test $GIT_FISH_REMIND_ME_TO_COMMIT_ENABLED -eq 1; or return 0
+function __git::reminders::should-i-commit --on-event in_git_repo_root_directory
+    # when inside a git repo, check if the number of unstaged changes (i.e. lines)
+    # is greater than `$git_fish_reminders_should_i_commit_threshold`
+    # if so, print a reminder to commit
+
+    set --query git_fish_reminders_should_i_commit_threshold
+    or set --universal git_fish_reminders_should_i_commit_threshold 50
+
+    set --query git_fish_reminders_should_i_commit_enable
+    or set --universal git_fish_reminders_should_i_commit_enable 0
+
+    test $git_fish_reminders_should_i_commit_enable -eq 1; or return 0
 
     # FIX: why does it actually trigger when fish is started?
     # do not want to run it every time a new fish shell is opened
     test $__fish_config_dir = "$PWD"; or return 0
     # defined in $__fish_config_dir/functions/should_i_commit.fish
     # part of git.fish
-    should_i_commit $GIT_FISH_REMIND_ME_TO_COMMIT_THRESHOLD
+    should_i_commit $git_fish_reminders_should_i_commit_threshold
 end
 
 function __git.fish::reminders::avoid_being_on_main_branch --on-event in_git_repo_root_directory

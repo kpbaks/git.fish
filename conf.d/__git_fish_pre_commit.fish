@@ -17,13 +17,17 @@ if not command --query pre-commit
     return 0
 end
 
-# Disable by default
-set --query GIT_FISH_PRE_COMMIT_ENABLE; or set --universal GIT_FISH_PRE_COMMIT_ENABLE 0
-set --query GIT_FISH_PRE_COMMIT_LIST_HOOKS; or set --universal GIT_FISH_PRE_COMMIT_LIST_HOOKS 0
-set --query GIT_FISH_PRE_COMMIT_AUTO_INSTALL; or set --universal GIT_FISH_PRE_COMMIT_AUTO_INSTALL 0
+set --query git_fish_reminders_pre_commit_enable
+or set --universal git_fish_reminders_pre_commit_enable 0
+
+set --query git_fish_reminders_pre_commit_list_hooks
+or set --universal git_fish_reminders_pre_commit_list_hooks 0
+
+set --query git_fish_reminders_pre_commit_auto_install_hooks
+or set --universal git_fish_reminders_pre_commit_auto_install_hooks 0
 
 function __git.fish::check_for_pre_commit --on-event in_git_repo_root_directory
-    test $GIT_FISH_PRE_COMMIT_ENABLE -eq 1; or return 0
+    test $git_fish_reminders_pre_commit_enable -eq 1; or return 0
     # Do not want to spam the user with the same message over and over again in the same shell session
     contains -- $PWD (__git.fish::git_dirs_visited); and return 0
 
@@ -34,7 +38,7 @@ function __git.fish::check_for_pre_commit --on-event in_git_repo_root_directory
 
     if test -f .pre-commit-config.yaml
         __git.fish::echo "A $dot_pre_commit_config_yaml file was found in $(set_color --bold)$cwd$(set_color normal)"
-        if test $GIT_FISH_PRE_COMMIT_LIST_HOOKS -eq 1
+        if test $git_fish_reminders_pre_commit_list_hooks -eq 1
             set -l hooks (string match --regex --all --groups-only "[^#]+-\s+id:\s(\S+)\$" < .pre-commit-config.yaml)
             __git.fish::echo "The following hooks are listed:"
             printf " - %s\n" $hooks
@@ -47,8 +51,8 @@ function __git.fish::check_for_pre_commit --on-event in_git_repo_root_directory
         end
     else
         __git.fish::echo "No $dot_pre_commit_config_yaml file found in $(set_color --bold)$cwd$(set_color normal)."
-        if test $GIT_FISH_PRE_COMMIT_AUTO_INSTALL -eq 1
-            __git.fish::echo (printf "%s\$GIT_FISH_PRE_COMMIT_AUTO_INSTALL%s is set. generating a sample $dot_pre_commit_config_yaml file and installing it..." (set_color $fish_color_param) (set_color normal))
+        if test $git_fish_reminders_pre_commit_auto_install_hooks -eq 1
+            __git.fish::echo (printf "%s\$git_fish_reminders_pre_commit_auto_install_hooks%s is set. generating a sample $dot_pre_commit_config_yaml file and installing it..." (set_color $fish_color_param) (set_color normal))
             command pre-commit sample-config | tee .pre-commit-config.yaml && command pre-commit install --install-hooks
             __git.fish::echo "pre-commit hooks installed."
         else

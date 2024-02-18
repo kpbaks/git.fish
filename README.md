@@ -86,7 +86,7 @@ repos cd # Change directory to a repository using fzf
 
 ### Reminders
 
-Reminders are actions that are run when you enter a git repository. They are meant to act as helpful reminders to encourage good practices.
+Reminders are actions that are run when you enter a git repository. They are meant to act as helpful reminders to encourage good practices. This feature is probably not everyone's cup of tea, as it can be distracting. Therefore, all reminders are disabled by default. So you have to enable them by setting the corresponding universal variable `git_fish_reminders_<reminder>_enable` to `1`.
 
 #### `pre-commit`
 
@@ -94,6 +94,14 @@ If you have [pre-commit](https://pre-commit.com/) installed then a check will be
 
 - If it does, then the installed pre-commit hooks will be listed.
 - If it does not, then a reminder will be printed to the terminal to encourage you to install - the default pre-commit hooks.
+
+##### Settings
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `git_fish_reminders_pre_commit_enable` | Enable the pre-commit reminder. | `0` |
+| `git_fish_reminders_pre_commit_list_hooks` | List the installed pre-commit hooks. | `0` |
+| `git_fish_reminders_pre_commit_auto_install_hooks` | Automatically install the default pre-commit hooks. | `0` |
 
 #### `should-i-commit`
 
@@ -107,4 +115,5 @@ Example reminder with `set git_fish_reminders_should_i_commit_threshold 50`:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `git_fish_reminders_should_i_commit_enable` | Enable the should-i-commit reminder. | `0` |
 `git_fish_reminders_should_i_commit_threshold` | The number of uncommitted changes that will trigger the reminder. | `50` |

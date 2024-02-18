@@ -99,7 +99,9 @@ If you have [pre-commit](https://pre-commit.com/) installed then a check will be
 
 Check if there are uncommitted changes in the repository and if there are more than `git_fish_reminders_should_i_commit_threshold` then a reminder will be printed to the terminal.
 
+Example reminder with `set git_fish_reminders_should_i_commit_threshold 50`:
 
+![should-i-commit-output](https://github.com/kpbaks/git.fish/assets/57013304/1e5bbc9a-bfd1-4e80-9ca6-0208b88bd596)
 
 ##### Settings
 

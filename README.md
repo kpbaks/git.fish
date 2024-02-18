@@ -30,6 +30,17 @@ fisher install kpbaks/git.fish
 
 #### `gbo`
 
+`gbo` short for "git branch overview" list information about local branches, use `--all` for local and remote, in a pretty-printed table with four columns:
+1. `branch`: The current branch is highlighted.
+2. `commit`: If the commit is a a conventional-commit then the `type(scope):` part is highlighted.
+3. `author`: Each author is assigned a unique color.
+4. `committerdate`: Time since most recent commit. A color gradient from red to white is used to indicate how recent the latest commit was.
+
+Here is an example of the output when run against the [helix](https://github.com/helix-editor/helix) repository.
+
+![image](https://github.com/kpbaks/git.fish/assets/57013304/93631887-04ee-42dc-9893-cfb3c6e180d0)
+
+
 
 
 #### `gcl`

@@ -276,9 +276,12 @@ function __git::repos::cd
     set --query git_fish_repos_cd_show_preview
     or set --universal git_fish_repos_cd_show_preview 1
 
+    # TODO: document in readme
+    set --query git_fish_repos_cd_preview_command
+    or set --universal git_fish_repos_cd_preview_command 'git -c color.status=always -C {} status'
+
     if test $git_fish_repos_cd_show_preview -eq 1
-        # TODO: make the preview command configurable with a variable
-        set -a fzf_opts --preview 'git -c color.status=always -C {} status'
+        set -a fzf_opts --preview $git_fish_repos_cd_preview_command
         if test $COLUMNS -le 120
             # Terminal is not wide enough to have the preview to the right
             set -a fzf_opts --preview-window=down

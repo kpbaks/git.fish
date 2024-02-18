@@ -38,16 +38,13 @@ fisher install kpbaks/git.fish
 
 Here is an example of the output when run against the [helix](https://github.com/helix-editor/helix) repository.
 
-![image](https://github.com/kpbaks/git.fish/assets/57013304/93631887-04ee-42dc-9893-cfb3c6e180d0)
-
-
-
+![gbo-output](https://github.com/kpbaks/git.fish/assets/57013304/93631887-04ee-42dc-9893-cfb3c6e180d0)
 
 #### `gcl`
 
 `gcl` short for `git config --list` lists all git config settings in a colored and formatted table. Without setting any options the user's global config will be shown. If you only want the settings for the current git repository you can use `gcl [-l|--local]`
 
-![gcl-output](https://github.com/kpbaks/git.fish/assets/57013304/7d466f54-b6a7-4ddd-9fa1-8d19ed91d1f8)
+![gcl-output](https://github.com/kpbaks/git.fish/assets/57013304/f90f77ef-6366-426d-90de-d354bb1500fa)
 
 #### `gign`
 

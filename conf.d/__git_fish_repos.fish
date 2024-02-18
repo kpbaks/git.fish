@@ -214,47 +214,12 @@ function __git::repos::clear --description "clear the list of visited repos"
     end
 end
 
-# This function is the public interface to the repos functionality
-function repos --description "manage the list of visited repos"
-    set -l options h/help
-    if not argparse $options -- $argv
-        eval (status function) --help
-        return 2
-    end
-
+function __git::repos::cd
     set -l reset (set_color normal)
     set -l blue (set_color blue)
     set -l red (set_color red)
     set -l green (set_color green)
     set -l yellow (set_color yellow)
-
-    if set --query _flag_help
-        # TODO: <kpbaks 2023-09-20 20:33:11> improve the help message
-        echo "usage: repos [init|clear|list|check]" >&2
-        __git.fish::help_footer >&2
-        return 0
-    end
-
-    if test (count $argv) -eq 1
-        switch $argv[1]
-            case clear
-                __git::repos::clear
-                return 0
-            case list
-                __git::repos::list
-                return 0
-            case check
-                __git::repos::check
-                return 0
-            case init
-                __git::repos::init $PWD
-                return 0
-            case '*'
-                printf "%serror%s: unknown command: %s\n\n" $red $reset $verb
-                eval (status function) --help
-                return 2
-        end
-    end
 
     # Update the repos db, so that the user only selects from valid repos
     __git::repos::check
@@ -283,7 +248,7 @@ function repos --description "manage the list of visited repos"
     # see kpbaks/fuzzy-file.fish for inspiration
     # TODO: <kpbaks 2023-09-20 18:06:08> make the preview command configurable with a variable
     # TODO: <kpbaks 2023-09-20 20:04:32> create keybind to open remote origin url in browser ctrl+o
-
+    # TODO: create an option to not show preview
 
     set -l fzf_opts \
         --prompt "select the git repo to cd into: " \
@@ -324,4 +289,53 @@ function repos --description "manage the list of visited repos"
     end
 
     builtin cd $selected_repo
+end
+
+# This function is the public interface to the repos functionality
+function repos -d "manage the list of visited repos" -a subcommand
+    set -l options h/help
+    if not argparse $options -- $argv
+        eval (status function) --help
+        return 2
+    end
+
+    set -l reset (set_color normal)
+    set -l blue (set_color blue)
+    set -l red (set_color red)
+    set -l green (set_color green)
+    set -l yellow (set_color yellow)
+
+    if set --query _flag_help
+        # TODO: <kpbaks 2023-09-20 20:33:11> improve the help message
+        echo "usage: repos [init|clear|list|check]"
+
+        printf "\n"
+        __git.fish::help_footer
+        return 0
+    end >&2
+
+    if test (count $argv) -eq 0
+        printf '%serror%s: no subcommand given\n\n' $red $reset
+        eval (status function) --help
+        return 2
+    end
+
+    switch $argv[1]
+        case clear
+            __git::repos::clear
+        case list
+            __git::repos::list
+        case check
+            __git::repos::check
+        case init
+            __git::repos::init $PWD
+        case cd
+            __git::repos::cd
+        case '*'
+            printf "%serror%s: unknown command: %s\n\n" $red $reset $verb
+            eval (status function) --help
+            return 2
+    end
+
+    return 0
 end

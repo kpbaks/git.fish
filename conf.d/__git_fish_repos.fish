@@ -69,8 +69,8 @@ function __git::repos::add_git_repo_to_db -a dir
         (set_color $fish_color_command) $reset
 end
 
-# Every time a directory with a .git directory is entered, store it in a universal variable
 function __git::repos::in_git_repo_root_directory_hook --on-event in_git_repo_root_directory
+    # Every time a directory with a .git directory is entered, add that directory to the db
     __git::repos::add_git_repo_to_db $PWD
 end
 
@@ -111,6 +111,7 @@ function __git::repos::list --description "list all the git repos that have been
 
     # TODO: <kpbaks 2023-06-05 21:15:20> add --relative flag to print relative timestamps
     # use `path mtime --relative`
+    # TODO: format output as a table similar to `./functions/gbo.fish`
 
     set -l paths
     set -l timestamps
@@ -176,17 +177,22 @@ function __git::repos::list --description "list all the git repos that have been
     end
 end
 
-function __git::repos::init --description "Initialize the repos database by searching recursely from \$argv[1]"
-    if not argparse --min-args 1 --max-args 1 -- $argv
-        return 1
+function __git::repos::init -d "Initialize the repos database by searching recursely from $argv[1]" -a dir
+    set -l reset (set_color normal)
+    set -l red (set_color red)
+
+    if test (count $argv) -eq 0
+        printf '%serror%s: no directory given as argument.\n' $red $reset
+        return 2
     end
 
-    if not test -d $argv[1]
-        __git.fish::echo (printf "%s is not a directory" $argv[1])
-        return 1
+    if not test -d $dir
+        printf '%serror%s: %s is not a directory\n' $red $reset $dir
+        return 2
     end
 
     set -l found_git_repos_count 0
+    # FIXME: what if `find` is not installed?
     find -type d -name .git -exec dirname {} \; | path resolve | while read -l path
         set -l insert_query "INSERT INTO repos (path, timestamp, number_of_times_visited) VALUES ('$path', strftime('%s', 'now'), 0);"
         command sqlite3 $git_fish_repos_sqlite3_db $insert_query
@@ -198,28 +204,25 @@ function __git::repos::init --description "Initialize the repos database by sear
     __git.fish::echo "found $found_git_repos_count git repos"
 end
 
-function __git::repos::clear --description "clear the list of visited repos"
+function __git::repos::clear -d "clear the db of visited repos"
     # TODO: <kpbaks 2023-09-20 20:32:12> add a --select flag to select which repos to clear with fzf
     # TODO: <kpbaks 2023-09-20 20:32:37> or use $argv to select which repos to clear, and then
     # have completion for `repos clear` to show the list of repos, so it is easier to select
     set -l number_of_repos_in_db (command sqlite3 $git_fish_repos_sqlite3_db "SELECT COUNT(*) FROM repos;")
     command sqlite3 $git_fish_repos_sqlite3_db "DELETE FROM repos;"
+
     switch $number_of_repos_in_db
         case 0
-            __git.fish::echo "no repos have been visited"
-        case 1
-            __git.fish::echo "cleared the 1 repo from list of visited repos"
+            printf 'no repos have been visited\n'
         case '*'
-            __git.fish::echo (printf "cleared all %d repos from list of visited repos" $number_of_repos_in_db)
+            printf "cleared all repos from list of visited repos, removed: %d" $number_of_repos_in_db
     end
 end
 
 function __git::repos::cd
     set -l reset (set_color normal)
-    set -l blue (set_color blue)
     set -l red (set_color red)
-    set -l green (set_color green)
-    set -l yellow (set_color yellow)
+    set -l blue (set_color blue)
 
     # Update the repos db, so that the user only selects from valid repos
     __git::repos::check
@@ -242,14 +245,7 @@ function __git::repos::cd
         set valid_repos[2] $last_visited_repo
     end
 
-    # fzf delimits items with newlines, so we need to convert the array i.e. transpose it.
-    # to be delimited by newlines
-    # TODO: <kpbaks 2023-09-16 13:58:19> improve the visuals of the fzf prompt
-    # see kpbaks/fuzzy-file.fish for inspiration
-    # TODO: <kpbaks 2023-09-20 18:06:08> make the preview command configurable with a variable
     # TODO: <kpbaks 2023-09-20 20:04:32> create keybind to open remote origin url in browser ctrl+o
-    # TODO: create an option to not show preview
-
     set -l fzf_opts \
         --prompt "select the git repo to cd into: " \
         --border-label=" $(string upper "repos") " \
@@ -264,17 +260,29 @@ function __git::repos::cd
         --color="gutter:-1" \
         --color="hl:#FFB600" \
         --color="hl+:#FFB600" \
+        --color="prompt:yellow:italic" \
+        --color="label:yellow:bold" \
+        --color="pointer:bright-red" \
+        --color="preview-border:yellow" \
+        --color="info:magenta:dim" \
         --pointer='|>' \
         --bind=ctrl-d:preview-page-down \
         --bind=ctrl-u:preview-page-up \
         --bind=ctrl-f:page-down \
         --bind=ctrl-b:page-up \
-        --reverse \
-        --preview 'git -c color.status=always -C {} status'
+        --reverse
 
-    if test $COLUMNS -le 100
-        # Terminal is not wide enough to have the preview to the right
-        set -a fzf_opts --preview-window=down
+    # TODO: document in readme
+    set --query git_fish_repos_cd_show_preview
+    or set --universal git_fish_repos_cd_show_preview 1
+
+    if test $git_fish_repos_cd_show_preview -eq 1
+        # TODO: make the preview command configurable with a variable
+        set -a fzf_opts --preview 'git -c color.status=always -C {} status'
+        if test $COLUMNS -le 120
+            # Terminal is not wide enough to have the preview to the right
+            set -a fzf_opts --preview-window=down
+        end
     end
 
     for valid_repo in $valid_repos
@@ -322,15 +330,15 @@ function repos -d "manage the list of visited repos" -a subcommand
 
     switch $argv[1]
         case clear
-            __git::repos::clear
+            __git::repos::clear $argv[2..]
         case list
-            __git::repos::list
+            __git::repos::list $argv[2..]
         case check
-            __git::repos::check
+            __git::repos::check $argv[2..]
         case init
             __git::repos::init $PWD
         case cd
-            __git::repos::cd
+            __git::repos::cd $argv[2..]
         case '*'
             printf "%serror%s: unknown command: %s\n\n" $red $reset $verb
             eval (status function) --help

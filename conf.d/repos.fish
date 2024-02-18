@@ -27,11 +27,6 @@ if not test -f $git_fish_repos_sqlite3_db
 end
 
 function __git::repos::add_git_repo_to_db -a dir
-    # if not argparse --min-args 1 --max-args 1 -- $argv
-    #     __git.fish::echo "usage: $(status function) <path>"
-    #     return 2
-    # end
-
     if not test -d $dir
         __git.fish::echo "$dir is not a directory"
         return 1
@@ -95,10 +90,9 @@ function __git::repos::check
     __git.fish::echo (printf "Removed %s%d%s repos from list of visited repos" $git_color (count $repos_to_delete_from_db) $reset)
 end
 
-function __git::repos::list --description "list all the git repos that have been visited"
+function __git::repos::list -d "list all the git repos that have been visited"
     __git::repos::check
 
-    # set -l git_color (set_color "#f44d27") # taken from git's logo
     set -l git_color (set_color red)
     set -l reset (set_color normal)
 
@@ -205,8 +199,8 @@ function __git::repos::init -d "Initialize the repos database by searching recur
 end
 
 function __git::repos::clear -d "clear the db of visited repos"
-    # TODO: <kpbaks 2023-09-20 20:32:12> add a --select flag to select which repos to clear with fzf
-    # TODO: <kpbaks 2023-09-20 20:32:37> or use $argv to select which repos to clear, and then
+    # TODO: Add a --select flag to select which repos to clear with fzf
+    # or use $argv to select which repos to clear, and then
     # have completion for `repos clear` to show the list of repos, so it is easier to select
     set -l number_of_repos_in_db (command sqlite3 $git_fish_repos_sqlite3_db "SELECT COUNT(*) FROM repos;")
     command sqlite3 $git_fish_repos_sqlite3_db "DELETE FROM repos;"
@@ -245,7 +239,6 @@ function __git::repos::cd
         set valid_repos[2] $last_visited_repo
     end
 
-    # TODO: <kpbaks 2023-09-20 20:04:32> create keybind to open remote origin url in browser ctrl+o
     set -l fzf_opts \
         --prompt "select the git repo to cd into: " \
         --border-label=" $(string upper "repos") " \
@@ -303,7 +296,7 @@ function __git::repos::cd
 end
 
 # This function is the public interface to the repos functionality
-function repos -d "manage the list of visited repos" -a subcommand
+function repos -d "Manage the db of visited git repos" -a subcommand
     set -l options h/help
     if not argparse $options -- $argv
         eval (status function) --help
@@ -315,13 +308,32 @@ function repos -d "manage the list of visited repos" -a subcommand
     set -l red (set_color red)
     set -l green (set_color green)
     set -l yellow (set_color yellow)
+    set -l bold (set_color --bold)
 
     if set --query _flag_help
-        # TODO: <kpbaks 2023-09-20 20:33:11> improve the help message
-        echo "usage: repos [init|clear|list|check]"
-
+        set -l option_color $green
+        set -l section_title_color $yellow
+        # Overall description of the command
+        printf "%sManage the db of visited git repos%s\n" $bold $reset
         printf "\n"
+        # Usage
+        printf "%sUSAGE:%s %s%s%s [OPTIONS] [COMMAND]\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset
+        printf "\n"
+        # Subcommands
+        printf "%sCOMMANDS:%s\n" $section_title_color $reset
+        printf "\t%sinit%s      Initialize the repos database by searching recursely from the given directory\n" $green $reset
+        printf "\t%sclear%s     Clear the db of visited repos\n" $green $reset
+        printf "\t%slist%s      List all the git repos that have been visited\n" $green $reset
+        printf "\t%scheck%s     Check if the database is up to date\n" $green $reset
+        printf "\t%scd%s        Change directory to a visited repo\n" $green $reset
+        printf "\n"
+        # Description of the options and flags
+        printf "%sOPTIONS:%s\n" $section_title_color $reset
+        printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset
+        printf "\n"
+
         __git.fish::help_footer
+
         return 0
     end >&2
 

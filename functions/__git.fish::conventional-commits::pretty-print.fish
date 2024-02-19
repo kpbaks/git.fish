@@ -82,9 +82,13 @@ function __git.fish::conventional-commits::pretty-print -a commit
     if test $breaking -eq 1
         printf "%s%s%s" $color_desc "!" $reset
     end
-    # TODO: highlight GitHub issue numbers, e.g. build(deps): bump serde_json from 1.0.111 to 1.0.113 (#9471)
-    # TODO: highlight semver versions, e.g. build(deps): bump serde_json from 1.0.111 to 1.0.113 (#9471)
-    # TODO: format sections in `` like in markdown
-    printf ": %s%s%s" $color_desc $desc $reset
+
+    # Highlight GitHub issue numbers, e.g. build(deps): bump serde_json from 1.0.111 to 1.0.113 (#9471)
+    # Highlight semver versions, e.g. build(deps): bump serde_json from 1.0.111 to 1.0.113 (#9471)
+    # Format sections in `` like in markdown
+    printf ": %s%s%s" $color_desc $desc $reset \
+        | string replace --regex '(#\d+)' "$(set_color red)\$1$(set_color normal)" \
+        | string replace --regex '(\d+\.\d+\.\d+)' "$(set_color cyan)\$1$(set_color normal)" \
+        | string replace --all --regex '`([^`]+)`' "$(set_color --bold)\$1$(set_color normal)"
     printf "\n"
 end

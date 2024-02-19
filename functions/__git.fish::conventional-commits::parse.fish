@@ -3,8 +3,9 @@ function __git.fish::conventional-commits::parse -a commit
 
     set -l conventional_commit_regexp "^(feat|fix|build|chore|ci|docs|style|refactor|perf|test)(\(([^(]+)\))?(!)?: (.+)"
     set -l matches (string match --regex --groups-only $conventional_commit_regexp $commit)
+
     switch (count $matches)
-        case 2
+        case 2 3
             printf "%s\n" $matches
         case 4 5
             # Do not print the "(scope)" capture

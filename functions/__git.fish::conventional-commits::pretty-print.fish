@@ -1,5 +1,7 @@
 function __git.fish::conventional-commits::pretty-print -a commit
-    argparse --min-args 1 --max-args 1 -- $argv; or return 2
+
+    test (count $argv) -eq 1; or return 2
+    # argparse --min-args 1 --max-args 1 -- $argv; or return 2
 
     set -l matches (__git.fish::conventional-commits::parse $commit)
     if test $status -ne 0
@@ -12,6 +14,7 @@ function __git.fish::conventional-commits::pretty-print -a commit
 
     set -l reset (set_color normal)
     set -l italics (set_color --italics)
+    set -l bold (set_color --bold)
 
     set -l breaking 0
     switch (count $matches)
@@ -39,35 +42,35 @@ function __git.fish::conventional-commits::pretty-print -a commit
     switch $type
         case feat
             set -f color_type (set_color $set_color_opts green)
-            set -f color_scope (set_color --bold)
+            set -f color_scope $bold
             set -f color_desc $italics
         case fix
             set -f color_type (set_color $set_color_opts red)
-            set -f color_scope (set_color --bold)
+            set -f color_scope $bold
             set -f color_desc $italics
         case build
             set -f color_type (set_color $set_color_opts yellow)
-            set -f color_scope (set_color --bold)
+            set -f color_scope $bold
             set -f color_desc $italics
         case chore
             set -f color_type (set_color $set_color_opts yellow)
-            set -f color_scope (set_color --bold)
+            set -f color_scope $bold
             set -f color_desc $italics
         case ci docs
             set -f color_type (set_color $set_color_opts yellow)
-            set -f color_scope (set_color --bold)
+            set -f color_scope $bold
             set -f color_desc $italics
         case style
             set -f color_type (set_color $set_color_opts yellow)
-            set -f color_scope (set_color --bold)
+            set -f color_scope $bold
             set -f color_desc $italics
         case refactor perf
             set -f color_type (set_color $set_color_opts magenta)
-            set -f color_scope (set_color --bold)
+            set -f color_scope $bold
             set -f color_desc $italics
         case test
             set -f color_type (set_color $set_color_opts cyan)
-            set -f color_scope (set_color --bold)
+            set -f color_scope $bold
             set -f color_desc $italics
     end
 
@@ -79,6 +82,8 @@ function __git.fish::conventional-commits::pretty-print -a commit
     if test $breaking -eq 1
         printf "%s%s%s" $color_desc "!" $reset
     end
+    # TODO: highlight GitHub issue numbers, e.g. build(deps): bump serde_json from 1.0.111 to 1.0.113 (#9471)
+    # TODO: highlight semver versions, e.g. build(deps): bump serde_json from 1.0.111 to 1.0.113 (#9471)
     # TODO: format sections in `` like in markdown
     printf ": %s%s%s" $color_desc $desc $reset
     printf "\n"

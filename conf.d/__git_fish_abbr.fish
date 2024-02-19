@@ -208,7 +208,7 @@ abbr -a gmv git mv
 
 # git pull
 set --query git_fish_abbr_git_pull_merge_strategy
-or set --universal git_fish_abbr_git_pull_merge_strategy "--ff-only"
+or set --universal git_fish_abbr_git_pull_merge_strategy --ff-only
 
 # TODO: create a user setting to choose between `--rebase` `--no-rebase` `--ff-only`
 # TODO: maybe add `--no-rebase`
@@ -223,7 +223,7 @@ function __git::abbr::git_push
     set -l unpushed_commits (command git log --pretty=format:"%s" @{u}..)
     if test (count $unpushed_commits) -gt 0
         # List the commits that will be pushed
-        echo "# unpushed commits:"
+        printf "# %d unpushed commit%s:\n" (count $unpushed_commits) (test (count $unpushed_commits) -eq 1; and echo ""; or echo "s")
         printf "# - %s\n" $unpushed_commits
     else
         echo "# no commits to push ¯\\_(ツ)_/¯"

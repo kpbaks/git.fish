@@ -87,8 +87,8 @@ function __git.fish::conventional-commits::pretty-print -a commit
     # Highlight semver versions, e.g. build(deps): bump serde_json from 1.0.111 to 1.0.113 (#9471)
     # Format sections in `` like in markdown
     printf ": %s%s%s" $color_desc $desc $reset \
-        | string replace --regex '(#\d+)' "$(set_color red)\$1$(set_color normal)" \
-        | string replace --regex '(\d+\.\d+\.\d+)' "$(set_color cyan)\$1$(set_color normal)" \
+        | string replace --all --regex '(#\d+)' "$(set_color red)\$1$(set_color normal)" \
+        | string replace --all --regex '(\d+\.\d+\.\d+)' "$(set_color cyan)\$1$(set_color normal)" \
         | string replace --all --regex '`([^`]+)`' "$(set_color --bold)\$1$(set_color normal)"
     printf "\n"
 end

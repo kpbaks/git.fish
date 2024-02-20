@@ -89,6 +89,6 @@ function __git.fish::conventional-commits::pretty-print -a commit
     printf ": %s%s%s" $color_desc $desc $reset \
         | string replace --all --regex '(#\d+)' "$(set_color red)\$1$(set_color normal)" \
         | string replace --all --regex '(\d+\.\d+\.\d+)' "$(set_color cyan)\$1$(set_color normal)" \
-        | string replace --all --regex '`([^`]+)`' "$(set_color --bold)\$1$(set_color normal)"
+        | string replace --all --regex '(`[^`]+`)' "$(set_color --bold)\$1$(set_color normal)"
     printf "\n"
 end

@@ -1,4 +1,4 @@
-function __git.fish::help_footer --description "Print a help footer. This way all help messages are consistent in git.fish"
+function __git::help_footer --description "Print a help footer. This way all help messages are consistent in git.fish"
     set -l github_url https://github.com/kpbaks/git.fish
     set -l star_symbol "⭐"
     set -l reset (set_color normal)

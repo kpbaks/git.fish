@@ -1,10 +1,8 @@
-# set --local c complete --command (status filename | path basename | string split --fields=1 .)
-
 set -l c complete -c repos
 $c -f # disable file completion for repos command
 
-set -l verbs clear list check init
-set -l cond "not __fish_seen_subcommand_from $verbs"
+set -l subcommands clear list check init
+set -l cond "not __fish_seen_subcommand_from $subcommands"
 
 $c -n $cond -a clear -d "clear list of visited repositories"
 $c -n $cond -a list -d "list visited repositories"

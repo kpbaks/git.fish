@@ -275,9 +275,15 @@ function __git::repos::cd
 
     if test $git_fish_repos_cd_show_preview -eq 1
         set -a fzf_opts --preview $git_fish_repos_cd_preview_command
+        # TODO: instead of hardcoding the minimum width, use fzf's ability to update the preview window
+        # location every time the window is resized
+        # I have checked with version `0.46.1` and it is not possible to update the preview window location every time the window is resized :(
+        # set -a fzf_opts "--preview-window=right:60%(down)"
         if test $COLUMNS -le 120
             # Terminal is not wide enough to have the preview to the right
             set -a fzf_opts --preview-window=down
+        else
+            set -a fzf_opts --preview-window=right
         end
     end
 
@@ -332,7 +338,7 @@ function repos -d "Manage the db of visited git repos" -a subcommand
         printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $green $reset $green $reset
         printf "\n"
 
-        __git.fish::help_footer
+        __git::help_footer
 
         return 0
     end >&2

@@ -29,7 +29,7 @@ function gcl --description "Print the output of `git config --list` in a pretty 
         printf "\t%s-l%s, %s--local%s     Show the local git config instead of the global\n" $green $reset $green $reset >&2
         printf "\n" >&2
 
-        __git.fish::help_footer
+        __git::help_footer
         return 0
     end
 

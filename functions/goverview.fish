@@ -33,7 +33,7 @@ function goverview -d "show an overview of the git repos in the subtree of the c
         printf "  -h, --help       show this help\n"
 
         printf "\n" >&2
-        __git.fish::help_footer
+        __git::help_footer
 
         return 0
     end

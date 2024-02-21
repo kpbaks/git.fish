@@ -37,7 +37,7 @@ function gstatus --description 'opinionated `git status`'
 
         printf "\n"
 
-        __git.fish::help_footer
+        __git::help_footer
         return 0
     end >&2
 

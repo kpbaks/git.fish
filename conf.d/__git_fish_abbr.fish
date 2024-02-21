@@ -212,6 +212,7 @@ or set --universal git_fish_abbr_git_pull_merge_strategy --ff-only
 
 # TODO: create a user setting to choose between `--rebase` `--no-rebase` `--ff-only`
 # TODO: maybe add `--no-rebase`
+# TODO: show how many commits that can be pulled in a comment similar to `gP` abbreviation
 abbr -a gp git pull $git_fish_abbr_git_pull_merge_strategy
 abbr -a gpnrb git pull --no-rebase
 abbr -a gprb git pull --rebase
@@ -219,10 +220,12 @@ abbr -a gpnff git pull --no-ff
 
 # git push
 function __git::abbr::git_push
+    # TODO: print the remote pushing to
     # FIXME: what if the commit msg is longer than 1 line?
     set -l unpushed_commits (command git log --pretty=format:"%s" @{u}..)
     if test (count $unpushed_commits) -gt 0
         # List the commits that will be pushed
+        # TODO: print the duration since the commit was made
         printf "# %d unpushed commit%s:\n" (count $unpushed_commits) (test (count $unpushed_commits) -eq 1; and echo ""; or echo "s")
         printf "# - %s\n" $unpushed_commits
     else

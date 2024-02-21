@@ -32,7 +32,8 @@ function gbo -d "Print a tabular overview of the current status of each git bran
         printf "\t%s-h%s, %s--help%s      Show this help message and exit.\n" $option_color $reset $option_color $reset
         printf "\t%s-l%s, %s--legend%s    Show a legend at the beginning of the output.\n" $option_color $reset $option_color $reset
         printf "\n"
-         __git.fish::help_footer
+
+        __git::help_footer
 
         return 0
     end >&2 # Redirect the help message to stderr
@@ -102,10 +103,10 @@ function gbo -d "Print a tabular overview of the current status of each git bran
     set -l author_colors cyan red blue green yellow magenta brcyan brred brblue brgreen bryellow brmagenta
     set -l unique_authors
 
-    set -l branch_header "branch"
-    set -l commit_header "commit"
-    set -l committerdate_header "committerdate"
-    set -l author_header "author"
+    set -l branch_header branch
+    set -l commit_header commit
+    set -l committerdate_header committerdate
+    set -l author_header author
 
     set -l longest_branch $branch_header
     set -l length_of_longest_branch (string length $branch_header)
@@ -280,6 +281,7 @@ function gbo -d "Print a tabular overview of the current status of each git bran
         if test $show_committerdate -eq 1
             # Assign a heatmap like color to each committerdate, similar to how GitHub does it
             # Intervals are chosen arbitrarily, as I don't know what interval GitHub uses.
+            # IDEA: instead fadiing out to white, the go towards blue for a freezing effect
             set -l seconds_since_last_commit (math "$now - $committerdate_as_unix_timestamp")
             set -l committerdate_color
             if test $seconds_since_last_commit -lt 86400 # 1 day

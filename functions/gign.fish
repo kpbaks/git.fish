@@ -58,7 +58,7 @@ function gign --description 'Get .gitignore file from https://www.toptal.com/dev
         printf "\t" >&2
         printf "%s python flask > .gitignore" (status current-command) | fish_indent --ansi >&2
         printf "\n" >&2
-        __git.fish::help_footer
+        __git::help_footer
 
         return 0
     end

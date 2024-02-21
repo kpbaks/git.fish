@@ -33,7 +33,7 @@ function should_i_commit --description 'Check if you should commit, based on the
         printf "\t%s-h%s, %s--help%s      Show this help message and exit\n" $option_color $reset $option_color $reset >&2
 
         printf "\n" >&2
-        __git.fish::help_footer >&2
+        __git::help_footer >&2
 
         return 0
     end

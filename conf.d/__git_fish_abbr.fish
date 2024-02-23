@@ -128,10 +128,11 @@ end
 # TODO: use a better name
 abbr -a sgcm --set-cursor -f __git::abbr::git_commit_skip_selected_pre_commit_hook
 
+
 function __git::abbr::gen_git_commit_conventional_commits -a type key
     # Use lowercase for the type with scope, to encourage using commit scopes more often
     # to create a more structured commit history
-    # TODO: for the commit types that have a scope, populate the scope with the basename of the modified file, if only one file is modified
+    set -l staged_files (command git diff --name-only --cached)
     # TODO: make gcm{m,M}{,!} special such that it prepopulates the commit message with something like "merge: merge {{branch-merging-from}} -> {{branch-merging-into}}"
     set -l breaking_changes_warning "# only use this for BREAKING CHANGES like breaking backwards compatibility!"
     abbr -a gcm$key --set-cursor "git commit --message '$type(%): '"
@@ -139,6 +140,33 @@ function __git::abbr::gen_git_commit_conventional_commits -a type key
     set -l key_uppercased (string upper $key)
     abbr -a gcm$key_uppercased --set-cursor "git commit --message '$type: %'"
     abbr -a gcm$key_uppercased"!" --set-cursor "git commit --message '$type: %' $breaking_changes_warning"
+end
+
+
+function __git::abbr::gen_git_commit_conventional_commits_with_scope -a type key
+    set -l abbr gcm$key
+    set -l name_of_generated_function __git::abbr::generated::$abbr
+
+    # TODO: for the commit types that have a scope, populate the scope with the basename of the modified file, if only one file is modified
+    # Generate the function that will be used as the abbreviation
+    # handle more cases with single files staged
+    eval "function $name_of_generated_function
+        set -l staged_files (command git diff --name-only --cached)
+        set -l scope
+        if test (count \$staged_files) -eq 1
+            if test \$staged_files[1] = README.md
+                set scope readme
+            end
+        end
+
+        if test -z \$scope
+            echo 'git commit --message \'$type(%): \''
+        else
+            printf 'git commit --message \'$type(%s): %%\'\n' \$scope
+        end
+    end"
+
+    abbr -a $abbr --set-cursor -f $name_of_generated_function
 end
 
 __git::abbr::gen_git_commit_conventional_commits build b
@@ -154,6 +182,8 @@ __git::abbr::gen_git_commit_conventional_commits revert v
 __git::abbr::gen_git_commit_conventional_commits style s
 __git::abbr::gen_git_commit_conventional_commits test t
 
+__git::abbr::gen_git_commit_conventional_commits_with_scope feat f
+__git::abbr::gen_git_commit_conventional_commits_with_scope docs d
 
 # git diff
 function __git::abbr::git_diff

@@ -150,6 +150,11 @@ function __git::abbr::gen_git_commit_conventional_commits_with_scope -a type key
     # TODO: for the commit types that have a scope, populate the scope with the basename of the modified file, if only one file is modified
     # Generate the function that will be used as the abbreviation
     # handle more cases with single files staged
+    # e.g.
+    # - flake.nix
+    # - .gitignore
+    # - CMakeLists.txt
+    # - Cargo.{toml,lock}
     eval "function $name_of_generated_function
         set -l staged_files (command git diff --name-only --cached)
         set -l scope
@@ -243,7 +248,13 @@ or set --universal git_fish_abbr_git_pull_merge_strategy --ff-only
 # TODO: create a user setting to choose between `--rebase` `--no-rebase` `--ff-only`
 # TODO: maybe add `--no-rebase`
 # TODO: show how many commits that can be pulled in a comment similar to `gP` abbreviation
-abbr -a gp git pull $git_fish_abbr_git_pull_merge_strategy
+function __git::abbr::git_pull
+    # TODO: figure out how to do without it being annoying
+    # printf "# %s\n" (command git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative master..origin/master)
+    echo git pull $git_fish_abbr_git_pull_merge_strategy
+end
+
+abbr -a gp -f __git::abbr::git_pull --set-cursor
 abbr -a gpnrb git pull --no-rebase
 abbr -a gprb git pull --rebase
 abbr -a gpnff git pull --no-ff
@@ -311,7 +322,7 @@ abbr -a gsh -f __git::abbr::git_show
 abbr -a gsb git show-branch
 
 abbr -a gs $git_fish_git_status_command
-abbr -a gss git status --short --branch --untracked-files=all
+# abbr -a gss git status --short --branch --untracked-files=all
 
 # git stash
 abbr -a gst --set-cursor git stash push --message "'%'"

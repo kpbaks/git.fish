@@ -343,7 +343,7 @@ function __git::abbr::git_submodule_add
     end
     echo $cmd
 end
-abbr -a gsma --set-cursor --function __git::abbr::git_submodule_add
+abbr -a gsma --set-cursor -f __git::abbr::git_submodule_add
 abbr -a gsms git submodule status
 abbr -a gsml git submodule status
 abbr -a gsmf git submodule foreach git
@@ -387,7 +387,8 @@ function abbr_git_switch
                 | string match --invert --regex '^\*' \
                 | string trim
             )
-            echo "# you have $(count $branches) other local branches: [ $(string join ', ' $branches) ]"
+            echo "# you have $(count $branches) other local branches:"
+            printf '# - %s\n' $branches
             echo "$cmd $branches[1]"
     end
 end

@@ -46,20 +46,31 @@ test $git_fish_abbr_enable_git = 1; or return 0
 
 # git add
 function __git::abbr::git_add
-    set -l cmd "git add"
+    # set -l cmd "git add"
+    # TODO: use a global varible to store whether we are in a git repo or not
+    # to avoid having all other git commands run the "relatively" expensive check, of whether we are in a git repo
     # 1. Find all modified, untracked, and deleted files
-    set -l addable_files (command git ls-files --modified --others --deleted)
+    set -l unstaged_and_untracked_files (command git ls-files --others --exclude-standard --modified)
     # 2. If there is exactly one file, append it to the command
-    if test (count $addable_files) -eq 1
-        if string match --quiet --regex "\s" -- "$addable_files"
-            # Filepath contains spaces, so we wrap them in single qoutes such that the shell will treat the path as a single word
-            set --append cmd "'$addable_files'"
-        else
-            set --append cmd $addable_files
-        end
+    switch (count $unstaged_and_untracked_files)
+        case 0
+            printf 'git add %%'
+        case 1
+            printf 'git add %s%%' "'$unstaged_and_untracked_files[1]'"
+        case '*'
+            printf 'git add %%'
     end
 
-    printf "%s %%\n" $cmd
+    # if test (count $unstaged_files) -eq 1
+    #     if string match --quiet --regex "\s" -- "$unstaged_files"
+    #         # Filepath contains spaces, so we wrap them in single qoutes such that the shell will treat the path as a single word
+    #         set --append cmd "'$unstaged_files'"
+    #     else
+    #         set --append cmd $unstaged_files
+    #     end
+    # end
+
+    # printf "%s %%\n" $cmd
     echo $__and_git_status
 end
 
@@ -387,7 +398,7 @@ function abbr_git_switch
                 | string match --invert --regex '^\*' \
                 | string trim
             )
-            echo "# you have $(count $branches) other local branches:"
+            echo "# you have $(count $branches) other local branches: (sorted by committerdate)"
             printf '# - %s\n' $branches
             echo "$cmd $branches[1]"
     end

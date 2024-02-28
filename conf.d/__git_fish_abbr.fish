@@ -27,6 +27,7 @@ and begin
     abbr -a pr 'gh pr create -t (git show -s --format=%s HEAD) -b (git show -s --format=%B HEAD | tail -n+3)'
 end
 # -------------------------------------------------------------------------------------------------
+# TODO: document options in README.md
 set --query git_fish_abbr_append_git_status
 or set --universal git_fish_abbr_append_git_status 1
 
@@ -143,7 +144,6 @@ abbr -a sgcm --set-cursor -f __git::abbr::git_commit_skip_selected_pre_commit_ho
 function __git::abbr::gen_git_commit_conventional_commits -a type key
     # Use lowercase for the type with scope, to encourage using commit scopes more often
     # to create a more structured commit history
-    set -l staged_files (command git diff --name-only --cached)
     # TODO: make gcm{m,M}{,!} special such that it prepopulates the commit message with something like "merge: merge {{branch-merging-from}} -> {{branch-merging-into}}"
     set -l breaking_changes_warning "# only use this for BREAKING CHANGES like breaking backwards compatibility!"
     abbr -a gcm$key --set-cursor "git commit --message '$type(%): '"

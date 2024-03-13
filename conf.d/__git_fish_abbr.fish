@@ -265,7 +265,7 @@ function __git::abbr::git_pull
     echo git pull $git_fish_abbr_git_pull_merge_strategy
 end
 
-abbr -a gp -f __git::abbr::git_pull --set-cursor
+# abbr -a gp -f __git::abbr::git_pull --set-cursor
 abbr -a gpnrb git pull --no-rebase
 abbr -a gprb git pull --rebase
 abbr -a gpnff git pull --no-ff
@@ -281,6 +281,7 @@ function __git::abbr::git_push
         printf "# %d unpushed commit%s:\n" (count $unpushed_commits) (test (count $unpushed_commits) -eq 1; and echo ""; or echo "s")
         printf "# - %s\n" $unpushed_commits
     else
+        # FIXME: thinks no commits are found when no upstream
         echo "# no commits to push ¯\\_(ツ)_/¯"
     end
 
@@ -295,7 +296,46 @@ function __git::abbr::git_push
     end
 end
 
-abbr -a gP --set-cursor -f __git::abbr::git_push
+# abbr -a gP --set-cursor -f __git::abbr::git_push
+
+# TODO: implement
+function __git::abbr::git_push_or_pull
+    # set --query __git_fish_last_fetch
+    # or set --global (command date '+%s')
+
+    # 1. Check if current branch has commits from the remote, that has not been merged in.
+    # 2. If there are 1 or more commits that can be merged, then expand to `git pull` i.e. `__git::abbr::git_pull`
+    # 3. Else expand to `git push` i.e. `__git::abbr::git_push`
+
+    # set -l unmerged_commits (command git log --pretty=format:"%s" @{u}..)
+
+    # command git rev-list --left-right --count $current_branch...origin/$current_branch | read local remote
+
+
+    # set -l remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
+    if command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null | read remote_branch
+        set -l current_branch (string split --max=1 --right / $remote_branch)[-1]
+        set -l n 6
+        if test (random 1 6) -eq $n
+            command git fetch --quiet
+            echo "# called `git fetch --quiet` in the background against remote branch: $remote_branch"
+        end
+
+        command git rev-list --left-right --count $current_branch...origin/$current_branch | read n_local_commits n_remote_commits
+
+        if test $n_remote_commits -gt 0
+            # There are commits that can be pulled
+            __git::abbr::git_pull
+        else
+            # There are no commits that can be pulled
+            __git::abbr::git_push
+        end
+
+    end
+
+end
+
+abbr -a gp --set-cursor -f __git::abbr::git_push_or_pull
 
 # git rebase
 abbr -a grb git rebase
@@ -337,7 +377,7 @@ abbr -a gs $git_fish_git_status_command
 
 # git stash
 abbr -a gst --set-cursor git stash push --message "'%'"
-abbr -a gstp git stash pop
+abbr -a gstp git stash pop --quiet
 abbr -a gsta git stash apply
 abbr -a gstd git stash drop
 abbr -a gstl git stash list

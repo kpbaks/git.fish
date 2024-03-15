@@ -314,7 +314,8 @@ function __git::abbr::git_push_or_pull
 
     # set -l remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null | read remote_branch
-        set -l current_branch (string split --max=1 --right / $remote_branch)[-1]
+        # Strip "origin/" prefix
+        set -l current_branch (string split --max=1 / $remote_branch)[-1]
         set -l n 6
         if test (random 1 6) -eq $n
             command git fetch --quiet

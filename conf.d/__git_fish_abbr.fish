@@ -296,13 +296,7 @@ function __git::abbr::git_push
     end
 end
 
-# abbr -a gP --set-cursor -f __git::abbr::git_push
-
-# TODO: implement
 function __git::abbr::git_push_or_pull
-    # set --query __git_fish_last_fetch
-    # or set --global (command date '+%s')
-
     # 1. Check if current branch has commits from the remote, that has not been merged in.
     # 2. If there are 1 or more commits that can be merged, then expand to `git pull` i.e. `__git::abbr::git_pull`
     # 3. Else expand to `git push` i.e. `__git::abbr::git_push`
@@ -317,13 +311,26 @@ function __git::abbr::git_push_or_pull
         # Strip "origin/" prefix
         set -l current_branch (string split --max=1 / $remote_branch)[-1]
         set -l n 6
-        if test (random 1 6) -eq $n
+        if test (random 1 $n) -eq $n
             command git fetch --quiet
             echo "# called `git fetch --quiet` in the background against remote branch: $remote_branch"
         end
 
+        # Check if local branch is dirty
+        set -l stats (command git diff --stat --exit-code)
+        if test $status -ne 0
+            echo '# local branch is dirty. please commit or stash your changes'
+            printf '# %s\n' $stats
+            echo '%'
+            return 0
+        end
+
         command git rev-list --left-right --count $current_branch...origin/$current_branch | read n_local_commits n_remote_commits
 
+        # TODO: what if there is nothing to push or pull?
+        # if test $n_local_commits -eq 0 -a $n_remote_commits -eq 0
+        #     echo '# '
+        # end
         if test $n_remote_commits -gt 0
             # There are commits that can be pulled
             __git::abbr::git_pull
@@ -331,9 +338,7 @@ function __git::abbr::git_push_or_pull
             # There are no commits that can be pulled
             __git::abbr::git_push
         end
-
     end
-
 end
 
 abbr -a gp --set-cursor -f __git::abbr::git_push_or_pull

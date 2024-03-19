@@ -316,21 +316,22 @@ function __git::abbr::git_push_or_pull
             echo "# called `git fetch --quiet` in the background against remote branch: $remote_branch"
         end
 
-        # Check if local branch is dirty
-        set -l stats (command git diff --stat --exit-code)
-        if test $status -ne 0
-            echo '# local branch is dirty. please commit or stash your changes'
-            printf '# %s\n' $stats
-            echo '%'
-            return 0
-        end
-
         command git rev-list --left-right --count $current_branch...origin/$current_branch | read n_local_commits n_remote_commits
 
+        # echo "local_commits: $n_local_commits"
+        # echo "remote_commits: $n_remote_commits"
         # TODO: what if there is nothing to push or pull?
-        # if test $n_local_commits -eq 0 -a $n_remote_commits -eq 0
-        #     echo '# '
-        # end
+        if test $n_local_commits -eq 0 -a $n_remote_commits -eq 0
+            # Check if local branch is dirty
+            set -l stats (command git diff --stat --exit-code)
+            if test $status -ne 0
+                echo '# local branch is dirty. please commit or stash your changes'
+                printf '# %s\n' $stats
+                echo '%'
+                return 0
+            end
+            # echo '# '
+        end
         if test $n_remote_commits -gt 0
             # There are commits that can be pulled
             __git::abbr::git_pull

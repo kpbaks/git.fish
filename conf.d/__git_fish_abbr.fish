@@ -170,8 +170,21 @@ function __git::abbr::gen_git_commit_conventional_commits_with_scope -a type key
         set -l staged_files (command git diff --name-only --cached)
         set -l scope
         if test (count \$staged_files) -eq 1
-            if test \$staged_files[1] = README.md
+        switch \$staged_files[1]
+            case README.md
                 set scope readme
+            case CHANGELOG.md
+                set scope changelog
+            case flake.nix
+                set scope flake
+            case .gitignore
+                set scope gitignore
+	    case CMakelists.txt
+                set scope cmake
+            case Cargo.toml
+                set scope cargo
+            case journal/main.typ
+                set scope journal
             end
         end
 
@@ -317,13 +330,6 @@ function __git::abbr::git_push_or_pull
         end
 
         command git rev-list --left-right --count $current_branch...origin/$current_branch | read n_local_commits n_remote_commits
-        # echo "pipestatus: $pipestatus"
-        # return 0
-        # if test $pipestatus[1] -ne 0
-        #     echo "git push --set-upstream origin $current_branch% # no remote branch found, creating one"
-        #     return 0
-        # end
-
         # echo "local_commits: $n_local_commits"
         # echo "remote_commits: $n_remote_commits"
         # TODO: what if there is nothing to push or pull?

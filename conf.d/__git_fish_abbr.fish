@@ -317,10 +317,12 @@ function __git::abbr::git_push_or_pull
         end
 
         command git rev-list --left-right --count $current_branch...origin/$current_branch | read n_local_commits n_remote_commits
-        if test $status -ne 0
-            echo "git push --set-upstream origin $current_branch% # no remote branch found, creating one"
-            return 0
-        end
+        # echo "pipestatus: $pipestatus"
+        # return 0
+        # if test $pipestatus[1] -ne 0
+        #     echo "git push --set-upstream origin $current_branch% # no remote branch found, creating one"
+        #     return 0
+        # end
 
         # echo "local_commits: $n_local_commits"
         # echo "remote_commits: $n_remote_commits"
@@ -343,6 +345,9 @@ function __git::abbr::git_push_or_pull
             # There are no commits that can be pulled
             __git::abbr::git_push
         end
+    else
+        set -l branch (command git rev-parse --abbrev-ref HEAD)
+        echo "git push --set-upstream origin $branch% # no remote branch found, creating one"
     end
 end
 

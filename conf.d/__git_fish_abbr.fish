@@ -282,6 +282,7 @@ end
 abbr -a gpnrb git pull --no-rebase
 abbr -a gprb git pull --rebase
 abbr -a gpnff git pull --no-ff
+abbr -a gpl git pull
 
 # git push
 function __git::abbr::git_push

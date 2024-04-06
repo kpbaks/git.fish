@@ -52,6 +52,7 @@ function gstatus --description 'opinionated `git status`'
     set -l indent (string repeat --count 4 " ")
     set -l bar '│'
     set -l hr (string repeat --count (math "min(100, $COLUMNS)") "─")
+    set hr (printf '%s%s%s\n' (set_color --dim) $hr $reset)
 
     set -l current_branch (command git rev-parse --abbrev-ref HEAD)
 

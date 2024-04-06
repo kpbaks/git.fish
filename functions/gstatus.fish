@@ -134,22 +134,24 @@ function gstatus --description 'opinionated `git status`'
         end
         set -l number_of_lines_changed_in_repo_since_last_commit (math "$insertions + $deletions")
 
-        printf "%s" $indent
-        printf "%s%d%s file%s changed" $blue $files_changed $reset (test $files_changed -eq 1; and echo ""; or echo "s")
-        if test $insertions -gt 0
-            printf ", %s%d%s insertion%s(%s+%s)" $green $insertions $reset (test $insertions -eq 1; and echo ""; or echo "s") $green $reset
+        if test $files_changed -gt 0
+            printf "%s" $indent
+            printf "%s%d%s file%s changed" $blue $files_changed $reset (test $files_changed -eq 1; and echo ""; or echo "s")
+            if test $insertions -gt 0
+                printf ", %s%d%s insertion%s(%s+%s)" $green $insertions $reset (test $insertions -eq 1; and echo ""; or echo "s") $green $reset
+            end
+            if test $deletions -gt 0
+                printf ", %s%d%s deletion%s(%s-%s)" $red $deletions $reset (test $deletions -eq 1; and echo ""; or echo "s") $red $reset
+            end
+            switch $number_of_lines_changed_in_repo_since_last_commit
+                case 0
+                case 1
+                    printf ", in total %s%d%s line has changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
+                case '*'
+                    printf ", in total %s%d%s lines have changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
+            end
+            printf '\n'
         end
-        if test $deletions -gt 0
-            printf ", %s%d%s deletion%s(%s-%s)" $red $deletions $reset (test $deletions -eq 1; and echo ""; or echo "s") $red $reset
-        end
-        switch $number_of_lines_changed_in_repo_since_last_commit
-            case 0
-            case 1
-                printf ", in total %s%d%s line has changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
-            case '*'
-                printf ", in total %s%d%s lines have changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
-        end
-        printf "\n"
 
         echo $hr
     end
@@ -193,22 +195,24 @@ function gstatus --description 'opinionated `git status`'
         end
         set -l number_of_lines_changed_in_repo_since_last_commit (math "$insertions + $deletions")
 
-        printf "%s" $indent
-        printf "%s%d%s file%s changed" $blue $files_changed $reset (test $files_changed -eq 1; and echo ""; or echo "s")
-        if test $insertions -gt 0
-            printf ", %s%d%s insertion%s(%s+%s)" $green $insertions $reset (test $insertions -eq 1; and echo ""; or echo "s") $green $reset
+        if test $files_changed -gt 0
+            printf "%s" $indent
+            printf "%s%d%s file%s changed" $blue $files_changed $reset (test $files_changed -eq 1; and echo ""; or echo "s")
+            if test $insertions -gt 0
+                printf ", %s%d%s insertion%s(%s+%s)" $green $insertions $reset (test $insertions -eq 1; and echo ""; or echo "s") $green $reset
+            end
+            if test $deletions -gt 0
+                printf ", %s%d%s deletion%s(%s-%s)" $red $deletions $reset (test $deletions -eq 1; and echo ""; or echo "s") $red $reset
+            end
+            switch $number_of_lines_changed_in_repo_since_last_commit
+                case 0
+                case 1
+                    printf ", in total %s%d%s line has changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
+                case '*'
+                    printf ", in total %s%d%s lines have changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
+            end
+            printf '\n'
         end
-        if test $deletions -gt 0
-            printf ", %s%d%s deletion%s(%s-%s)" $red $deletions $reset (test $deletions -eq 1; and echo ""; or echo "s") $red $reset
-        end
-        switch $number_of_lines_changed_in_repo_since_last_commit
-            case 0
-            case 1
-                printf ", in total %s%d%s line has changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
-            case '*'
-                printf ", in total %s%d%s lines have changed" $yellow $number_of_lines_changed_in_repo_since_last_commit $reset
-        end
-        printf "\n"
 
         echo $hr
     end
@@ -216,7 +220,7 @@ function gstatus --description 'opinionated `git status`'
     if not set --query _flag_no_untracked
         printf "%suntracked%s files:\n" $bold_red $reset
         if set --query _flag_hint
-            printf "%s(use %s%s to include in what will be committed)\n" $indent (printf (echo "git add ..." | fish_indent --ansi)) $reset
+            printf "%s(use %s%s to include what will be committed)\n" $indent (printf (echo "git add ..." | fish_indent --ansi)) $reset
             printf "%s(use the abbreviation %sgau%s to add ALL %suntracked%s files)\n" $indent (set_color $fish_color_command) $reset $red $reset
         end
 

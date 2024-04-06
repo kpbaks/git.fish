@@ -1,6 +1,7 @@
 function gstatus --description 'opinionated `git status`'
 
-    set -l options h/help H/hint b/no-branches s/no-staged u/no-unstaged U/no-untracked
+    # TODO: add stash section
+    set -l options h/help H/hint b/no-branches s/no-staged u/no-unstaged U/no-untracked S/no-stash
     if not argparse $options -- $argv
         printf "\n" >&2
         eval (status function) --help
@@ -11,6 +12,7 @@ function gstatus --description 'opinionated `git status`'
     set -l red (set_color red)
     set -l green (set_color green)
     set -l yellow (set_color yellow)
+    set -l magenta (set_color magenta)
     set -l blue (set_color blue)
     set -l bold (set_color --bold)
     set -l bold_yellow (set_color --bold yellow)
@@ -22,10 +24,10 @@ function gstatus --description 'opinionated `git status`'
         set -l section_title_color $yellow
         # Overall description of the command
         printf "%sOpinionated $(printf (echo "git status" | fish_indent --ansi))%s\n" $bold $reset
-        printf "\n"
+        printf '\n'
         # Usage
         printf "%sUSAGE:%s %s%s%s\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset
-        printf "\n"
+        printf '\n'
         # Description
         printf "%sOPTIONS:%s\n" $section_title_color $reset
         printf "\t%s-h%s, %s--help%s            Show this help message and exit\n" $green $reset $green $reset
@@ -34,8 +36,9 @@ function gstatus --description 'opinionated `git status`'
         printf "\t%s-s%s, %s--no-staged%s       Do not show staged files\n" $green $reset $green $reset
         printf "\t%s-u%s, %s--no-unstaged%s     Do not show unstaged files\n" $green $reset $green $reset
         printf "\t%s-U%s, %s--no-untracked%s    Do not show untracked files\n" $green $reset $green $reset
+        printf "\t%s-S%s, %s--no-stask%s        Do not show stashes\n" $green $reset $green $reset
 
-        printf "\n"
+        printf '\n'
 
         __git::help_footer
         return 0
@@ -47,13 +50,14 @@ function gstatus --description 'opinionated `git status`'
     end
 
     set -l indent (string repeat --count 4 " ")
-    set -l bar "│"
+    set -l bar '│'
     set -l hr (string repeat --count (math "min(100, $COLUMNS)") "─")
 
     set -l current_branch (command git rev-parse --abbrev-ref HEAD)
 
     if not set --query _flag_no_branches
         printf "%slocal branches%s:\n" $blue $reset
+        # TODO: if the branch has a prefix like `feat/` or `bugfix/` or `refactor/` then color it differently
         command git branch | while read branch
             if test $branch = "* $current_branch"
                 printf "%s%s%s%s\n" $indent $green $branch $reset
@@ -92,10 +96,10 @@ function gstatus --description 'opinionated `git status`'
 
             set -l commit_threshold 3
             if test $local -ge $commit_threshold
-                printf "%syou may want to push your changes to the remote\n" $indent
+                printf "%syou may want to push⬆ your changes to the remote\n" $indent
             end
             if test $remote -ge $commit_threshold
-                printf "%syou may want to pull changes from the remote\n" $indent
+                printf "%syou may want to pull⬇ changes from the remote\n" $indent
             end
         end
         echo $hr
@@ -223,6 +227,25 @@ function gstatus --description 'opinionated `git status`'
             else
                 printf "%s%s%s%s/%s%s%s\n" $indent $blue (path dirname $f) $reset $bold_red (path basename $f) $reset
             end
+        end
+    end
+
+    if not set --query _flag_no_stash
+        echo $hr
+        # TODO: show hints for how to interact with stashes, i.e. how to apply/pop them
+
+        # TODO: show the time since the stash was created
+        # git stash list --format="%h %s %cr"
+        # git stash list --format="%h %s %at" # unix epoch
+        printf '%sstashes%s:\n' $magenta $reset
+
+        # set -l stashes (command git stash list)
+
+        command git stash list \
+            | string match --regex --groups-only '^stash@\{(\d+)\}: (.+)$' \
+            | while read --line index msg
+
+            printf '%s[%d] %s"%s"%s\n' $indent $index $green $msg $reset
         end
     end
 end

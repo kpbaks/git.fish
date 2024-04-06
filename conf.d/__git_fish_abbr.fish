@@ -23,6 +23,38 @@ and begin
     abbr -a ghi gh issue
     abbr -a ghil --set-cursor "gh issue list --state=open% # state can be one of: open | closed | all"
     abbr -a ghilw gh issue list --web
+    function __git::gh::list-workflows
+        set -l dir $PWD
+        while test $dir != /
+            if test -d $dir/.github/workflows
+                # for f in $dir/.github/workflows/*
+                # end
+                # printf '%s\n' $dir/.github/workflows/*.{yml,yaml}
+                path basename $dir/.github/workflows/*.{yml,yaml}
+                return 0
+            end
+            set dir (path dirname $dir)
+        end
+
+        return 1
+    end
+    function __git::abbr::gh-workflow-run
+        set -l workflows (__git::gh::list-workflows)
+        set -l n_workflows (count $workflows)
+        if test (count $n_workflows) -gt 1
+            printf '# %s\n' $workflows
+        end
+        # for f in (__git::gh::list-workflows)
+        #     echo "# $f"
+        # end
+        printf "gh workflow run"
+        if test $n_workflows -eq 1
+            printf " $workflows[1]"
+        end
+        printf '\n'
+    end
+    abbr -a ghwr -f __git::abbr::gh-workflow-run
+    # abbr -a ghwr gh workflow run
     # jonwoo
     abbr -a pr 'gh pr create -t (git show -s --format=%s HEAD) -b (git show -s --format=%B HEAD | tail -n+3)'
 end

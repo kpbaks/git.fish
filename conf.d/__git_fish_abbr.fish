@@ -27,9 +27,11 @@ and begin
         set -l dir $PWD
         while test $dir != /
             if test -d $dir/.github/workflows
-                # for f in $dir/.github/workflows/*
+                # for f in $dir/.github/workflows/*.{yml,yaml}
+                #     # if string match
                 # end
                 # printf '%s\n' $dir/.github/workflows/*.{yml,yaml}
+
                 path basename $dir/.github/workflows/*.{yml,yaml}
                 return 0
             end
@@ -202,21 +204,25 @@ function __git::abbr::gen_git_commit_conventional_commits_with_scope -a type key
         set -l staged_files (command git diff --name-only --cached)
         set -l scope
         if test (count \$staged_files) -eq 1
-        switch \$staged_files[1]
-            case README.md
-                set scope readme
-            case CHANGELOG.md
-                set scope changelog
-            case flake.nix
-                set scope flake
-            case .gitignore
-                set scope gitignore
-	    case CMakelists.txt
-                set scope cmake
-            case Cargo.toml
-                set scope cargo
-            case journal/main.typ
-                set scope journal
+            switch \$staged_files[1]
+                case README.md
+                    set scope readme
+                case CHANGELOG.md
+                    set scope changelog
+                case flake.nix
+                    set scope flake
+                case .gitignore
+                    set scope gitignore
+        	    case CMakelists.txt
+                    set scope cmake
+                case Cargo.toml
+                    set scope cargo
+                case journal/main.typ
+                    set scope journal
+            end
+
+            if string match --regex --groups-only '^.github/workflows/([^.]+)\.(yml|yaml)' \$staged_files[1] | read --line workflow extension
+                set scope gh-action:\$workflow
             end
         end
 

@@ -1,3 +1,5 @@
+<!-- # `><> 💙 ` -->
+
 # git.fish
 
 Collection of abbreviations and interactive fish-shell integrations I use to make `git` easier!
@@ -66,13 +68,20 @@ See `gign --help` for more information.
 ##### Usage
 
 ```fish
-repos init [DIR] # Initialize the database by recursively searching for git repositories in DIR
+repos populate <DIR> # Populate the database by recursively searching for git repositories in DIR
 repos list # List all repositories in the database
 repos clear # Clear the database
 repos check # Update the database by removing non-existing directories
 repos cd # Change directory to a repository using fzf
 ```
 <!-- TODO: insert picture of `repos list` -->
+
+> [!TIP]\
+> `repos` is really useful if you create a keybind to quickly `cd` around to your projects
+> I like to use <kbd>alt-r<kbd/> for this:
+> ```fish
+bind \er 'repos cd; commandline --function repaint'
+> ```
 
 ##### Settings
 

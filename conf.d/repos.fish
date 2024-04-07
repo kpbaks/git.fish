@@ -23,7 +23,8 @@ if not test -f $git_fish_repos_sqlite3_db
 		);
 	"
     command sqlite3 $git_fish_repos_sqlite3_db $schema
-    __git.fish::echo "created database at $git_fish_repos_sqlite3_db"
+
+    printf '%sgit.fish:repos [info]%s: created database at %s\n' (set_color green) (set_color reset) $git_fish_repos_sqlite3_db >&2
 end
 
 function __git::repos::add_git_repo_to_db -a dir
@@ -60,8 +61,8 @@ function __git::repos::add_git_repo_to_db -a dir
     set -l repo_dir (string replace "$HOME" "~" $dir)
     __git.fish::echo (printf "added (%s%s%s) to list of visited repos, total: %s%d%s (use %srepos%s to interact with them)\n" \
 			$git_color $repo_dir $reset \
-			$git_color $total_number_of_repos_visited $reset) \
-        (set_color $fish_color_command) $reset
+			$git_color $total_number_of_repos_visited $reset \
+        (set_color $fish_color_command) $reset)
 end
 
 function __git::repos::in_git_repo_root_directory_hook --on-event in_git_repo_root_directory
@@ -78,13 +79,15 @@ function __git::repos::check
     set -l repos_to_delete_from_db
     for path in $paths
         if not test -d $path
-            set --append repos_to_delete_from_db $path
+            set -a repos_to_delete_from_db $path
         end
     end
 
     test (count $repos_to_delete_from_db) -eq 0; and return 0
-    set -l delete_query "DELETE FROM repos WHERE path IN ($(string join ',' $(printf "'%s' " $repos_to_delete_from_db)));"
-    # echo $delete_query
+
+    set repos_to_delete_from_db (printf "'%s'\n" $repos_to_delete_from_db | string join ',')
+    set -l delete_query "DELETE FROM repos WHERE path IN ($repos_to_delete_from_db);"
+    echo $delete_query
     command sqlite3 $git_fish_repos_sqlite3_db $delete_query
     # TODO: the count printed is wrong
     __git.fish::echo (printf "Removed %s%d%s repos from list of visited repos" $git_color (count $repos_to_delete_from_db) $reset)
@@ -171,20 +174,23 @@ function __git::repos::list -d "list all the git repos that have been visited"
     end
 end
 
-function __git::repos::init -d "Initialize the repos database by searching recursely from $argv[1]" -a dir
+function __git::repos::populate -d "populate the repos database by searching recursively for `.git/` directories from $argv[1]" -a dir
     set -l reset (set_color normal)
     set -l red (set_color red)
 
     if test (count $argv) -eq 0
-        printf '%serror%s: no directory given as argument.\n' $red $reset
+        printf '%serror%s: no directory given as argument.\n' $red $reset >&2
         return 2
     end
 
     if not test -d $dir
-        printf '%serror%s: %s is not a directory\n' $red $reset $dir
+        printf '%serror%s: %s is not a directory\n' $red $reset $dir >&2
         return 2
     end
 
+
+    # FIXME: do not add the same repo twice
+    # FIXME: do not add git submodules
     set -l found_git_repos_count 0
     # FIXME: what if `find` is not installed?
     find -type d -name .git -exec dirname {} \; | path resolve | while read -l path
@@ -327,11 +333,11 @@ function repos -d "Manage the db of visited git repos" -a subcommand
         printf "\n"
         # Subcommands
         printf "%sCOMMANDS:%s\n" $section_title_color $reset
-        printf "\t%sinit%s      Initialize the repos database by searching recursely from the given directory\n" $green $reset
-        printf "\t%sclear%s     Clear the db of visited repos\n" $green $reset
-        printf "\t%slist%s      List all the git repos that have been visited\n" $green $reset
-        printf "\t%scheck%s     Check if the database is up to date\n" $green $reset
-        printf "\t%scd%s        Change directory to a visited repo\n" $green $reset
+        printf "\t%populate%s <DIR>  Populate the repos database by searching recursively for `.git/` directories\n" $green $reset
+        printf "\t%sclear%s          Clear the db of visited repos\n" $green $reset
+        printf "\t%slist%s           List all the git repos that have been visited\n" $green $reset
+        printf "\t%scheck%s          Check if the database is up to date\n" $green $reset
+        printf "\t%scd%s             Use fzf to select a visited repo to cd into\n" $green $reset
         printf "\n"
         # Description of the options and flags
         printf "%sOPTIONS:%s\n" $section_title_color $reset
@@ -344,12 +350,14 @@ function repos -d "Manage the db of visited git repos" -a subcommand
     end >&2
 
     if test (count $argv) -eq 0
-        printf '%serror%s: no subcommand given\n\n' $red $reset
+        printf '%serror%s: no command given\n\n' $red $reset
         eval (status function) --help
         return 2
     end
 
     switch $argv[1]
+        case cd
+            __git::repos::cd $argv[2..]
         case clear
             __git::repos::clear $argv[2..]
         case list
@@ -357,9 +365,9 @@ function repos -d "Manage the db of visited git repos" -a subcommand
         case check
             __git::repos::check $argv[2..]
         case init
-            __git::repos::init $PWD
-        case cd
-            __git::repos::cd $argv[2..]
+            __git::repos::populate $PWD
+        case overview
+            echo todo
         case '*'
             printf "%serror%s: unknown command: %s\n\n" $red $reset $verb
             eval (status function) --help

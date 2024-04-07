@@ -237,19 +237,23 @@ function __git::abbr::gen_git_commit_conventional_commits_with_scope -a type key
 end
 
 __git::abbr::gen_git_commit_conventional_commits build b
-__git::abbr::gen_git_commit_conventional_commits chore c
-__git::abbr::gen_git_commit_conventional_commits ci i
+# __git::abbr::gen_git_commit_conventional_commits chore c
+# __git::abbr::gen_git_commit_conventional_commits ci i
 __git::abbr::gen_git_commit_conventional_commits docs d
-__git::abbr::gen_git_commit_conventional_commits feat f
-__git::abbr::gen_git_commit_conventional_commits fix x
+# __git::abbr::gen_git_commit_conventional_commits feat f
+# __git::abbr::gen_git_commit_conventional_commits fix x
 __git::abbr::gen_git_commit_conventional_commits merge m
-__git::abbr::gen_git_commit_conventional_commits perf p
+# __git::abbr::gen_git_commit_conventional_commits perf p
 __git::abbr::gen_git_commit_conventional_commits refactor r
 __git::abbr::gen_git_commit_conventional_commits revert v
 __git::abbr::gen_git_commit_conventional_commits style s
 __git::abbr::gen_git_commit_conventional_commits test t
 
 __git::abbr::gen_git_commit_conventional_commits_with_scope feat f
+__git::abbr::gen_git_commit_conventional_commits_with_scope fix x
+__git::abbr::gen_git_commit_conventional_commits_with_scope chore c
+__git::abbr::gen_git_commit_conventional_commits_with_scope ci i
+__git::abbr::gen_git_commit_conventional_commits_with_scope perf p
 __git::abbr::gen_git_commit_conventional_commits_with_scope docs d
 
 # git diff

@@ -264,7 +264,8 @@ end
 abbr -a gd --set-cursor -f __git::abbr::git_diff
 
 # TODO: create a function for this similar to `gstatus`
-abbr -a gds git diff --stat
+# abbr -a gds git diff --stat
+abbr -a gds git diff --staged
 
 # git fetch
 abbr -a gf --set-cursor "git fetch %$__and_git_status"

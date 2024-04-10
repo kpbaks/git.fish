@@ -497,7 +497,7 @@ function abbr_git_switch
             # that you switch between often. E.g. master and develop.
             set -l other_branch (command git branch | string match --invert --regex '^\*' | string trim)
             echo "# you only have 1 other local branch"
-            echo "$cmd $other_branch"
+            echo "$cmd $other_branch%"
         case '*'
             # If there are more than 2 branches, then append the most recently used branch to the command
             set -l branches (command git branch --sort=-committerdate \
@@ -506,11 +506,13 @@ function abbr_git_switch
             )
             echo "# you have $(count $branches) other local branches: (sorted by committerdate)"
             printf '# - %s\n' $branches
-            echo "$cmd $branches[1]"
+            echo "$cmd $branches[1]%"
     end
+
+    echo "and git fetch"
 end
 
-abbr -a gsw -f abbr_git_switch
+abbr -a gsw --set-cursor -f abbr_git_switch
 
 abbr -a gswc git switch --create
 

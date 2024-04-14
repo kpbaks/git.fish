@@ -9,6 +9,7 @@ Collection of abbreviations and interactive fish-shell integrations I use to mak
 - [fish ^3.6.0](https://github.com/fish-shell/fish-shell/releases/tag/3.6.0) enhanced the capabilities of `abbr` which this plugin makes use of.
 - [git](https://git-scm.com/) I don't hope that comes as a surprise ;-)
 - [sqlite3](https://www.sqlite.org/index.html) is used to store visited git directories with the `repos` command.
+- [gum](https://github.com/charmbracelet/gum) is used to provide interactive widgets to some of the commands, like `resolve-conflicts`.
 
 ### Optional Requirements
 

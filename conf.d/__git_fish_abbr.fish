@@ -500,13 +500,10 @@ function abbr_git_switch
             echo "$cmd $other_branch%"
         case '*'
             # If there are more than 2 branches, then append the most recently used branch to the command
-            set -l branches (command git branch --sort=-committerdate \
-                | string match --invert --regex '^\*' \
-                | string trim
-            )
+            set -l branches (git branch --sort=-committerdate --format="%(refname:short) %(committerdate:relative)" | column -t -s " " --table-columns-limit 2 --table-right 2)
             echo "# you have $(count $branches) other local branches: (sorted by committerdate)"
             printf '# - %s\n' $branches
-            echo "$cmd $branches[1]%"
+            echo "$cmd $(string split --fields=1 ' ' -- $branches[1])%"
     end
 
     echo "and git fetch"

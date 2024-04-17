@@ -97,10 +97,10 @@ function gstatus --description 'opinionated `git status`'
 
             set -l commit_threshold 3
             if test $local -ge $commit_threshold
-                printf "%syou may want to push⬆ your changes to the remote\n" $indent
+                printf '%syou may want to push%s⬆%s your changes to the remote\n' $indent $green $reset
             end
             if test $remote -ge $commit_threshold
-                printf "%syou may want to pull⬇ changes from the remote\n" $indent
+                printf '%syou may want to pull%s⬇%s the changes from the remote\n' $indent $red $reset
             end
         end
         echo $hr
@@ -238,6 +238,8 @@ function gstatus --description 'opinionated `git status`'
     if not set --query _flag_no_stash
         echo $hr
         # TODO: show hints for how to interact with stashes, i.e. how to apply/pop them
+
+        # TODO: show which branch the stash is from e.g. the current output contains 'On feat/integration: temp'
 
         # TODO: show the time since the stash was created
         # git stash list --format="%h %s %cr"

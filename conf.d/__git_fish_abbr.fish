@@ -560,7 +560,7 @@ end
 
 abbr -a git_clone_at_depth --position command --regex "gc[0-9]*" --function abbr_git_clone
 
-abbr -a gwip "git add (git ls-files --modified) $git_fish_git_status_command && git commit --message 'wip, squash me' --no-verify"
+abbr -a gwip "git add (git ls-files --modified) && $git_fish_git_status_command && git commit --message 'wip, squash me' --no-verify"
 
 # unstage a file
 abbr -a gun --set-cursor git restore --staged %

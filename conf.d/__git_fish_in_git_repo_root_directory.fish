@@ -59,26 +59,42 @@ function __git.fish::reminders::connect-to-remote --on-event in_git_repo_root_di
 end
 
 function __git.fish::auto_fetch --on-event in_git_repo_root_directory
-    set --query GIT_FISH_AUTO_FETCH; or set --global GIT_FISH_AUTO_FETCH 0
-    test $GIT_FISH_AUTO_FETCH -eq 1; or return 0
+    set --query git_fish_auto_fetch; or set -U git_fish_auto_fetch 0
+    test $git_fish_auto_fetch -eq 1; or return 0
+
+    set -l now (date +%s)
+    # TODO: use sqlite3 for this
+    # set -l git_auto_fetch_cache $__fish_user_data_dir/git.fish/auto_fetch.cache.txt
+    # set -l delimiter '|'
+    # while read -d $delimiter path last_auto_fetch
+
+    # end <
+
+
 
     # TODO: maybe print a warning if this is the case
     command git rev-parse @{upstream} >/dev/null 2>/dev/null; or return 0 # No remote branch detected
 
     # Remote branch detected
     # TODO: maybe but in background with `&` to not block for a second or 2, which is annoying
-    command git fetch --quiet
+    command git fetch --quiet &
+    function __git_auto_fetch_callback --on-process-exit $last_pid
+        echo hello
+        set -l head_hash (command git rev-parse HEAD)
+        set -l branch_name (command git rev-parse --abbrev-ref HEAD)
+        set -l upstream_hash (command git ls-remote origin --tags refs/heads/$branch_name | string match --regex --groups-only "^(\S+)")
 
-    set -l head_hash (command git rev-parse HEAD)
-    set -l branch_name (command git rev-parse --abbrev-ref HEAD)
-    set -l upstream_hash (command git ls-remote origin --tags refs/heads/$branch_name | string match --regex --groups-only "^(\S+)")
+        if test $head_hash != $upstream_hash
+            # TODO: <kpbaks 2023-09-19 21:33:09> figure out if ahead or behind
+            # See how I do it in `gstatus`
+            __git.fish::echo "You are behind the remote branch. Run $(printf "git pull" | fish_indent --ansi) to update!"
+            __git.fish::echo "or you are ahead of the remote branch. Run $(printf "git push" | fish_indent --ansi) to update!"
+        end
 
-    if test $head_hash != $upstream_hash
-        # TODO: <kpbaks 2023-09-19 21:33:09> figure out if ahead or behind
-        # See how I do it in `gstatus`
-        __git.fish::echo "You are behind the remote branch. Run $(printf "git pull" | fish_indent --ansi) to update!"
-        __git.fish::echo "or you are ahead of the remote branch. Run $(printf "git push" | fish_indent --ansi) to update!"
+        commandline --function repaint
+        functions --erase (status function)
     end
+
 
     # TODO: implement this
     # Figure out what commits that are in the remote branch but not in the local branch
@@ -120,6 +136,7 @@ function __git::reminders::should-i-commit --on-event in_git_repo_root_directory
 end
 
 function __git.fish::reminders::avoid_being_on_main_branch --on-event in_git_repo_root_directory
+    # TODO: rename variable to new scheme and document
     set --query GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH; or set --universal GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH 0
     test $GIT_FISH_AVOID_BEING_ON_MAIN_BRANCH -eq 1; or return 0
 
@@ -131,6 +148,8 @@ function __git.fish::reminders::avoid_being_on_main_branch --on-event in_git_rep
     end
 
     set -l current_branch (command git rev-parse --abbrev-ref HEAD)
+
+    # TODO: revamp and improve
 
     if contains -- $current_branch main master # The 2 most common names for the main branch
         set -l reset (set_color normal)
@@ -156,9 +175,29 @@ end
 
 # TODO: use https://github.com/compilerla/conventional-pre-commit
 
-function __git.fish::reminders::use-branches --on-event in_git_repo_root_directory
-    set --query GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED; or set --universal GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED 0
-    test $GIT_FISH_REMIND_ME_TO_USE_BRANCHES_ENABLED -eq 1; or return 0
+function __git.fish::reminders::branches --on-event in_git_repo_root_directory
+    # TODO: document variables in README.md
+    set --query git_fish_reminders_branches_enable
+    or set --universal git_fish_reminders_branches_enable 0
+
+    set --query git_fish_reminders_branches_also_show_remote
+    or set --universal git_fish_reminders_branches_also_show_remote 0
+
+    test $git_fish_reminders_branches_enable -eq 1; or return 0
+
+    set -l args
+    if test $git_fish_reminders_branches_also_show_remote -eq 1
+        set -a args --all
+    end
+
     # functions/gbo.fish
-    gbo --unchecked # We already know that we are in a git repo
+    gbo $args --unchecked # We already know that we are in a git repo
 end
+
+
+# TODO: check if submodules are initialized when enter git repo
+
+# `git submodule status`
+# -73b54c862e9034b7158980c0e6eb3b264fac4729 thirdparty/raylib
+#
+# suggest: `git submodule update --init --recursive`

@@ -1,6 +1,7 @@
 # (g)it (b)ranch (o)verview
 function gbo -d "Print a tabular overview of the current status of each git branch"
     set -l options h/help a/all u/unchecked l/legend
+    # TODO: ellipsize commitmessage column if overflowing width
 
     if not argparse $options -- $argv
         eval (status function) --help

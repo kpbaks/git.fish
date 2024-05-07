@@ -51,6 +51,8 @@ function conflicts -d ''
     # fAo
     # >>>>>>> other
 
+    # FIXME: handle power set of combinations
+
     command git diff --check | while read --line current bar equal incoming
         string match --regex --groups-only '^([^:]+):(\d+):' $current | read --line file_start line_start
         string match --regex --groups-only '^([^:]+):(\d+):' $bar | read --line file_start line_bar

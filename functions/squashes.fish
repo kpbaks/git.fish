@@ -8,6 +8,8 @@ function squashes -d 'list all unpushed commits containing r`squash( me)?`'
     end
 
     set -l squash_regexp 'squash( me)?'
+    # TODO: use this one, as it is the one recognized by `git` with `git rebase --interactive --autosquash`
+    # set -l squash_regexp 'squash!'
 
     set -l reset (set_color normal)
     set -l bold (set_color --bold)
@@ -58,6 +60,9 @@ function squashes -d 'list all unpushed commits containing r`squash( me)?`'
         end
     end
 
+    # echo "hashes: $hashes"
+    # echo "commitmsgs: $commitmsgs"
+
     if test (count $hashes) -gt 0
         if isatty stdout
             for i in (seq (count $hashes))
@@ -65,7 +70,7 @@ function squashes -d 'list all unpushed commits containing r`squash( me)?`'
             end
         else
             for i in (seq (count $hashes))
-                printf '+ %s %s\n'$hashes[$i] $commitmsgs[$i]
+                printf '+ %s %s\n' $hashes[$i] $commitmsgs[$i]
             end
         end
         return 0

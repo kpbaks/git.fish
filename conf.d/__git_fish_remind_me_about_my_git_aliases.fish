@@ -1,7 +1,11 @@
 status is-interactive; or return 0
 
-set --query GIT_FISH_REMIND_ME_ABOUT_MY_GIT_ALIASES; or set --global GIT_FISH_REMIND_ME_ABOUT_MY_GIT_ALIASES 0
-test $GIT_FISH_REMIND_ME_ABOUT_MY_GIT_ALIASES -eq 1; or return 0
+# TODO: document in README.md
+
+set --query git_fish_reminders_git_aliases_enable
+or set --universal git_fish_reminders_git_aliases_enable 0
+
+test $git_fish_reminders_git_aliases_enable -eq 1; or return 0
 
 function __git.fish::remind_me_about_my_git_aliases --on-event fish_postexec
     # if the user typed a git command, remind them about their aliases

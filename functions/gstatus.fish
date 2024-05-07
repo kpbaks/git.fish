@@ -14,6 +14,7 @@ function gstatus --description 'opinionated `git status`'
     set -l yellow (set_color yellow)
     set -l magenta (set_color magenta)
     set -l blue (set_color blue)
+    set -l cyan (set_color cyan)
     set -l bold (set_color --bold)
     set -l bold_yellow (set_color --bold yellow)
     set -l bold_red (set_color --bold red)
@@ -239,20 +240,63 @@ function gstatus --description 'opinionated `git status`'
         echo $hr
         # TODO: show hints for how to interact with stashes, i.e. how to apply/pop them
 
-        # TODO: show which branch the stash is from e.g. the current output contains 'On feat/integration: temp'
-
         # TODO: show the time since the stash was created
         # git stash list --format="%h %s %cr"
         # git stash list --format="%h %s %at" # unix epoch
         printf '%sstashes%s:\n' $magenta $reset
 
-        # set -l stashes (command git stash list)
+        set -l indices
+        set -l timestamps
+        set -l branches
+        set -l msgs
 
-        command git stash list \
-            | string match --regex --groups-only '^stash@\{(\d+)\}: (.+)$' \
-            | while read --line index msg
+        command git stash list --format="%gd %at %s" | string match --regex --groups-only '^stash@\{(\d+)\} (\d+) On (\S+): (.+)' \
+            | while read --line index timestamp branch msg
+            set -a indices $index
+            set -a timestamps $timestamp
+            set -a branches $branch
+            set -a msgs $msg
+        end
 
-            printf '%s[%d] %s"%s"%s\n' $indent $index $green $msg $reset
+        set -l index_width (string length $indices[-1])
+        set -l longest_branch ""
+        for branch in $branches
+            if test (string length $branch) -gt (string length $longest_branch)
+                set longest_branch $branch
+            end
+        end
+
+        set -l now (date +%s)
+        set -l time_sinces
+        set longest_time_since 0
+        for i in (seq (count $indices))
+            set -l time_since (math "$now - $timestamps[$i]")
+            set -a time_sinces $time_since
+            if test $time_since -gt $longest_time_since
+                set longest_time_since $time_since
+            end
+        end
+
+        # printf '%d\n' $time_sinces
+        # return
+
+        set -l branch_width (string length $longest_branch)
+        for i in (seq (count $indices))
+            printf '%s[%s%s%s] %s %s%s%s\n' \
+                $indent \
+                $cyan (string pad -w $index_width $indices[$i]) $reset \
+                (string pad -r -w $branch_width $branches[$i]) \
+                $green $msgs[$i] $reset
+
+
+
+            # FIXME: prints really weirdly
+            # printf '%s[%s%s%s] %s%s%s secs ago %s %s%s%s\n' \
+            #     $indent \
+            #     $cyan (string pad -w $index_width $indices[$i]) $reset \
+            #     $yellow (string pad -w $longest_time_since $time_sinces[$i]) $reset \
+            #     (string pad -r -w $branch_width $branches[$i]) \
+            #     $green $msgs[$i] $reset
         end
     end
 end

@@ -1,6 +1,6 @@
 function git.fish -a subcommand --description "Interact with `kpbaks/git.fish` plugin"
-
     set -l options h/help
+
     if not argparse $options -- $argv
         printf "\n"
         eval (status function) --help
@@ -21,47 +21,61 @@ function git.fish -a subcommand --description "Interact with `kpbaks/git.fish` p
     end
 
     if test (count $argv) -eq 0
-        # TODO: improve
-        echo "No subcommand provided"
-        set -l scriptdir (path dirname (status filename))
-        echo "Usage: $scriptfile <subcommand> $scriptdir"
-        set -l scriptfile (path resolve (status filename))
-        set -l scriptdir (path dirname $scriptfile)
-        echo "scriptfile: $scriptfile"
-        echo "scriptdir: $scriptdir"
-        return 1
+        set subcommand all
     end
 
     switch $subcommand
-        case status
-            set -l git_fish_env_vars
-            set | string match --regex --groups-only --all -- '(^GIT_FISH_\S+)' | while read var
-                set --append git_fish_env_vars $var
-            end
+        case all
+            eval (status function) functions
+            eval (status function) reminders
+            eval (status function) abbreviations
 
-            set -l longest_var_length 0
-            for var in $git_fish_env_vars
-                set longest_var_length (math "max $(string length $var),$longest_var_length")
-            end
 
-            for var in $git_fish_env_vars
-                set -l padding_length (math "$longest_var_length - $(string length $var) + 1")
-                set -l padding (string repeat --count $padding_length ' ')
-                set -l val $$var
-                set -l val_color $reset
-                if string match --quiet "*ENABLE*" -- $var
-                    if test "$val" = 0
-                        set val_color $red
-                    else if test "$val" = 1
-                        set val_color $green
-                    end
-                end
+            # set -l git_fish_env_vars
+            # set | string match --regex --groups-only --all -- '(^GIT_FISH_\S+)' | while read var
+            #     set --append git_fish_env_vars $var
+            # end
 
-                printf "%s%s = %s%s%s\n" $var $padding $val_color $val $reset
-            end
+            # set -l longest_var_length 0
+            # for var in $git_fish_env_vars
+            #     set longest_var_length (math "max $(string length $var),$longest_var_length")
+            # end
 
-        case enable # <module>
-        case disable # <module>
+            # for var in $git_fish_env_vars
+            #     set -l padding_length (math "$longest_var_length - $(string length $var) + 1")
+            #     set -l padding (string repeat --count $padding_length ' ')
+            #     set -l val $$var
+            #     set -l val_color $reset
+            #     if string match --quiet "*ENABLE*" -- $var
+            #         if test "$val" = 0
+            #             set val_color $red
+            #         else if test "$val" = 1
+            #             set val_color $green
+            #         end
+            #     end
+
+            #     printf "%s%s = %s%s%s\n" $var $padding $val_color $val $reset
+            # end
+
+        case functions
+            printf '# functions:\n'
+            # gbo
+            # gstatus
+            # repos
+            # gcl
+            # goverview
+            # gsl
+            # gign
+
+
+
+        case reminders
+            printf '# reminders:\n'
+        case abbreviations
+            printf '# abbreviations:\n'
+
+            # case enable # <module>
+            # case disable # <module>
         case abbr
             set -l longest_abbr_length 0
             for abbr in $__GIT_FISH_ABBREVIATIONS

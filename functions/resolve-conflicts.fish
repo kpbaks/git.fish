@@ -43,6 +43,9 @@ function resolve-conflicts -d ''
     set -l n_conflicts (math "$(count $checks) / 4")
     set -l n_conflicts_handled 0
 
+    # FIXME: handle power set of combinations
+    set -l current_branch (command git rev-parse --abbrev-ref HEAD)
+
     # command git diff --check | while read --line current bar equal incoming
     printf '%s\n' $checks | while read --line current bar equal incoming
         set n_conflicts_handled (math $n_conflicts_handled + 1)
@@ -68,7 +71,7 @@ function resolve-conflicts -d ''
 
         printf '%s/%s\n' $n_conflicts_handled $n_conflicts
 
-        switch (gum choose --header="select resolution: " current incoming both edit quit)
+        switch (gum choose --header="select resolution: " "current (HEAD aka. $current_branch)" incoming both edit quit | string split ' ' --fields=1)
             case current
                 set -l sed_expr "command sed -i -e '$line_bar,$line_end d' -e '$line_start d' $file_start"
                 printf 'executed: '

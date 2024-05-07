@@ -353,6 +353,24 @@ function __git::abbr::git_push
     end
 end
 
+function __git::find_root -a start_dir
+    if test (count $argv) -eq 0
+        set start_dir $PWD
+    end
+
+    set -l dir $start_dir
+    while $dir != /
+        if test -d $dir/.git
+            echo $dir
+            return 0
+        end
+
+        set dir (path dirname $dir)
+    end
+
+    return 1
+end
+
 function __git::abbr::git_push_or_pull
     # 1. Check if current branch has commits from the remote, that has not been merged in.
     # 2. If there are 1 or more commits that can be merged, then expand to `git pull` i.e. `__git::abbr::git_pull`
@@ -393,7 +411,19 @@ function __git::abbr::git_push_or_pull
             __git::abbr::git_pull
         else
             # There are no commits that can be pulled
-            __git::abbr::git_push
+
+            set -l squashes (squashes)
+            if test (count $squashes) -gt 0
+                printf '# you have some commits to squash, before you can push!\n'
+                # printf '#squashes = %d\n' (count $squashes)
+                for squash in $squashes
+                    echo "# - $squash"
+                end
+                echo "git rebase --interactive --autosquash "
+                # printf '# - %s\n' $squashes
+            else
+                __git::abbr::git_push
+            end
         end
     else
         set -l branch (command git rev-parse --abbrev-ref HEAD)
@@ -401,6 +431,7 @@ function __git::abbr::git_push_or_pull
     end
 end
 
+# TODO: integrate `squashes`
 abbr -a gp --set-cursor -f __git::abbr::git_push_or_pull
 
 # git rebase

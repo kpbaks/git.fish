@@ -79,7 +79,6 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
     # TODO: maybe but in background with `&` to not block for a second or 2, which is annoying
     command git fetch --quiet &
     function __git_auto_fetch_callback --on-process-exit $last_pid
-        echo hello
         set -l head_hash (command git rev-parse HEAD)
         set -l branch_name (command git rev-parse --abbrev-ref HEAD)
         set -l upstream_hash (command git ls-remote origin --tags refs/heads/$branch_name | string match --regex --groups-only "^(\S+)")

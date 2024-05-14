@@ -269,6 +269,7 @@ function __git::repos::cd
         --bind=ctrl-u:preview-page-up \
         --bind=ctrl-f:page-down \
         --bind=ctrl-b:page-up \
+        --bind=tab:close \
         --reverse
 
     # TODO: document in readme

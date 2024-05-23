@@ -192,6 +192,8 @@ function __git::abbr::gen_git_commit_conventional_commits_with_scope -a type key
     set -l abbr gcm$key
     set -l name_of_generated_function __git::abbr::generated::$abbr
 
+    # TODO: add option for user to create custom rules maybe in a file
+
     # TODO: for the commit types that have a scope, populate the scope with the basename of the modified file, if only one file is modified
     # Generate the function that will be used as the abbreviation
     # handle more cases with single files staged
@@ -342,7 +344,7 @@ function __git::abbr::git_push
         echo "# no commits to push ¯\\_(ツ)_/¯"
     end
 
-    set -l git_push_opts --follow-tags
+    set -l git_push_opts --tags
     set -l branch (command git rev-parse --abbrev-ref HEAD)
     set -l remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if test $status -ne 0

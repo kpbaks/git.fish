@@ -86,8 +86,8 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
         if test $head_hash != $upstream_hash
             # TODO: <kpbaks 2023-09-19 21:33:09> figure out if ahead or behind
             # See how I do it in `gstatus`
-            __git.fish::echo "You are behind the remote branch. Run $(printf "git pull" | fish_indent --ansi) to update!"
-            __git.fish::echo "or you are ahead of the remote branch. Run $(printf "git push" | fish_indent --ansi) to update!"
+            __git.fish::echo "You are behind the remote branch. Run $(printf (echo "git pull" | fish_indent --ansi)) to update!"
+            __git.fish::echo "or you are ahead of the remote branch. Run $(printf (echo "git push" | fish_indent --ansi)) to update!"
         end
 
         commandline --function repaint

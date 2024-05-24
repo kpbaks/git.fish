@@ -344,13 +344,20 @@ function __git::abbr::git_push
         echo "# no commits to push ¯\\_(ツ)_/¯"
     end
 
-    set -l git_push_opts --tags
+    set -l git_push_opts
     set -l branch (command git rev-parse --abbrev-ref HEAD)
     set -l remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if test $status -ne 0
         # Local branch has no remote branch, so create one
         echo "git push $git_push_opts --set-upstream origin $branch% # no remote branch found, creating one"
     else
+        set -l unpushed_tags (command git push --tags --dry-run &| string match --regex --groups-only '\* \[new tag\]\s+(\S+)')
+        if test (count $unpushed_tags) -gt 0
+            printf '# unpushed tags: %d\n' (count $unpushed_tags)
+            printf '# - %s\n' $unpushed_tags
+
+            set -a git_push_opts --tags
+        end
         echo git push $git_push_opts
     end
 end

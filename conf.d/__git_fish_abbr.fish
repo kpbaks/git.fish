@@ -82,7 +82,7 @@ test $git_fish_abbr_enable_git = 1; or return 0
 # git add
 function __git::abbr::git_add
     # set -l cmd "git add"
-    # TODO: use a global varible to store whether we are in a git repo or not
+    # TODO: use a global variable to store whether we are in a git repo or not
     # to avoid having all other git commands run the "relatively" expensive check, of whether we are in a git repo
     # 1. Find all modified, untracked, and deleted files
     set -l unstaged_and_untracked_files (command git ls-files --others --exclude-standard --modified)
@@ -98,7 +98,7 @@ function __git::abbr::git_add
 
     # if test (count $unstaged_files) -eq 1
     #     if string match --quiet --regex "\s" -- "$unstaged_files"
-    #         # Filepath contains spaces, so we wrap them in single qoutes such that the shell will treat the path as a single word
+    #         # Filepath contains spaces, so we wrap them in single quotes such that the shell will treat the path as a single word
     #         set --append cmd "'$unstaged_files'"
     #     else
     #         set --append cmd $unstaged_files
@@ -320,7 +320,17 @@ or set --universal git_fish_abbr_git_pull_merge_strategy --ff-only
 function __git::abbr::git_pull
     # TODO: figure out how to do without it being annoying
     # printf "# %s\n" (command git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative master..origin/master)
-    echo git pull $git_fish_abbr_git_pull_merge_strategy
+
+    #echo git pull $git_fish_abbr_git_pull_merge_strategy
+
+    #https://www.youtube.com/watch?v=xN1-2p06Urc
+    set -l opts
+    if test (command git config pull.rebase) = false
+        set -a opts --rebase
+    end
+
+    echo git pull $opts
+    echo or git rebase --abort
 end
 
 # abbr -a gp -f __git::abbr::git_pull --set-cursor
@@ -333,6 +343,7 @@ abbr -a gpl git pull
 function __git::abbr::git_push
     # TODO: print the remote pushing to
     # FIXME: what if the commit msg is longer than 1 line?
+    # TODO: add time since commit
     set -l unpushed_commits (command git log --pretty=format:"%s" @{u}..)
     if test (count $unpushed_commits) -gt 0
         # List the commits that will be pushed

@@ -644,3 +644,5 @@ abbr -a gah 'git stash; and git pull --rebase; and git stash pop'
 
 # functions/gbo.fish
 abbr -a gboa gbo --all
+
+abbr -a gce git config --edit

@@ -496,8 +496,19 @@ abbr -a gs $git_fish_git_status_command
 abbr -a gst --set-cursor git stash push --message "'%'"
 abbr -a gstp git stash pop --quiet
 abbr -a gsta git stash apply
-abbr -a gstd git stash drop
+# abbr -a gstd git stash drop
 abbr -a gstl git stash list
+
+function abbr_git_stash_diff
+    if command -q difft
+        echo "GIT_EXTERNAL_DIFF=difft git stash show -p stash@{1%} --ext-diff"
+    else
+        echo "git stash show -p stash@{1%}"
+    end
+end
+
+abbr -a gstd --set-cursor -f abbr_git_stash_diff
+
 
 # git submodule
 abbr -a gsm git submodule

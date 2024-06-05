@@ -58,11 +58,17 @@ See `gign --help` for more information.
 
 #### `goverview`
 
+TODO
+
 #### `gsl`
+
+TODO
 
 <!-- #### `gss` -->
 
 #### `gstatus`
+
+TODO
 
 #### `repos`
 
@@ -81,10 +87,12 @@ repos cd             # Change directory to a repository using fzf
 
 > [!TIP]\
 > `repos` is really useful if you create a keybind to quickly `cd` around to your projects
-> I like to use <kbd>alt-r<kbd/> for this:
-> ```fish
-bind \er 'repos cd; commandline --function repaint'
-> ```
+> I like to use <kbd>alt-r</kbd> for this:
+
+
+<!-- > ```fish -->
+<!-- bind \er 'repos cd; commandline --function repaint' -->
+<!-- > ``` -->
 
 ##### Settings
 
@@ -121,9 +129,9 @@ Check if there are uncommitted changes in the repository and if there are more t
 
 Example reminder with `set git_fish_reminders_should_i_commit_threshold 50`:
 
-TODO center image
-
-![should-i-commit-output](https://github.com/kpbaks/git.fish/assets/57013304/1e5bbc9a-bfd1-4e80-9ca6-0208b88bd596)
+<p align="center">
+  <img src="https://github.com/kpbaks/git.fish/assets/57013304/1e5bbc9a-bfd1-4e80-9ca6-0208b88bd596" alt="should-i-commit-output" style="max-width: 100%; height: auto;">
+</p>
 
 ##### Settings
 

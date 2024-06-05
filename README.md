@@ -67,6 +67,7 @@ TODO
 <!-- #### `gss` -->
 
 #### `gstatus`
+![gstatus](https://github.com/kpbaks/git.fish/assets/57013304/0b424dae-e2df-4ad2-8f90-f896cd9c7e12)
 
 TODO
 

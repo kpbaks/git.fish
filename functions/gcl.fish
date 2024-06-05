@@ -48,8 +48,8 @@ function gcl --description "Print the output of `git config --list` in a pretty 
     command git config $_flag_local --list \
         | sort \
         | while read --delimiter = param value
-        set --append params $param
-        set --append values $value
+        set -a params $param
+        set -a values $value
     end
 
     # Find the longest param and value
@@ -86,7 +86,7 @@ function gcl --description "Print the output of `git config --list` in a pretty 
         else if string match --quiet --regex "^\d+\$" -- $value
             # value is a digit e.g. "5"
             set value_color (set_color --bold purple)
-        else if string match --quiet --regex "^!" -- $value
+        else if string match --quiet --regex "^(!|/)" -- $value
             # value is command invocation e.g. "!~/.local/bin/gh-2.29.0 auth git-credential"
             set value_color $reset
             # Wrap in `printf` to remove trailing newline
@@ -94,13 +94,10 @@ function gcl --description "Print the output of `git config --list` in a pretty 
         end
 
         set -l param_color $default_param_color
-        if test $param = "user.name"
+        if string match --quiet 'user.*' -- $param
             set param_color $important_param_color
             set value_color $important_param_color
-        else if test $param = "user.email"
-            set param_color $important_param_color
-            set value_color $important_param_color
-        else if test $param = "remote.origin.url"
+        else if string match --quiet 'remote.*' -- $param
             set param_color $important_param_color
             set value_color $important_param_color
         else if string match --quiet --regex "^alias" -- $param

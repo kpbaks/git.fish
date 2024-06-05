@@ -245,6 +245,7 @@ function __git::repos::cd
         set valid_repos[2] $last_visited_repo
     end
 
+
     set -l fzf_opts \
         --prompt "select the git repo to cd into: " \
         --border-label=" $(string upper "repos") " \
@@ -269,8 +270,10 @@ function __git::repos::cd
         --bind=ctrl-u:preview-page-up \
         --bind=ctrl-f:page-down \
         --bind=ctrl-b:page-up \
-        --bind=tab:close \
+        --bind=tab:abort \
+        --bind=ctrl-p:toggle-preview \
         --reverse
+
 
     # TODO: document in readme
     set --query git_fish_repos_cd_show_preview
@@ -279,20 +282,22 @@ function __git::repos::cd
     # TODO: document in readme
     set --query git_fish_repos_cd_preview_command
     or set --universal git_fish_repos_cd_preview_command 'git -c color.status=always -C {} status'
+    set -a fzf_opts --preview $git_fish_repos_cd_preview_command
 
-    if test $git_fish_repos_cd_show_preview -eq 1
-        set -a fzf_opts --preview $git_fish_repos_cd_preview_command
-        # TODO: instead of hardcoding the minimum width, use fzf's ability to update the preview window
-        # location every time the window is resized
-        # I have checked with version `0.46.1` and it is not possible to update the preview window location every time the window is resized :(
-        # set -a fzf_opts "--preview-window=right:60%(down)"
-        if test $COLUMNS -le 120
-            # Terminal is not wide enough to have the preview to the right
-            set -a fzf_opts --preview-window=down
-        else
-            set -a fzf_opts --preview-window=right
-        end
+    set -l preview_window_direction right
+    if test $COLUMNS -le 120
+        set preview_window_direction down
     end
+
+    set -l preview_window_size_percentage 50%
+
+    set -l preview_window_opts $preview_window_direction $preview_window_size_percentage
+    if not test $git_fish_repos_cd_show_preview -eq 1
+        set -a preview_window_opts hidden
+    end
+
+    set preview_window_opts (string join : $preview_window_opts)
+    set -a fzf_opts --preview-window="$preview_window_opts"
 
     for valid_repo in $valid_repos
         set -l dirname (path dirname $valid_repo)
@@ -327,18 +332,18 @@ function repos -d "Manage the db of visited git repos" -a subcommand
         set -l option_color $green
         set -l section_title_color $yellow
         # Overall description of the command
-        printf "%sManage the db of visited git repos%s\n" $bold $reset
+        printf "%sManage the database of visited git repos%s\n" $bold $reset
         printf "\n"
         # Usage
         printf "%sUSAGE:%s %s%s%s [OPTIONS] [COMMAND]\n" $section_title_color $reset (set_color $fish_color_command) (status current-command) $reset
         printf "\n"
         # Subcommands
         printf "%sCOMMANDS:%s\n" $section_title_color $reset
-        printf "\t%populate%s <DIR>  Populate the repos database by searching recursively for `.git/` directories\n" $green $reset
-        printf "\t%sclear%s          Clear the db of visited repos\n" $green $reset
-        printf "\t%slist%s           List all the git repos that have been visited\n" $green $reset
-        printf "\t%scheck%s          Check if the database is up to date\n" $green $reset
-        printf "\t%scd%s             Use fzf to select a visited repo to cd into\n" $green $reset
+        printf "\t%spopulate%s <DIR>  Populate the repos database by searching recursively for `.git/` directories\n" $green $reset
+        printf "\t%sclear%s           Clear the database of visited repos\n" $green $reset
+        printf "\t%slist%s            List all the git repos that have been visited\n" $green $reset
+        printf "\t%scheck%s           Check if the database is up to date, by removing references to repos no longer on disk\n" $green $reset
+        printf "\t%scd%s              Use fzf to select a visited repo to cd into\n" $green $reset
         printf "\n"
         # Description of the options and flags
         printf "%sOPTIONS:%s\n" $section_title_color $reset

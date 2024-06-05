@@ -245,9 +245,14 @@ function __git::repos::cd
         set valid_repos[2] $last_visited_repo
     end
 
+    set -l open_remote_git_url_script "#!/usr/bin/env -S fish --no-config
+set -l url (git config remote.)
+    "
+
 
     set -l fzf_opts \
-        --prompt "select the git repo to cd into: " \
+        --prompt "  select the git repo to cd into: " \
+        --header "press: ctrl-p to toggle preview, ctrl-o to open remote url in your browser" \
         --border-label=" $(string upper "repos") " \
         --height 80% \
         --cycle \
@@ -258,6 +263,7 @@ function __git::repos::cd
         --color='marker:#00ff00' \
         --no-scrollbar \
         --color="gutter:-1" \
+        --color="header:8" \
         --color="hl:#FFB600" \
         --color="hl+:#FFB600" \
         --color="prompt:yellow:italic" \
@@ -272,14 +278,12 @@ function __git::repos::cd
         --bind=ctrl-b:page-up \
         --bind=tab:abort \
         --bind=ctrl-p:toggle-preview \
+        --bind=ctrl-o:"execute-silent(fish -c 'open (git -C {} remote get-url origin)')" \
         --reverse
 
-
-    # TODO: document in readme
     set --query git_fish_repos_cd_show_preview
     or set --universal git_fish_repos_cd_show_preview 1
 
-    # TODO: document in readme
     set --query git_fish_repos_cd_preview_command
     or set --universal git_fish_repos_cd_preview_command 'git -c color.status=always -C {} status'
     set -a fzf_opts --preview $git_fish_repos_cd_preview_command

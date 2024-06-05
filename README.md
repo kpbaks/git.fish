@@ -4,6 +4,8 @@
 
 Collection of abbreviations and interactive fish-shell integrations I use to make `git` easier!
 
+TODO create toc
+
 ## Requirements
 
 - [fish ^3.6.0](https://github.com/fish-shell/fish-shell/releases/tag/3.6.0) enhanced the capabilities of `abbr` which this plugin makes use of.
@@ -70,10 +72,10 @@ See `gign --help` for more information.
 
 ```fish
 repos populate <DIR> # Populate the database by recursively searching for git repositories in DIR
-repos list # List all repositories in the database
-repos clear # Clear the database
-repos check # Update the database by removing non-existing directories
-repos cd # Change directory to a repository using fzf
+repos list           # List all repositories in the database
+repos clear          # Clear the database
+repos check          # Update the database by removing non-existing directories
+repos cd             # Change directory to a repository using fzf
 ```
 <!-- TODO: insert picture of `repos list` -->
 
@@ -88,7 +90,7 @@ bind \er 'repos cd; commandline --function repaint'
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `git_fish_repos_sqlite3_db` | The path to the sqlite3 database file. | `$`__fish_user_data_dir/git.fish/repos.sqlite3` |
+| `git_fish_repos_sqlite3_db` | The path to the sqlite3 database file. | `$__fish_user_data_dir/git.fish/repos.sqlite3` |
 | `git_fish_repos_cd_show_preview` | Use `git_fish_repos_cd_preview_command` to show a preview of the repo in `fzf` | `1` |
 | `git_fish_repos_cd_preview_command` | The command to use to show the fzf preview. | `git -c color.status=always -C {} status` |
 
@@ -118,6 +120,8 @@ If you have [pre-commit](https://pre-commit.com/) installed then a check will be
 Check if there are uncommitted changes in the repository and if there are more than `git_fish_reminders_should_i_commit_threshold` then a reminder will be printed to the terminal.
 
 Example reminder with `set git_fish_reminders_should_i_commit_threshold 50`:
+
+TODO center image
 
 ![should-i-commit-output](https://github.com/kpbaks/git.fish/assets/57013304/1e5bbc9a-bfd1-4e80-9ca6-0208b88bd596)
 

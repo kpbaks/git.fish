@@ -114,16 +114,15 @@ function __git::repos::list -d "list all the git repos that have been visited"
     set -l timestamps
     set -l number_of_times_visited_list
     command sqlite3 $git_fish_repos_sqlite3_db $select_all_query | while read -d "|" -l id path timestamp number_of_times_visited
-        set --append paths $path
-        set --append timestamps $timestamp
-        set --append number_of_times_visited_list $number_of_times_visited
+        set -a paths $path
+        set -a timestamps $timestamp
+        set -a number_of_times_visited_list $number_of_times_visited
     end
 
     set -l longest_path_length 0
     for path in $paths
         set longest_path_length (math "max $longest_path_length,$(string length $path)")
     end
-
 
     set -l git_repos_visited_count (count $paths)
     if test $git_repos_visited_count -eq 0
@@ -191,6 +190,7 @@ function __git::repos::populate -d "populate the repos database by searching rec
 
     # FIXME: do not add the same repo twice
     # FIXME: do not add git submodules
+    # TODO: use fd if installed
     set -l found_git_repos_count 0
     # FIXME: what if `find` is not installed?
     find -type d -name .git -exec dirname {} \; | path resolve | while read -l path
@@ -204,7 +204,7 @@ function __git::repos::populate -d "populate the repos database by searching rec
     __git.fish::echo "found $found_git_repos_count git repos"
 end
 
-function __git::repos::clear -d "clear the db of visited repos"
+function __git::repos::clear -d "clear the database of visited repos"
     # TODO: Add a --select flag to select which repos to clear with fzf
     # or use $argv to select which repos to clear, and then
     # have completion for `repos clear` to show the list of repos, so it is easier to select
@@ -241,20 +241,19 @@ function __git::repos::cd
         # By Swapping the first 2 rows of the query you just have to press `enter`
         # to go to git repository you visited before this one ;)
         set -l last_visited_repo $valid_repos[1]
-        set valid_repos[1] $valid_repos[2]
-        set valid_repos[2] $last_visited_repo
+        if test $last_visited_repo = $PWD
+            # The last visited repo is the one currently in, which makes sense ...
+            # Do not want that as the first suggestion so swap it with second most recently visited
+            set valid_repos[1] $valid_repos[2]
+            set valid_repos[2] $last_visited_repo
+        end
     end
-
-    set -l open_remote_git_url_script "#!/usr/bin/env -S fish --no-config
-set -l url (git config remote.)
-    "
-
 
     set -l fzf_opts \
         --prompt "  select the git repo to cd into: " \
-        --header "press: ctrl-p to toggle preview, ctrl-o to open remote url in your browser" \
+        --header "press: ctrl-p to toggle preview, ctrl-o to open remote url in your browser, <esc> | <tab> to close" \
         --border-label=" $(string upper "repos") " \
-        --height 80% \
+        --height 50% \
         --cycle \
         --no-mouse \
         --ansi \
@@ -278,7 +277,7 @@ set -l url (git config remote.)
         --bind=ctrl-b:page-up \
         --bind=tab:abort \
         --bind=ctrl-p:toggle-preview \
-        --bind=ctrl-o:"execute-silent(fish -c 'open (git -C {} remote get-url origin)')" \
+        --bind=ctrl-o:"execute-silent(fish --no-config -c 'open (git -C {} remote get-url origin)')" \
         --reverse
 
     set --query git_fish_repos_cd_show_preview

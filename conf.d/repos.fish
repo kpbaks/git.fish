@@ -22,7 +22,7 @@ if not test -f $git_fish_repos_sqlite3_db
 			number_of_times_visited INTEGER DEFAULT 1
 		);
 	"
-    command sqlite3 $git_fish_repos_sqlite3_db $schema
+    command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db $schema
 
     printf '%sgit.fish:repos [info]%s: created database at %s\n' (set_color green) (set_color reset) $git_fish_repos_sqlite3_db >&2
 end
@@ -47,17 +47,17 @@ function __git::repos::add_git_repo_to_db -a dir
 		INSERT INTO repos (path, timestamp) VALUES ('$dir', $now)
 		ON CONFLICT(path) DO UPDATE SET timestamp=$now, number_of_times_visited=number_of_times_visited+1;
 	"
-    command sqlite3 $git_fish_repos_sqlite3_db $query
+    command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db $query
 
     # set -l git_color (set_color "#f44d27") # taken from git's logo
     set -l git_color (set_color red)
     set -l reset (set_color normal)
 
     # if the repo has not been visited before, then print a message
-    set -l number_of_times_visited (command sqlite3 $git_fish_repos_sqlite3_db "SELECT number_of_times_visited FROM repos WHERE path='$dir';")
+    set -l number_of_times_visited (command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "SELECT number_of_times_visited FROM repos WHERE path='$dir';")
     test $number_of_times_visited -eq 1; or return 0
 
-    set -l total_number_of_repos_visited (command sqlite3 $git_fish_repos_sqlite3_db "SELECT COUNT(*) FROM repos;")
+    set -l total_number_of_repos_visited (command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "SELECT COUNT(*) FROM repos;")
     set -l repo_dir (string replace "$HOME" "~" $dir)
     __git.fish::echo (printf "added (%s%s%s) to list of visited repos, total: %s%d%s (use %srepos%s to interact with them)\n" \
 			$git_color $repo_dir $reset \
@@ -72,7 +72,7 @@ end
 
 # Intended to be used by the other repos-<command> functions, to check if the database is up to date
 function __git::repos::check
-    set -l paths (command sqlite3 $git_fish_repos_sqlite3_db "SELECT path FROM repos;")
+    set -l paths (command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "SELECT path FROM repos;")
 
     # iterate over the list of paths
     # check if the path exists, if it does not then remove it from the database
@@ -88,7 +88,7 @@ function __git::repos::check
     set repos_to_delete_from_db (printf "'%s'\n" $repos_to_delete_from_db | string join ',')
     set -l delete_query "DELETE FROM repos WHERE path IN ($repos_to_delete_from_db);"
     echo $delete_query
-    command sqlite3 $git_fish_repos_sqlite3_db $delete_query
+    command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db $delete_query
     # TODO: the count printed is wrong
     __git.fish::echo (printf "Removed %s%d%s repos from list of visited repos" $git_color (count $repos_to_delete_from_db) $reset)
 end
@@ -113,7 +113,7 @@ function __git::repos::list -d "list all the git repos that have been visited"
     set -l paths
     set -l timestamps
     set -l number_of_times_visited_list
-    command sqlite3 $git_fish_repos_sqlite3_db $select_all_query | while read -d "|" -l id path timestamp number_of_times_visited
+    command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db $select_all_query | while read -d "|" -l id path timestamp number_of_times_visited
         set -a paths $path
         set -a timestamps $timestamp
         set -a number_of_times_visited_list $number_of_times_visited
@@ -195,7 +195,7 @@ function __git::repos::populate -d "populate the repos database by searching rec
     # FIXME: what if `find` is not installed?
     find -type d -name .git -exec dirname {} \; | path resolve | while read -l path
         set -l insert_query "INSERT INTO repos (path, timestamp, number_of_times_visited) VALUES ('$path', strftime('%s', 'now'), 0);"
-        command sqlite3 $git_fish_repos_sqlite3_db $insert_query
+        command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db $insert_query
         set found_git_repos_count (math $found_git_repos_count + 1)
         # TODO: <kpbaks 2023-09-20 20:28:46> highlight the path that they share as a prefix
         printf "- %s\n" $path
@@ -208,8 +208,8 @@ function __git::repos::clear -d "clear the database of visited repos"
     # TODO: Add a --select flag to select which repos to clear with fzf
     # or use $argv to select which repos to clear, and then
     # have completion for `repos clear` to show the list of repos, so it is easier to select
-    set -l number_of_repos_in_db (command sqlite3 $git_fish_repos_sqlite3_db "SELECT COUNT(*) FROM repos;")
-    command sqlite3 $git_fish_repos_sqlite3_db "DELETE FROM repos;"
+    set -l number_of_repos_in_db (command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "SELECT COUNT(*) FROM repos;")
+    command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "DELETE FROM repos;"
 
     switch $number_of_repos_in_db
         case 0
@@ -227,7 +227,7 @@ function __git::repos::cd
     # Update the repos db, so that the user only selects from valid repos
     __git::repos::check
 
-    set -l repos (command sqlite3 $git_fish_repos_sqlite3_db "SELECT * FROM repos ORDER BY timestamp DESC;")
+    set -l repos (command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "SELECT * FROM repos ORDER BY timestamp DESC;")
     # If there are no repos, just return,
     # this will prevent the fzf prompt from showing up
     if test (count $repos) -eq 0
@@ -235,7 +235,17 @@ function __git::repos::cd
         return 1
     end
 
-    set -l valid_repos (command sqlite3 $git_fish_repos_sqlite3_db "select path from repos order by timestamp desc;")
+    set -l valid_repos (command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "SELECT path FROM repos ORDER BY timestamp DESC;")
+    switch (count $valid_repos)
+        case 0
+            # If there are no repos, just return,
+            # this will prevent the fzf prompt from showing up
+            printf '%serror%s: no repos have been visited\n' $red $reset
+            return 1
+        case 1
+        case '*'
+    end
+
     if test (count $valid_repos) -ge 2
         # I often find myself jumping back and forth between two git repositories.
         # By Swapping the first 2 rows of the query you just have to press `enter`
@@ -253,6 +263,7 @@ function __git::repos::cd
         --prompt "  select the git repo to cd into: " \
         --header "press: ctrl-p to toggle preview, ctrl-o to open remote url in your browser, <esc> | <tab> to close" \
         --border-label=" $(string upper "repos") " \
+        --border \
         --height 50% \
         --cycle \
         --no-mouse \
@@ -280,10 +291,10 @@ function __git::repos::cd
         --bind=ctrl-o:"execute-silent(fish --no-config -c 'open (git -C {} remote get-url origin)')" \
         --reverse
 
-    set --query git_fish_repos_cd_show_preview
+    set -q git_fish_repos_cd_show_preview
     or set --universal git_fish_repos_cd_show_preview 1
 
-    set --query git_fish_repos_cd_preview_command
+    set -q git_fish_repos_cd_preview_command
     or set --universal git_fish_repos_cd_preview_command 'git -c color.status=always -C {} status'
     set -a fzf_opts --preview $git_fish_repos_cd_preview_command
 
@@ -376,6 +387,7 @@ function repos -d "Manage the db of visited git repos" -a subcommand
         case init
             __git::repos::populate $PWD
         case overview
+            # TODO: what was my idea with this?
             echo todo
         case '*'
             printf "%serror%s: unknown command: %s\n\n" $red $reset $verb

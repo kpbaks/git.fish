@@ -330,7 +330,10 @@ function __git::abbr::git_pull
     end
 
     echo git pull $opts
-    echo or git rebase --abort
+    if contains -- --rebase $opts
+        # Only append if use --rebase
+        echo or git rebase --abort
+    end
 end
 
 # abbr -a gp -f __git::abbr::git_pull --set-cursor
@@ -405,6 +408,7 @@ function __git::abbr::git_push_or_pull
     if command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null | read remote_branch
         # Strip "origin/" prefix
         set -l current_branch (string split --max=1 / $remote_branch)[-1]
+        # FIXME: use a timeout cache for this instead
         set -l n 6
         if test (random 1 $n) -eq $n
             command git fetch --quiet
@@ -414,7 +418,7 @@ function __git::abbr::git_push_or_pull
         command git rev-list --left-right --count $current_branch...origin/$current_branch | read n_local_commits n_remote_commits
         # echo "local_commits: $n_local_commits"
         # echo "remote_commits: $n_remote_commits"
-        # TODO: what if there is nothing to push or pull?
+        # FIXME: what if there is nothing to push or pull?
         if test $n_local_commits -eq 0 -a $n_remote_commits -eq 0
             # Check if local branch is dirty
             set -l stats (command git diff --stat --exit-code)
@@ -494,7 +498,7 @@ abbr -a gs $git_fish_git_status_command
 
 # git stash
 abbr -a gst --set-cursor git stash push --message "'%'"
-abbr -a gstp git stash pop --quiet
+abbr -a gstp git stash pop
 abbr -a gsta git stash apply
 # abbr -a gstd git stash drop
 abbr -a gstl git stash list

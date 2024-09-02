@@ -6,6 +6,8 @@ Collection of abbreviations and interactive fish-shell integrations I use to mak
 
 TODO create toc
 
+- [] create command that prints all env vars regocnized by git see `man git`
+
 ## Requirements
 
 - [fish ^3.6.0](https://github.com/fish-shell/fish-shell/releases/tag/3.6.0) enhanced the capabilities of `abbr` which this plugin makes use of.

@@ -55,7 +55,7 @@ function gstatus --description 'opinionated `git status`'
     set -l hr (string repeat --count (math "min(100, $COLUMNS)") "─")
     set hr (printf '%s%s%s\n' (set_color --dim) $hr $reset)
 
-    set -l current_branch (command git rev-parse --abbrev-ref HEAD)
+    set -l current_branch (command git rev-parse --abbrev-ref HEAD | string trim)
 
     if not set --query _flag_no_branches
         printf "%slocal branches%s:\n" $blue $reset

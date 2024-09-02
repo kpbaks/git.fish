@@ -93,6 +93,8 @@ function gcl --description "Print the output of `git config --list` in a pretty 
             set value (printf (string sub --start=2 -- $value | fish_indent --ansi))
         end
 
+        # TODO: check if `merge.tool` is installed i.e. is `nvimdiff` installed?
+
         set -l param_color $default_param_color
         if string match --quiet 'user.*' -- $param
             set param_color $important_param_color

@@ -88,12 +88,13 @@ function __git::abbr::git_add
     set -l unstaged_and_untracked_files (command git ls-files --others --exclude-standard --modified)
     # 2. If there is exactly one file, append it to the command
     switch (count $unstaged_and_untracked_files)
-        case 0
-            printf 'git add %%'
         case 1
             printf 'git add %s%%' "'$unstaged_and_untracked_files[1]'"
-        case '*'
+        case 0
+            printf '# There are no changes or untracked files to add'
             printf 'git add %%'
+        case '*'
+            printf 'git add --patch %%'
     end
 
     # if test (count $unstaged_files) -eq 1

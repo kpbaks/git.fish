@@ -552,11 +552,12 @@ function abbr_git_switch
     # Check how many branches there are
     set -l num_branches (command git branch | count)
     switch $num_branches
+        case 0 # unreachable
         case 1
             # If there is only one local branch, there is nothing to switch to.
             # So we just output the command. With a comment explaining that there is no other branch.
             echo "# There is no other local branch to switch to, but you can create one :D"
-            echo "$cmd --create"
+            echo "$cmd --create %"
         case 2
             # if there are 2, then append the other branch name to the command
             # else output the command.
@@ -570,9 +571,28 @@ function abbr_git_switch
             set -l branches (git branch --sort=-committerdate --format="%(refname:short) %(committerdate:relative)" | column -t -s " " --table-columns-limit 2 --table-right 2)
             echo "# you have $(count $branches) other local branches: (sorted by committerdate)"
             printf '# - %s\n' $branches
-            echo "$cmd $(string split --fields=1 ' ' -- $branches[1])%"
+
+            set -l moves (git reflog show --format="%gs" --grep-reflog="checkout: moving from" --max-count=1)
+            if string match --groups-only --regex '^checkout: moving from (\S+) to (\S+)$' -- $moves | read --line from to
+                echo "$cmd $from%"
+            else
+                # Since a reflog can be pruned, it might not have a result to the query above
+                # in which case it is better to look at the committerdate
+                set -l current_branch (command git rev-parse --abbrev-ref HEAD)
+                set -l branch_to_switch_to
+                # If you just made a commit then the current branch is the most recent
+                # In that case use the next-recent
+                if test $current_branch -eq $branches[1]
+                    set branch_to_switch_to $branches[2]
+                else
+                    set branch_to_switch_to $branches[1]
+                end
+                echo "$cmd $(string split --fields=1 ' ' -- $branch_to_switch_to)%"
+            end
     end
 
+    # TODO: maybe check if the user has configured a "change-branch" hook (if one exists?)
+    # and if it exists, then do not append this
     echo "and git fetch"
 end
 

@@ -716,23 +716,23 @@ function _abbr_git_clone
     set -l args --recurse-submodules
     set -l postfix_args
     # TODO: handle case where clipboard can not be read
-    set -l clipboard (fish_clipboard_paste)
+    set -l clipboard_contents (fish_clipboard_paste)
 
     # You ctrl+l && ctrl+c a git url
-    if string match --quiet --regex "^(https?|git)://.*\.git\$" -- "$clipboard"
-        set -a args $clipboard
+    if string match --quiet --regex "^(https?://|git@).*\.git\$" -- "$clipboard_contents"
+        set -a args $clipboard_contents
         # Parse the directory name from the url
         set -a postfix_args '&& cd'
-        set -a postfix_args (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard)
-    else if string match --quiet --regex "^git clone .*\.git\$" -- "$clipboard"
+        set -a postfix_args (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard_contents)
+    else if string match --quiet --regex "^git clone .*\.git\$" -- "$clipboard_contents"
         # example: git clone https://github.com/nushell/nushell.git
-        set -l url (string replace --all --regex '^git clone (.*)\.git$' '$1' $clipboard)
+        set -l url (string replace --all --regex '^git clone (.*)\.git$' '$1' $clipboard_contents)
         set -l reponame (string split --max=1 --right / $url)[-1]
         set -a postfix_args $url
         set -a postfix_args "&& cd $reponame"
-    else if string match --groups-only --regex "^\s*git clone https://git(hub|lab)\.com/([^/]+)/(.+)" $clipboard | read --line _hub owner repository
+    else if string match --groups-only --regex "^\s*git clone https://git(hub|lab)\.com/([^/]+)/(.+)" $clipboard_contents | read --line _hub owner repository
         # example: git clone https://github.com/bevyengine/bevy
-        set -a postfix_args $clipboard
+        set -a postfix_args $clipboard_contents
         set -a postfix_args "&& cd $repository"
     end
 

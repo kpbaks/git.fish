@@ -413,7 +413,7 @@ function __git::abbr::git_pull
 
     #https://www.youtube.com/watch?v=xN1-2p06Urc
     set -l opts
-    if test (command git config pull.rebase) = false
+    if test "$(command git config pull.rebase)" = false
         set -a opts --rebase
     end
 

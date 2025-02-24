@@ -118,12 +118,22 @@ abbr -a gaa "git add --all"
 abbr -a gad "git add (git ls-files --deleted)"
 abbr -a gai "git add --interactive"
 abbr -a gam "git add (git ls-files --modified)"
-abbr -a gap "git add --patch"
+function _abbr_git_add_patch
+    # 
+    # command git status --porcelain
+    # 
+
+    echo "git add --patch"
+end
+
+abbr -a gap --function _abbr_git_add_patch
+
 abbr -a gau "git add (git ls-files --others --exclude-standard)"
 
 function _abbr_git_add_modified_and_commit_previous
     # 1. find the previous commit
     set -l expansion "git add (git ls-files --modified)"
+    # TODO: can this be read from git reflog instead?
     set -l previous_commit (history search --max 1 --prefix "git commit --message")
     # 2. if there is a previous commit, add it to the command
     if test -n "$previous_commit"
@@ -135,6 +145,35 @@ end
 # This one is nice to have, if your pre-commit hook did not pass, as you would
 # have to add the, now, modified files again and then commit them with the same message.
 abbr -a gamcp --set-cursor -f _abbr_git_add_modified_and_commit_previous
+
+# git archive
+function _abbr_git_archive
+    set -l expansion git archive
+    set -l repo_name (path basename (pwd))
+    set -l output
+    switch $argv[1]
+        case gar
+            set output "$repo_name.tar"
+        case garz
+            set output "$repo_name.zip"
+        case '*'
+            # unreachable
+    end
+
+    set -a expansion --output $output
+    set -a expansion HEAD
+    echo $expansion
+end
+
+abbr -a gar --regex "garz?" --function _abbr_git_archive
+
+# git bisect
+function _abbr_git_bisect
+
+    # TODO: figure out how to detect if a git bisect is underway
+    echo "git bisect"
+end
+abbr -a gbs --function _abbr_git_bisect
 
 # git blame
 # abbr -a gb
@@ -306,70 +345,96 @@ function _abbr_git_diff
     and printf "GIT_EXTERNAL_DIFF=difft " # then use as the diff tool
     # TODO: append --staged if all modified files are staged
 
-    echo "git diff"
-end
-abbr -a gd --set-cursor -f _abbr_git_diff
-
-# TODO: create a function for this similar to `gstatus`
-abbr -a gds git diff --staged
-
-function _abbr_git_fetch
-    if not command -q gum
-        echo "git fetch"
-        return
+    set -l expansion git diff
+    if string match --regex --quiet s -- $argv[1]
+        set -a expansion --staged
     end
-
-    # TODO: add to `gitui` aswell
-    # fetch "Retrieves changes from the remote"
-    # fetch --prune "Retrieves changes from the remote and removes deleted remote branches"
-    # fetch --tags "Retrieves changes from the remote including all tags"
-    # fetch --all "Retrieves changes from all remotes" # TODO: enumerate known remotes here
-    # fetch --all --prune "Retrieves changes from all remotes and removes deleted remote branches"
-    # fetch --all --tags "Retrieves changes from all remotes including all tags"
-
-    # TODO: handle case where user presses esc gracefully
-    gum choose
-    commandline -f repaint
+    echo $expansion
 end
+abbr -a gd --regex "gds?" --set-cursor -f _abbr_git_diff
+
+# function _abbr_git_fetch
+#     if not command -q gum
+#         echo "git fetch"
+#         return
+#     end
+
+#     # TODO: add to `gitui` aswell
+#     set -l options
+#     set -a options "fetch # Retrieves changes from the remote"
+#     set -a options "fetch --prune # Retrieves changes from the remote and removes deleted remote branches"
+#     set -a options "fetch --tags # Retrieves changes from the remote including all tags"
+#     set -a options "fetch --all # Retrieves changes from all remotes" # TODO: enumerate known remotes here
+#     set -a options "fetch --all --prune # Retrieves changes from all remotes and removes deleted remote branches"
+#     set -a options "fetch --all --tags # Retrieves changes from all remotes including all tags"
+
+#     printf "%s\n" (printf "%s\n" $options | fish_indent --ansi) | gum choose
+#     # TODO: handle case where user presses esc gracefully
+#     # gum choose
+#     commandline -f repaint
+# end
 
 # git fetch
-abbr -a gf --set-cursor "git fetch %"
-abbr -a gfa --set-cursor "git fetch --all% # fetch the latest changes from all remote upstream repositories"
-abbr -a gft --set-cursor "git fetch --tags% # also fetch tags from the remote upstream repository"
-abbr -a gfp --set-cursor "git fetch --prune% # delete local references to remote branches that have been deleted upstream"
+# abbr -a gf --function _abbr_git_fetch
+abbr -a gf --set-cursor "git fetch --prune --tags --all -v"
+# abbr -a gfa --set-cursor "git fetch --all% # fetch the latest changes from all remote upstream repositories"
+# abbr -a gft --set-cursor "git fetch --tags% # also fetch tags from the remote upstream repository"
+# abbr -a gfp --set-cursor "git fetch --prune% # delete local references to remote branches that have been deleted upstream"
 
 # git grep
 function _abbr_git_grep
-    set -l expansion git grep "'%'"
-    if string match --regex --groups-only "gg([0-9]+)" -- $argv[1] | read n
+    set -l expansion git grep --heading
+    if not command git config grep.lineNumber >/dev/null
+        set -a expansion --line-number
+    end
+
+    if not command git config grep.column >/dev/null
+        set -a expansion --column
+    end
+
+    command git config grep.patternType | read patternType
+    if test $pipestatus[1] -ne 0
+        set -a expansion --perl-regexp
+    else if test $patternType = regular; and not command git config grep.extendedRegexp >/dev/null
+        set -a expansion --extended-regexp
+    end
+
+    if string match --regex --quiet v -- $argv[1]
+        set -a expansion --invert-match
+    end
+    if string match --regex --quiet i -- $argv[1]
+        set -a expansion --ignore-case
+    end
+
+    if string match --regex --groups-only "([0-9]+)" -- $argv[1] | read n
         set -a expansion "HEAD~$n"
     end
 
+    set -a expansion "'%'"
+
     echo $expansion
 end
-abbr -a gg --regex "gg[0-9]*" --set-cursor --function _abbr_git_grep
+abbr -a gg --regex "ggi?v?[0-9]*" --set-cursor --function _abbr_git_grep
 abbr -a gga --set-cursor "git grep '%' -- (git rev-list --all) # This might take some time to execute!"
 
 # git log
 function _abbr_git_log
     set -l expansion git log
-    if string match --regex --groups-only "gl([0-9]+)" -- $argv[1] | read n
+    if string match --regex --quiet p -- $argv[1]
+        set -a expansion --patch
+    else if string match --regex --quiet o -- $argv[1]
+        set -a expansion --oneline --decorate --graph
+    else if string match --regex --quiet s -- $argv[1]
+        set -a expansion --stat
+    end
+
+    if string match --regex --groups-only '([0-9]+)$' -- $argv[1] | read n
         set -a expansion --max-count $n
     end
 
     echo $expansion
 end
-abbr -a gl --regex "gl[0-9]*" --function _abbr_git_log
-
-function _abbr_git_log_oneline
-    set -l expansion git log --oneline --graph
-    if string match --regex --groups-only "gl([0-9]+)" -- $argv[1] | read n
-        set -a expansion --max-count $n
-    end
-
-    echo $expansion
-end
-abbr -a glo --regex "glo[0-9]*" --function _abbr_git_log_oneline
+abbr -a gl --regex "gl[ops]?[0-9]*" --function _abbr_git_log
 
 # git ls-files
 abbr -a gls git ls-files
@@ -394,9 +459,30 @@ abbr -a gm --set-cursor --function _abbr_git_merge
 abbr -a gma git merge --abort
 abbr -a gmc git merge --continue
 
+
+function _abbr_git_mv
+    if not command git rev-parse --is-inside-work-tree 2>/dev/null >&2
+        echo mv
+    else
+        # https://git-scm.com/docs/git-mv
+        echo "git mv -k --verbose"
+    end
+end
+abbr -a mv --function _abbr_git_mv
+
+function _abbr_git_rm
+    if not command git rev-parse --is-inside-work-tree 2>/dev/null >&2
+        echo rm
+    else
+        # https://git-scm.com/docs/git-rm
+        echo "git rm"
+    end
+end
+abbr -a rm --function _abbr_git_rm
 # git mv
 # TODO: try to detect a relevant file to move
-abbr -a gmv git mv
+# abbr -a gmv git mv
+# abbr -a grm git rm
 
 # git pull
 set --query git_fish_abbr_git_pull_merge_strategy
@@ -446,11 +532,13 @@ function __git::abbr::git_push
         echo "# no commits to push ¯\\_(ツ)_/¯"
     end
 
-    set -l git_push_opts
+    set -l git_push_opts --verbose
     set -l branch (command git rev-parse --abbrev-ref HEAD)
     set -l remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if test $status -ne 0
+        # FIXME: handle case where no remote has been confiugred yet
         # Local branch has no remote branch, so create one
+        # TODO: print comment note of where the remote is
         echo "git push $git_push_opts --set-upstream origin $branch% # no remote branch found, creating one"
     else
         set -l unpushed_tags (command git push --tags --dry-run &| string match --regex --groups-only '\* \[new tag\]\s+(\S+)')
@@ -581,13 +669,17 @@ function _abbr_git_show
         set -a expansion HEAD
     end
 
+    if string match --regex --quiet s -- $argv[1]
+        set -a expansion --summary
+    end
+
     if command --query difft; and not set --query --export GIT_EXTERNAL_DIFF
         set -p expansion "GIT_EXTERNAL_DIFF=difft"
         set -a expansion --ext-diff
     end
     echo $expansion
 end
-abbr -a gsh --regex "gsh[0-9]*" --function _abbr_git_show
+abbr -a gsh --regex "gshs?[0-9]*" --function _abbr_git_show
 
 # git show-branch
 abbr -a gsb git show-branch
@@ -713,14 +805,25 @@ abbr -a gwtrm git worktree remove
 abbr -a gwtrmf git worktree remove --force
 
 function _abbr_git_clone
-    set -l args --recurse-submodules
+    # TODO: detect if the user has permission to create a directory in $PWD, and print a warning if not
+
+    if command git rev-parse --inside-work-tree 2>/dev/null >&2
+        echo "# ERROR: You are already in a git directory"
+        echo "%"
+        # TODO: move this further down, and suggest to add the repo (if it is a repo) as a submodule
+        # echo "# HINT:  maybe you want to "
+        # echo "# git submodule add"
+        return
+    end
+
+    set -l args --recurse-submodules --verbose --progress
     set -l postfix_args
     # TODO: handle case where clipboard can not be read
-    set -l clipboard_contents (fish_clipboard_paste)
+    set -l clipboard_contents (fish_clipboard_paste | string trim)
 
-    # You ctrl+l && ctrl+c a git url
+    # You ctrl+l && ctrl+c a git url in a browser
     if string match --quiet --regex "^(https?://|git@).*\.git\$" -- "$clipboard_contents"
-        set -a args $clipboard_contents
+        set -a args "'$clipboard_contents'"
         # Parse the directory name from the url
         set -a postfix_args '&& cd'
         set -a postfix_args (string replace --all --regex '^.*/(.*)\.git$' '$1' $clipboard_contents)
@@ -732,24 +835,26 @@ function _abbr_git_clone
         set -a postfix_args "&& cd $reponame"
     else if string match --groups-only --regex "^\s*git clone https://git(hub|lab)\.com/([^/]+)/(.+)" $clipboard_contents | read --line _hub owner repository
         # example: git clone https://github.com/bevyengine/bevy
-        set -a postfix_args $clipboard_contents
+        set -a postfix_args "'$clipboard_contents'"
         set -a postfix_args "&& cd $repository"
     end
 
-    # TODO: use (capture) instead
-    set -l depth (string replace --all --regex '[^0-9]' '' $argv[1])
-    if test -n $depth
+    if string match --regex --groups-only "([0-9]+)" -- $argv[1] | read depth
         set -a args --depth=$depth
     end
 
     echo git clone $args $postfix_args
 end
 
-abbr -a git_clone_at_depth --regex "gc[0-9]*" --function _abbr_git_clone
+abbr -a git_clone_at_depth --regex "gc[0-9]*" --set-cursor --function _abbr_git_clone
 
 
 # TODO: detect if the last commit had message `squash! WIP` and you were the author, and suggest to use amend instead
-abbr -a gwip "git add (git ls-files --modified) && git commit --message 'squash! WIP' --no-verify"
+function _abbr_gwip
+
+    echo "git add (git ls-files --modified) && git commit --message 'squash! WIP' --no-verify"
+end
+abbr -a gwip --function _abbr_gwip
 
 # unstage a file
 

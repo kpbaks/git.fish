@@ -60,7 +60,7 @@ function __git::repos::add_git_repo_to_db -a dir
     set -l reset (set_color normal)
 
     # if the repo has not been visited before, then print a message
-    set -l number_of_times_visited (command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "SELECT number_of_times_visited FROM repos WHERE path='$dir';")
+    set -l number_of_times_visited (__repos_sqlite3 "SELECT number_of_times_visited FROM repos WHERE path='$dir';")
     test $number_of_times_visited -eq 1; or return 0
 
     set -l total_number_of_repos_visited (command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db "SELECT COUNT(*) FROM repos;")

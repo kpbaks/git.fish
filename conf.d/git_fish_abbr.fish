@@ -459,26 +459,25 @@ abbr -a gm --set-cursor --function _abbr_git_merge
 abbr -a gma git merge --abort
 abbr -a gmc git merge --continue
 
+# function _abbr_git_mv
+#     if not command git rev-parse --is-inside-work-tree 2>/dev/null >&2
+#         echo mv
+#     else
+#         # https://git-scm.com/docs/git-mv
+#         echo "git mv -k --verbose"
+#     end
+# end
+# abbr -a mv --function _abbr_git_mv
 
-function _abbr_git_mv
-    if not command git rev-parse --is-inside-work-tree 2>/dev/null >&2
-        echo mv
-    else
-        # https://git-scm.com/docs/git-mv
-        echo "git mv -k --verbose"
-    end
-end
-abbr -a mv --function _abbr_git_mv
-
-function _abbr_git_rm
-    if not command git rev-parse --is-inside-work-tree 2>/dev/null >&2
-        echo rm
-    else
-        # https://git-scm.com/docs/git-rm
-        echo "git rm"
-    end
-end
-abbr -a rm --function _abbr_git_rm
+# function _abbr_git_rm
+#     if not command git rev-parse --is-inside-work-tree 2>/dev/null >&2
+#         echo rm
+#     else
+#         # https://git-scm.com/docs/git-rm
+#         echo "git rm"
+#     end
+# end
+# abbr -a rm --function _abbr_git_rm
 # git mv
 # TODO: try to detect a relevant file to move
 # abbr -a gmv git mv

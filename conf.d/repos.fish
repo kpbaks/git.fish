@@ -39,7 +39,8 @@ function __git::repos::add_git_repo_to_db -a dir
         return 1
     end
 
-    if not test -d $dir/.git
+    # .git is a directory for regular repos, but a file for submodules
+    if not test -e $dir/.git
         __git.fish::echo "$dir is not a git repo"
         return 1
     end

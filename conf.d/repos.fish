@@ -39,8 +39,14 @@ function __git::repos::add_git_repo_to_db -a dir
         return 1
     end
 
-    # .git is a directory for regular repos, but a file for submodules
-    if not test -e $dir/.git
+    # By default submodules are detected (.git file); set git_fish_ignore_submodules=1 to only match regular repos (.git dir)
+    set --query git_fish_ignore_submodules; or set --universal git_fish_ignore_submodules 0
+    if test $git_fish_ignore_submodules -eq 1
+        set -l git_check test -d $dir/.git
+    else
+        set -l git_check test -e $dir/.git
+    end
+    if not $git_check
         __git.fish::echo "$dir is not a git repo"
         return 1
     end

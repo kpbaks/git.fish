@@ -17,7 +17,12 @@ function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
     # If the current directory is not a git repo, do nothing
     # NOTE: This does not account for when you are in a subdirectory of a git repo
     # .git is a directory for regular repos, but a file for submodules
-    test -e .git; or return 0
+    printf '[git.fish:debug] PWD changed to: %s\n' $PWD >&2
+    if not test -e .git
+        printf '[git.fish:debug] no .git found, skipping\n' >&2
+        return 0
+    end
+    printf '[git.fish:debug] .git exists (type: %s)\n' (test -d .git; and echo dir; or echo file) >&2
 
     set --query __git_fish_last_git_repo_root_directory
     or set --global __git_fish_last_git_repo_root_directory ""
@@ -26,7 +31,10 @@ function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
     set -l been_here_recently 0
     test $PWD = $__git_fish_last_git_repo_root_directory; or set been_here_recently 1
     set __git_fish_last_git_repo_root_directory $PWD # Update the last git repo root directory after the check above
-    test $been_here_recently -eq 1; or return 0
+    if test $been_here_recently -eq 0
+        printf '[git.fish:debug] been here recently (last: %s), skipping\n' $__git_fish_last_git_repo_root_directory >&2
+        return 0
+    end
 
     # check if we've already visited this directory
     # if not, add it to the list of visited directories
@@ -37,6 +45,7 @@ function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
     end
     # The user is in a git repo root directory, that is different from the last git repo root directory visited
     # in this fish session. Emit the event.
+    printf '[git.fish:debug] emitting in_git_repo_root_directory for %s\n' $PWD >&2
     emit in_git_repo_root_directory $PWD
 end
 

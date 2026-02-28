@@ -33,6 +33,8 @@ fisher install kpbaks/git.fish
     # Add the default package to either `environment.systemPackages` in your nixosConfigurations
     # or `home.packages` in your homeConfigurations
     inputs."git.fish".packages.${system}.default;
+    # There is also an overlay you can apply to refer to the package as `pkgs.fishPlugins.git-fish`
+    inputs."git.fish".overlays.default
   }
 }
 ```

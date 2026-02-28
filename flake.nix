@@ -17,7 +17,7 @@
   };
 
   outputs =
-    inputs@{ flake-parts, ... }:
+    inputs@{ self, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.git-hooks-nix.flakeModule
@@ -85,5 +85,8 @@
             };
           };
         };
+      flake.overlays.default = final: _prev: {
+        fishPlugins.git-fish = self.packages.${final.stdenv.hostPlatform.system}.default;
+      };
     };
 }

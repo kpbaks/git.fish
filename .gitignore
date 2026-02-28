@@ -7,3 +7,6 @@ fish_history
 fish_variables
 config.local.fish
 # End of https://www.toptal.com/developers/gitignore/api/fish
+# Nix
+/.pre-commit-config.yaml
+/.direnv/

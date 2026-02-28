@@ -58,6 +58,7 @@
             nixfmt.enable = true;
             rumdl-check.enable = true;
             rumdl-format.enable = true;
+            taplo.enable = true;
             typos.enable = true;
             # keep-sorted end
           };

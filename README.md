@@ -38,6 +38,7 @@ fisher install kpbaks/git.fish
 #### `gbo`
 
 `gbo` short for "git branch overview" list information about local branches, use `--all` for local and remote, in a pretty-printed table with four columns:
+
 1. `branch`: The current branch is highlighted.
 2. `commit`: If the commit is a a conventional-commit then the `type(scope):` part is highlighted.
 3. `author`: Each author is assigned a unique color.
@@ -69,6 +70,7 @@ TODO
 <!-- #### `gss` -->
 
 #### `gstatus`
+
 ![gstatus](https://github.com/kpbaks/git.fish/assets/57013304/0b424dae-e2df-4ad2-8f90-f896cd9c7e12)
 
 TODO
@@ -86,12 +88,12 @@ repos clear          # Clear the database
 repos check          # Update the database by removing non-existing directories
 repos cd             # Change directory to a repository using fzf
 ```
+
 <!-- TODO: insert picture of `repos list` -->
 
 > [!TIP]\
 > `repos` is really useful if you create a keybind to quickly `cd` around to your projects
 > I like to use <kbd>alt-r</kbd> for this:
-
 
 <!-- > ```fish -->
 <!-- bind \er 'repos cd; commandline --function repaint' -->
@@ -141,4 +143,4 @@ Example reminder with `set git_fish_reminders_should_i_commit_threshold 50`:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `git_fish_reminders_should_i_commit_enable` | Enable the should-i-commit reminder. | `0` |
-`git_fish_reminders_should_i_commit_threshold` | The number of uncommitted changes that will trigger the reminder. | `50` |
+| `git_fish_reminders_should_i_commit_threshold` | The number of uncommitted changes that will trigger the reminder. | `50` |

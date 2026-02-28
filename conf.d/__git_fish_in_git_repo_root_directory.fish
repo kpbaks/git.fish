@@ -76,8 +76,6 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
 
     # end <
 
-
-
     # TODO: maybe print a warning if this is the case
     command git rev-parse @{upstream} >/dev/null 2>/dev/null; or return 0 # No remote branch detected
 
@@ -100,7 +98,6 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
         functions --erase (status function)
     end
 
-
     # TODO: implement this
     # Figure out what commits that are in the remote branch but not in the local branch
     # set --local commits (command git log --pretty=format:"%h" $head_hash..$upstream_hash)
@@ -114,8 +111,6 @@ function __git.fish::auto_fetch --on-event in_git_repo_root_directory
     # set --local reset (set_color normal)
     # __git.fish::echo (printf "You are %s%d%s commits behind the remote branch. Run %sgit pull%s to update!" \
     # $yellow $num_commits $reset $green $reset)
-
-
 
 end
 
@@ -198,7 +193,6 @@ function __git.fish::reminders::branches --on-event in_git_repo_root_directory
     # functions/gbo.fish
     gbo $args --unchecked # We already know that we are in a git repo
 end
-
 
 # TODO: check if submodules are initialized when enter git repo
 

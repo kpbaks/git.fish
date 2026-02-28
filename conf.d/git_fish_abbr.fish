@@ -119,9 +119,9 @@ abbr -a gad "git add (git ls-files --deleted)"
 abbr -a gai "git add --interactive"
 abbr -a gam "git add (git ls-files --modified)"
 function _abbr_git_add_patch
-    # 
+    #
     # command git status --porcelain
-    # 
+    #
 
     echo "git add --patch"
 end
@@ -220,7 +220,6 @@ abbr -a gcmi git commit --interactive
 # # TODO: use a better name
 # abbr -a sgcm --set-cursor -f __git::abbr::git_commit_skip_selected_pre_commit_hook
 
-
 function __git::abbr::gen_git_commit_conventional_commits -a type key
     # Use lowercase for the type with scope, to encourage using commit scopes more often
     # to create a more structured commit history
@@ -232,7 +231,6 @@ function __git::abbr::gen_git_commit_conventional_commits -a type key
     abbr -a gcm$key_uppercased --set-cursor "git commit --message '$type: %'"
     abbr -a gcm$key_uppercased"!" --set-cursor "git commit --message '$type: %' $breaking_changes_warning"
 end
-
 
 function __git::abbr::gen_git_commit_conventional_commits_with_scope -a type key
     set -l abbr gcm$key
@@ -535,7 +533,7 @@ function __git::abbr::git_push
     set -l branch (command git rev-parse --abbrev-ref HEAD)
     set -l remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if test $status -ne 0
-        # FIXME: handle case where no remote has been confiugred yet
+        # FIXME: handle case where no remote has been configured yet
         # Local branch has no remote branch, so create one
         # TODO: print comment note of where the remote is
         echo "git push $git_push_opts --set-upstream origin $branch% # no remote branch found, creating one"
@@ -577,7 +575,6 @@ function __git::abbr::git_push_or_pull
     # set -l unmerged_commits (command git log --pretty=format:"%s" @{u}..)
 
     # command git rev-list --left-right --count $current_branch...origin/$current_branch | read local remote
-
 
     # set -l remote_branch (command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2> /dev/null)
     if command git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null | read remote_branch
@@ -789,7 +786,7 @@ abbr -a gswc git switch --create
 
 # git worktree
 abbr -a gwt git worktree
-# it is best practive to create a worktree in a directory that is a sibling of the current directory
+# it is best practice to create a worktree in a directory that is a sibling of the current directory
 function _abbr_git_worktree_add
     set -l dirname (path basename $PWD)
     set -l worktree_dirname "$dirname-wt"
@@ -847,7 +844,6 @@ end
 
 abbr -a git_clone_at_depth --regex "gc[0-9]*" --set-cursor --function _abbr_git_clone
 
-
 # TODO: detect if the last commit had message `squash! WIP` and you were the author, and suggest to use amend instead
 function _abbr_gwip
 
@@ -856,7 +852,6 @@ end
 abbr -a gwip --function _abbr_gwip
 
 # unstage a file
-
 
 # jonwoo
 # TODO: i think there is a --autostash flag to simplify this

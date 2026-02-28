@@ -7,12 +7,10 @@ for cmd in fzf sqlite3
     end
 end
 
-
 # Create the database if it doesn't exist
 # This database will be used to store the last time a repo was visited
 set --query git_fish_repos_sqlite3_db
 or set --universal git_fish_repos_sqlite3_db $__fish_user_data_dir/git.fish/repos.sqlite3
-
 
 function __repos_sqlite3
     command sqlite3 -init /dev/null $git_fish_repos_sqlite3_db $argv 2>/dev/null
@@ -143,7 +141,7 @@ function __git::repos::list -d "list all the git repos that have been visited"
     # somehow incorporate the local status of the repo
     # show it like in the neovim statusline with + and - and ~
     # if the user is in a repo, the highlight it with a different color/or bold it
-    # do not hightlight the https://git{hub,lab}.com/ part of the url
+    # do not highlight the https://git{hub,lab}.com/ part of the url
     # only the user/repo part
     # highlight the repos owned by the user, in a different color
     printf "%s%d repo%s visited%s\n" $git_color $git_repos_visited_count (test $git_repos_visited_count -eq 1; and echo ""; or echo "s") $reset
@@ -177,7 +175,6 @@ function __git::repos::list -d "list all the git repos that have been visited"
         # if it is a gitlab repo, print the gitlab icon
         # if it is a bitbucket repo, print the bitbucket icon
 
-
         printf "%s%s%s%s -> %s%s%s\n" $directory_styling $repo $reset $padding $git_color $remote_origin_url $reset
     end
 end
@@ -195,7 +192,6 @@ function __git::repos::populate -d "populate the repos database by searching rec
         printf '%serror%s: %s is not a directory\n' $red $reset $dir >&2
         return 2
     end
-
 
     # FIXME: do not add the same repo twice
     # FIXME: do not add git submodules

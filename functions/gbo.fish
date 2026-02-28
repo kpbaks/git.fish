@@ -76,7 +76,6 @@ function gbo -d "Print a tabular overview of the current status of each git bran
     # ┏ ┓ ┗ ┛ ━ ┃ ┳ ┻ ╋
     # ┌ ┐ └ ┘ ━ ┃ ┳ ┻ ╋
 
-
     set -l output_separator $bar
 
     set -l all

@@ -288,8 +288,6 @@ function gstatus --description 'opinionated `git status`'
                 (string pad -r -w $branch_width $branches[$i]) \
                 $green $msgs[$i] $reset
 
-
-
             # FIXME: prints really weirdly
             # printf '%s[%s%s%s] %s%s%s secs ago %s %s%s%s\n' \
             #     $indent \

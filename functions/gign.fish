@@ -48,7 +48,7 @@ function gign --description 'Get .gitignore file from https://www.toptal.com/dev
         printf "\t%s-l%s, %s--list%s      List all supported languages/frameworks\n" $green $reset $green $reset >&2
         if test -f .gitignore
             printf "\t%s-m%s, %s--merge%s     Merge with existing .gitignore file, avoiding duplicates\n" $green $reset $green $reset >&2
-            # printf "\t%s-s%s, %s--simplify%s  Simplify your .gitigore by removing reduntant rules\n" $green $reset $green $reset >&2
+            # printf "\t%s-s%s, %s--simplify%s  Simplify your .gitigore by removing redundant rules\n" $green $reset $green $reset >&2
         end
         printf "\n" >&2
         # Examples
@@ -88,7 +88,7 @@ function gign --description 'Get .gitignore file from https://www.toptal.com/dev
         printf "%s\n" $gitignore >&2
         echo $hr >&2
         # TODO: <kpbaks 2023-09-08 19:41:14> Use a hamming distance algorithm, suggest the closest match
-        # So if you type "pytho" it will suggest "python"
+        # So if you type "python" it will suggest "python"
         printf "%shint%s: You probably misspelled a language/framework name\n" $cyan $reset >&2
         printf "      or the language/framework is not supported.\n" >&2
         printf "      Try running %s%s to see a list of supported languages/frameworks\n" (printf (echo "gi --list" | fish_indent --ansi)) $reset >&2

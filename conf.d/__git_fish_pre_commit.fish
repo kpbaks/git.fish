@@ -61,7 +61,7 @@ function __git.fish::check_for_pre_commit --on-event in_git_repo_root_directory
             else
                 set -f generate_sample_config_command "pre-commit sample-config | tee .pre-commit-config.yaml && pre-commit install"
             end
-            set -l abbreviation pcg # (p)re-(c)ommit (g)enerate
+            set -l abbreviation pcg # (p)re-(c)omit (g)enerate
             __git.fish::echo (printf "A sample $dot_pre_commit_config_yaml file can be generated and installed with: (use the abbreviation %s$abbreviation%s to run it)" (set_color $fish_color_command) (set_color normal))
             printf "\t"
             echo $generate_sample_config_command | fish_indent --ansi

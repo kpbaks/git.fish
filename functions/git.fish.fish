@@ -30,7 +30,6 @@ function git.fish -a subcommand --description "Interact with `kpbaks/git.fish` p
             eval (status function) reminders
             eval (status function) abbreviations
 
-
             # set -l git_fish_env_vars
             # set | string match --regex --groups-only --all -- '(^GIT_FISH_\S+)' | while read var
             #     set --append git_fish_env_vars $var
@@ -66,8 +65,6 @@ function git.fish -a subcommand --description "Interact with `kpbaks/git.fish` p
             # goverview
             # gsl
             # gign
-
-
 
         case reminders
             printf '# reminders:\n'

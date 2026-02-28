@@ -38,7 +38,6 @@ function conflicts -d ''
         return 2
     end
 
-
     # for every 4 lines in `git diff --check`
 
     set -l n_conflicts 0

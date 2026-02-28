@@ -85,8 +85,10 @@
             };
           };
         };
-      flake.overlays.default = final: _prev: {
-        fishPlugins.git-fish = self.packages.${final.stdenv.hostPlatform.system}.default;
+      flake.overlays.default = final: prev: {
+        fishPlugins = prev.fishPlugins // {
+          git-fish = self.packages.${final.stdenv.hostPlatform.system}.default;
+        };
       };
     };
 }

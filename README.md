@@ -15,10 +15,6 @@ TODO create toc
 - [sqlite3](https://www.sqlite.org/index.html) is used to store visited git directories with the `repos` command.
 - [gum](https://github.com/charmbracelet/gum) is used to provide interactive widgets to some of the commands, like `resolve-conflicts`.
 
-### Optional Requirements
-
-- [pre-commit](https://pre-commit.com/) if installed, then the `pre-commit` reminder will be enabled.
-
 ## Installation
 
 Using [fisher](https://github.com/jorgebucaran/fisher)

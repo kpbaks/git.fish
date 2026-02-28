@@ -16,7 +16,13 @@ end
 function __git.fish::emitters::in_git_repo_root_directory --on-variable PWD
     # If the current directory is not a git repo, do nothing
     # NOTE: This does not account for when you are in a subdirectory of a git repo
-    test -d .git; or return 0
+    # By default submodules are detected (.git file); set git_fish_ignore_submodules=1 to only match regular repos (.git dir)
+    set --query git_fish_ignore_submodules; or set --universal git_fish_ignore_submodules 0
+    if test $git_fish_ignore_submodules -eq 1
+        test -d .git; or return 0
+    else
+        test -e .git; or return 0
+    end
 
     set --query __git_fish_last_git_repo_root_directory
     or set --global __git_fish_last_git_repo_root_directory ""

@@ -39,9 +39,12 @@ function __git::repos::add_git_repo_to_db -a dir
         return 1
     end
 
-    if not test -d $dir/.git
-        __git.fish::echo "$dir is not a git repo"
-        return 1
+    # By default submodules are detected (.git file); set git_fish_ignore_submodules=1 to only match regular repos (.git dir)
+    set --query git_fish_ignore_submodules; or set --universal git_fish_ignore_submodules 0
+    if test $git_fish_ignore_submodules -eq 1
+        test -d $dir/.git; or return 1
+    else
+        test -e $dir/.git; or return 1
     end
 
     set -l now (date +%s)

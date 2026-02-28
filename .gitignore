@@ -10,3 +10,4 @@ config.local.fish
 # Nix
 /.pre-commit-config.yaml
 /.direnv/
+/result

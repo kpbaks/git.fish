@@ -35,6 +35,7 @@
         {
           config,
           pkgs,
+          lib,
           ...
         }:
         {
@@ -69,6 +70,19 @@
             packages = config.pre-commit.settings.enabledPackages ++ [
               pkgs.fish
             ];
+          };
+
+          packages.default = pkgs.fishPlugins.buildFishPlugin {
+            pname = "git.fish";
+            version = "unknown";
+
+            src = lib.cleanSource ./.;
+            meta = {
+              description = "Collection of abbreviations and interactive fish-shell integrations I use to make `git` easier!";
+              homepage = "https://github.com/kpbaks/git.fish";
+              license = lib.licenses.mit;
+              maintainers = with lib.maintainers; [ kpbaks ];
+            };
           };
         };
     };

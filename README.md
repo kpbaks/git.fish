@@ -27,6 +27,20 @@ Using [fisher](https://github.com/jorgebucaran/fisher)
 fisher install kpbaks/git.fish
 ```
 
+### Nix
+
+```nix
+{
+  inputs."git.fish".url = "github:kpbaks/git.fish";
+
+  outputs = inputs: {
+    # Add the default package to either `environment.systemPackages` in your nixosConfigurations
+    # or `home.packages` in your homeConfigurations
+    inputs."git.fish".packages.${system}.default;
+  }
+}
+```
+
 ## Usage
 
 ### Abbreviations
